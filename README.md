@@ -1,0 +1,30 @@
+# 用户系统（移动端）
+
+技术栈：React Native、Nodejs
+
+开源 UI 组件库：React Native Elements
+
+#### 前端环境配置
+
+1、简易沙盒环境 Expo，创建旅游日记平台应用 Wander-Log-APP，运行
+
+npx create-expo-app Wander-Log-APP
+
+# 审核管理系统（PC 站点）
+
+技术栈：React、Nodejs
+
+开源 UI 组件库：Ant Design
+
+#### 前端环境配置
+
+1、创建审核管理系统应用 audit-management-system，运行
+
+npx create-react-app audit-management-system
+
+#### 后端环境配置
+
+mkdir backend
+cd backend
+npm init
+npm install express mongoose bcrypt cors

@@ -27,5 +27,6 @@ npx create-react-app audit-management-system
 #### 后端环境配置 backend
 
 npm init
+npm start
 
 

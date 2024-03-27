@@ -5,7 +5,7 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { NavigationContainer } from "@react-navigation/native";
 import Home from "./src/Home";
 // import LogPublicPage from "./src/LogPublicPage";
-// import MyLogPage from "./src/MyLogPage";
+import MyLogPage from "./src/MyLogPage/index";
 
 // 定义两个示例屏幕
 // function HomeScreen({ navigation }) {
@@ -48,8 +48,8 @@ function MyTabs() {
   return (
     <Tab.Navigator>
       <Tab.Screen name="Home" component={Home} />
-      {/* <Tab.Screen name="LogPublicPage" component={LogPublicPage} />
-      <Tab.Screen name="MyLogPage" component={MyLogPage} /> */}
+      {/* <Tab.Screen name="LogPublicPage" component={LogPublicPage} /> */}
+      <Tab.Screen name="MyLogPage" component={MyLogPage} />
     </Tab.Navigator>
   );
 }

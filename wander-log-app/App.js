@@ -3,18 +3,12 @@ import { Button, Text, View } from "react-native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { NavigationContainer } from "@react-navigation/native";
-<<<<<<< HEAD
-import Home from "./src/Home";
-// import LogPublicPage from "./src/LogPublicPage";
-import MyLogPage from "./src/MyLogPage/index";
-=======
 import HomeScreen from "./src/HomePage";
 import LogDetailScreen from "./src/LogDetailPage";
 import LoginScreen from "./src/LoginPage";
 import LogPublicScreen from "./src/LogPublicPage";
 import MyLogScreen from "./src/MyLogPage";
 import { MaterialIcons, Ionicons } from "@expo/vector-icons";
->>>>>>> fb452dbb4ad88131035e6335c5b551d2bae50588
 
 // 首页 堆栈导航
 const HomeStack = createNativeStackNavigator();
@@ -56,12 +50,6 @@ const Tab = createBottomTabNavigator();
 
 function MyTabs() {
   return (
-<<<<<<< HEAD
-    <Tab.Navigator>
-      <Tab.Screen name="Home" component={Home} />
-      {/* <Tab.Screen name="LogPublicPage" component={LogPublicPage} /> */}
-      <Tab.Screen name="MyLogPage" component={MyLogPage} />
-=======
     <Tab.Navigator
       initialRouteName="HomeStack"
       screenOptions={{ headerShown: false }}
@@ -96,7 +84,6 @@ function MyTabs() {
           ),
         }}
       />
->>>>>>> fb452dbb4ad88131035e6335c5b551d2bae50588
     </Tab.Navigator>
   );
 }

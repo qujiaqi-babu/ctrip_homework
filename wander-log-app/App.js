@@ -3,53 +3,87 @@ import { Button, Text, View } from "react-native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { NavigationContainer } from "@react-navigation/native";
-import Home from "./src/Home";
-// import LogPublicPage from "./src/LogPublicPage";
-// import MyLogPage from "./src/MyLogPage";
+import HomeScreen from "./src/HomePage";
+import LogDetailScreen from "./src/LogDetailPage";
+import LoginScreen from "./src/LoginPage";
+import LogPublicScreen from "./src/LogPublicPage";
+import MyLogScreen from "./src/MyLogPage";
+import { MaterialIcons, Ionicons } from "@expo/vector-icons";
 
-// 定义两个示例屏幕
-// function HomeScreen({ navigation }) {
-//   return (
-//     <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-//       <Text>Home Screen</Text>
-//       <Button
-//         title="Go to Details"
-//         onPress={() => navigation.navigate("Details")}
-//       />
-//     </View>
-//   );
-// }
-function DetailsScreen({ navigation }) {
+// 首页 堆栈导航
+const HomeStack = createNativeStackNavigator();
+function HomeStackScreen() {
   return (
-    <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-      <Text>Details Screen</Text>
-      <Button title="Go to Home" onPress={() => navigation.navigate("Home")} />
-    </View>
+    <HomeStack.Navigator screenOptions={{ headerShown: false }}>
+      <HomeStack.Screen name="Home" component={HomeScreen} />
+      <HomeStack.Screen
+        name="LogDetail"
+        component={LogDetailScreen}
+        options={{ headerShown: true }}
+      />
+    </HomeStack.Navigator>
   );
 }
 
-// 创建堆栈导航器
-const Stack = createNativeStackNavigator();
-
-function MyStack() {
+// 我的游记 堆栈导航
+const MyLogStack = createNativeStackNavigator();
+function MyLogStackScreen() {
   return (
-    <Stack.Navigator>
-      <Stack.Screen name="Home" component={Home} />
-      {/* <Stack.Screen name="LogPublicPage" component={LogPublicPage} />
-      <Stack.Screen name="MyLogPage" component={MyLogPage} /> */}
-    </Stack.Navigator>
+    <MyLogStack.Navigator screenOptions={{ headerShown: false }}>
+      <MyLogStack.Screen name="MyLog" component={MyLogScreen} />
+      <MyLogStack.Screen
+        name="LogDetail"
+        component={LogDetailScreen}
+        options={{ headerShown: true }}
+      />
+      <MyLogStack.Screen
+        name="Login"
+        component={LoginScreen}
+        options={{ headerShown: true }}
+      />
+    </MyLogStack.Navigator>
   );
 }
 
-// 创建底部导航器
+// 底部导航器
 const Tab = createBottomTabNavigator();
 
 function MyTabs() {
   return (
-    <Tab.Navigator>
-      <Tab.Screen name="Home" component={Home} />
-      {/* <Tab.Screen name="LogPublicPage" component={LogPublicPage} />
-      <Tab.Screen name="MyLogPage" component={MyLogPage} /> */}
+    <Tab.Navigator
+      initialRouteName="HomeStack"
+      screenOptions={{ headerShown: false }}
+    >
+      <Tab.Screen
+        name="HomeStack"
+        component={HomeStackScreen}
+        options={{
+          tabBarLabel: "游记列表",
+          tabBarIcon: ({ color, size }) => (
+            <MaterialIcons name="travel-explore" color={color} size={size} />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="LogPublic"
+        component={LogPublicScreen}
+        options={{
+          tabBarLabel: "游记发布",
+          tabBarIcon: ({ color, size }) => (
+            <MaterialIcons name="library-add" color={color} size={size} />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="MyLogStack"
+        component={MyLogStackScreen}
+        options={{
+          tabBarLabel: "我的游记",
+          tabBarIcon: ({ color, size }) => (
+            <MaterialIcons name="person" color={color} size={size} />
+          ),
+        }}
+      />
     </Tab.Navigator>
   );
 }
@@ -58,7 +92,6 @@ function MyTabs() {
 function App() {
   return (
     <NavigationContainer>
-      {/* <MyStack /> */}
       <MyTabs />
     </NavigationContainer>
   );

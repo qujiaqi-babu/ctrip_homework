@@ -39,7 +39,7 @@ function MyLogStackScreen() {
       <MyLogStack.Screen
         name="Login"
         component={LoginScreen}
-        options={{ headerShown: true }}
+        options={{ headerShown: false }}
       />
     </MyLogStack.Navigator>
   );

@@ -1,42 +1,60 @@
-import React from "react";
-import { ScrollView, TouchableOpacity, Text, StyleSheet } from "react-native";
+import React, { useState } from "react";
+import {
+  View,
+  ScrollView,
+  TouchableWithoutFeedback,
+  Text,
+  StyleSheet,
+  Animated,
+  Easing,
+} from "react-native";
 
-const HorizontalTopicScroll = ({ topicList, handleTopicPress }) => {
+const HorizontalTopicScroll = ({
+  topicList,
+  selectedTopic,
+  setSelectedTopic,
+}) => {
+  const handlePress = (index) => {
+    setSelectedTopic(topicList[index]);
+  };
+
   return (
-    <ScrollView horizontal={true} style={styles.scrollView}>
-      {topicList.map((item, index) => (
-        <TouchableOpacity
-          key={index}
-          style={[styles.topic, item.status && styles.selectedTopic]}
-          onPress={() => handleTopicPress(index)}
-        >
-          <Text style={styles.topicText}>{item.topic}</Text>
-        </TouchableOpacity>
-      ))}
-    </ScrollView>
+    <View>
+      <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
+        {topicList.map((topic, index) => (
+          <TouchableWithoutFeedback
+            key={index}
+            onPress={() => handlePress(index)}
+          >
+            <Text
+              style={[
+                styles.topic,
+                topic === selectedTopic && styles.selectedTopic,
+              ]}
+            >
+              {topic}
+            </Text>
+          </TouchableWithoutFeedback>
+        ))}
+      </ScrollView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  scrollView: {
-    flexDirection: "row", // 设置水平排列
-    padding: 10,
-    backgroundColor: "#f0f0f0",
-  },
   topic: {
-    backgroundColor: "red",
-    paddingHorizontal: 15,
-    paddingVertical: 10,
-    borderRadius: 20,
-    marginRight: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
     backgroundColor: "#fff",
+    fontSize: 16,
+    color: "#555",
+    marginBottom: 10,
   },
   selectedTopic: {
-    backgroundColor: "lightblue",
-  },
-  topicText: {
-    fontSize: 16,
     fontWeight: "bold",
+    color: "#0072c6",
+    borderBottomWidth: 2,
+    borderBottomColor: "#0072c6",
   },
 });
 

@@ -19,6 +19,11 @@ function HomeStackScreen() {
       <HomeStack.Screen
         name="LogDetail"
         component={LogDetailScreen}
+        options={{ headerShown: false }}
+      />
+      <HomeStack.Screen
+        name="MyLogPage"
+        component={MyLogScreen}
         options={{ headerShown: true }}
       />
     </HomeStack.Navigator>

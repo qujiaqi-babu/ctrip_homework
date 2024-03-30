@@ -19,9 +19,7 @@ import {
   BottomSheet,
   ListItem,
 } from "@rneui/themed";
-import SideMenu from "react-native-side-menu";
 import Drawer from "react-native-drawer";
-import { SafeAreaProvider } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 
 const ContentView = () => {

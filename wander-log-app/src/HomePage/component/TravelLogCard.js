@@ -106,7 +106,7 @@ const TravelLogCard = ({ item, columnIndex, numColumns }) => {
   );
 };
 
-const borderRadius = 8;
+const borderRadius = 4;
 
 const styles = StyleSheet.create({
   card: {

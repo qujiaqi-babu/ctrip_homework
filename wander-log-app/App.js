@@ -1,8 +1,19 @@
 import * as React from "react";
-import { StyleSheet, Dimensions } from "react-native";
+import { useEffect } from "react";
+import {
+  StyleSheet,
+  Dimensions,
+  Button,
+  View,
+  TouchableWithoutFeedback,
+} from "react-native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { NavigationContainer } from "@react-navigation/native";
+import {
+  NavigationContainer,
+  useNavigation,
+  useRoute,
+} from "@react-navigation/native";
 import HomeScreen from "./src/HomePage";
 import LogDetailScreen from "./src/LogDetailPage";
 import LoginScreen from "./src/LoginPage";
@@ -13,61 +24,82 @@ import SettingScreen from "./src/SettingPage";
 
 import { MaterialIcons, Ionicons } from "@expo/vector-icons";
 
-// 屏幕高度
-const screenHeight = Dimensions.get("window").height;
-
-// 首页 堆栈导航
-const HomeStack = createNativeStackNavigator();
-function HomeStackScreen() {
+// 发布游记按钮
+function PublishButton() {
+  const navigation = useNavigation();
   return (
-    <HomeStack.Navigator screenOptions={{ headerShown: false }}>
-      <HomeStack.Screen name="Home" component={HomeScreen} />
-      <HomeStack.Screen
-        name="LogDetail"
-        component={LogDetailScreen}
-        options={{ headerShown: false }}
-      />
-      <HomeStack.Screen
-        name="MyLogPage"
-        component={MyLogScreen}
-        options={{ headerShown: true }}
-      />
-    </HomeStack.Navigator>
+    <View style={styles.addButton}>
+      <TouchableWithoutFeedback
+        onPress={() => navigation.navigate("LogPublic")}
+      >
+        <MaterialIcons name="add" size={32} color="white" />
+      </TouchableWithoutFeedback>
+    </View>
   );
 }
 
-// 我的游记 堆栈导航
-const MyLogStack = createNativeStackNavigator();
-function MyLogStackScreen() {
+// 底部导航栏
+const Tab = createBottomTabNavigator();
+function HomeTabScreen() {
   return (
-    <MyLogStack.Navigator
-      screenOptions={{
-        headerShown: false,
-      }}
+    <View style={{ flex: 1 }}>
+      <Tab.Navigator
+        initialRouteName="Home"
+        screenOptions={{
+          headerShown: false,
+          tabBarLabelStyle: styles.tabBarText,
+          tabBarHideOnKeyboard: true,
+        }}
+      >
+        <Tab.Screen
+          name="Home"
+          component={HomeScreen}
+          options={{
+            tabBarLabel: "游记列表",
+            tabBarIcon: ({ color, size }) => (
+              <MaterialIcons name="travel-explore" color={color} size={size} />
+            ),
+          }}
+        />
+        {/* <Tab.Screen
+        name="LogPublic"
+        component={LogPublicScreen}
+        options={{
+          tabBarLabel: "游记发布",
+          tabBarIcon: ({ color, size }) => (
+            <MaterialIcons name="library-add" color={color} size={size} />
+          ),
+        }}
+      /> */}
+        <Tab.Screen
+          name="MyLog"
+          component={MyLogScreen}
+          options={{
+            tabBarLabel: "我的游记",
+            tabBarIcon: ({ color, size }) => (
+              <MaterialIcons name="person" color={color} size={size} />
+            ),
+          }}
+        />
+      </Tab.Navigator>
+      <PublishButton />
+    </View>
+  );
+}
+
+// 堆栈导航
+const Stack = createNativeStackNavigator();
+function HomeStackScreen() {
+  return (
+    <Stack.Navigator
+      initialRouteName="HomeTab"
+      screenOptions={{ headerShown: false }}
     >
-      <MyLogStack.Screen name="MyLog" component={MyLogScreen} />
-      <MyLogStack.Screen
-        name="LogDetail"
-        component={LogDetailScreen}
-        options={{
-          headerShown: true,
-        }}
-      />
-      <MyLogStack.Screen
-        name="Login"
-        component={LoginScreen}
-        options={{ headerShown: false }}
-      />
-      <MyLogStack.Screen
-        name="UserInfo"
-        component={UserInfoScreen}
-        options={{
-          headerShown: true,
-          headerTitleAlign: "center",
-          headerTitle: "编辑信息",
-        }}
-      />
-      <MyLogStack.Screen
+      <Stack.Screen name="HomeTab" component={HomeTabScreen} />
+      <Stack.Screen name="LogDetail" component={LogDetailScreen} />
+      <Stack.Screen name="Login" component={LoginScreen} />
+      <Stack.Screen name="LogPublic" component={LogPublicScreen} />
+      <Stack.Screen
         name="Setting"
         component={SettingScreen}
         options={{
@@ -76,73 +108,25 @@ function MyLogStackScreen() {
           headerTitle: "设置",
         }}
       />
-    </MyLogStack.Navigator>
-  );
-}
-
-// 底部导航器
-const Tab = createBottomTabNavigator();
-
-function MyTabs() {
-  return (
-    <Tab.Navigator
-      initialRouteName="HomeStack"
-      screenOptions={
-        ({ route }) => ({
-          tabBarVisible: route.name !== "LogPublic", // 根据路由名称隐藏特定按钮
-
-          headerShown: false,
-          // tabBarStyle: styles.tabBar,
-          tabBarLabelStyle: styles.tabBarText,
-          tabBarHideOnKeyboard: true,
-        })
-        //   {
-
-        // }
-      }
-    >
-      <Tab.Screen
-        name="HomeStack"
-        component={HomeStackScreen}
+      <Stack.Screen
+        name="UserInfo"
+        component={UserInfoScreen}
         options={{
-          tabBarLabel: "游记列表",
-          tabBarIcon: ({ color, size }) => (
-            <MaterialIcons name="travel-explore" color={color} size={size} />
-          ),
+          headerShown: true,
+          headerTitleAlign: "center",
+          headerTitle: "编辑信息",
         }}
       />
-      <Tab.Screen
-        name="LogPublic"
-        component={LogPublicScreen}
+      {/* Todo 此处应设置新页面-UserLogPage */}
+      <Stack.Screen
+        name="MyLogPage"
+        component={MyLogScreen}
         options={{
-          tabBarLabel: "游记发布",
-          tabBarIcon: ({ color, size }) => (
-            <MaterialIcons name="library-add" color={color} size={size} />
-          ),
-          // tabBarStyle: { display: "none" },
+          headerShown: true,
+          headerTitle: "UserLogPage",
         }}
       />
-      <Tab.Screen
-        name="MyLogStack"
-        component={MyLogStackScreen}
-        options={{
-          tabBarLabel: "我的游记",
-          tabBarIcon: ({ color, size }) => (
-            <MaterialIcons name="person" color={color} size={size} />
-          ),
-        }}
-      />
-      {/* <Tab.Screen
-        name="LogDetail"
-        component={LogDetailScreen}
-        options={{
-          tabBarLabel: "游记列表",
-          tabBarIcon: ({ color, size }) => (
-            <MaterialIcons name="travel-explore" color={color} size={size} />
-          ),
-        }}
-      /> */}
-    </Tab.Navigator>
+    </Stack.Navigator>
   );
 }
 
@@ -150,19 +134,29 @@ function MyTabs() {
 function App() {
   return (
     <NavigationContainer>
-      <MyTabs />
+      <HomeStackScreen />
     </NavigationContainer>
   );
 }
 
+// 屏幕宽高
+const { width, height } = Dimensions.get("window");
+
 const styles = StyleSheet.create({
-  // tabBar: {
-  //   position: "absolute",
-  //   top: screenHeight + 3,
-  // },
   tabBarText: {
     fontSize: 12,
     fontWeight: "bold",
+  },
+  addButton: {
+    position: "absolute",
+    width: 60,
+    paddingVertical: 6,
+    top: height + 6,
+    left: width / 2 - 30,
+    borderRadius: 15,
+    backgroundColor: "#007AFF",
+    alignItems: "center",
+    justifyContent: "center",
   },
 });
 

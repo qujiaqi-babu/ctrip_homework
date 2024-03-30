@@ -38,12 +38,18 @@ function HomeStackScreen() {
 const MyLogStack = createNativeStackNavigator();
 function MyLogStackScreen() {
   return (
-    <MyLogStack.Navigator screenOptions={{ headerShown: false }}>
+    <MyLogStack.Navigator
+      screenOptions={{
+        headerShown: false,
+      }}
+    >
       <MyLogStack.Screen name="MyLog" component={MyLogScreen} />
       <MyLogStack.Screen
         name="LogDetail"
         component={LogDetailScreen}
-        options={{ headerShown: true }}
+        options={{
+          headerShown: true,
+        }}
       />
       <MyLogStack.Screen
         name="Login"
@@ -53,7 +59,7 @@ function MyLogStackScreen() {
       <MyLogStack.Screen
         name="UserInfo"
         component={UserInfoScreen}
-        options={{ headerShown: false }}
+        options={{ headerShown: false, headerTitleAlign: "center" }}
       />
     </MyLogStack.Navigator>
   );
@@ -66,17 +72,18 @@ function MyTabs() {
   return (
     <Tab.Navigator
       initialRouteName="HomeStack"
-      // tabBar={(props) => <MyTabBar {...props} />}
       screenOptions={
-        // ({ route }) => ({
-        //   tabBarVisible: route.name !== "LogPublic", // 当路由名为 'Home' 时，隐藏底部导航栏
-        // })
-        {
+        ({ route }) => ({
+          tabBarVisible: route.name !== "LogPublic", // 根据路由名称隐藏特定按钮
+
           headerShown: false,
           // tabBarStyle: styles.tabBar,
           tabBarLabelStyle: styles.tabBarText,
           tabBarHideOnKeyboard: true,
-        }
+        })
+        //   {
+
+        // }
       }
     >
       <Tab.Screen
@@ -97,6 +104,7 @@ function MyTabs() {
           tabBarIcon: ({ color, size }) => (
             <MaterialIcons name="library-add" color={color} size={size} />
           ),
+          // tabBarStyle: { display: "none" },
         }}
       />
       <Tab.Screen
@@ -109,6 +117,16 @@ function MyTabs() {
           ),
         }}
       />
+      {/* <Tab.Screen
+        name="LogDetail"
+        component={LogDetailScreen}
+        options={{
+          tabBarLabel: "游记列表",
+          tabBarIcon: ({ color, size }) => (
+            <MaterialIcons name="travel-explore" color={color} size={size} />
+          ),
+        }}
+      /> */}
     </Tab.Navigator>
   );
 }
@@ -123,11 +141,10 @@ function App() {
 }
 
 const styles = StyleSheet.create({
-  tabBar: {
-    // position: "absolute",
-    // top: screenHeight + 3,
-    display: "none",
-  },
+  // tabBar: {
+  //   position: "absolute",
+  //   top: screenHeight + 3,
+  // },
   tabBarText: {
     fontSize: 12,
     fontWeight: "bold",

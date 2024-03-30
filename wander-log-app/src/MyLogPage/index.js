@@ -227,7 +227,7 @@ const MyLogPage = () => {
         })}
       >
         <View style={styles.container}>
-          <SafeAreaProvider>
+          {/* <SafeAreaProvider>
             <BottomSheet
               // modalProps={{ presentationStyle: "fullScreen" }}
               // containerStyle={{ backgroundColor: "red" }}
@@ -244,7 +244,7 @@ const MyLogPage = () => {
                 </ListItem.Content>
               </ListItem>
             </BottomSheet>
-          </SafeAreaProvider>
+          </SafeAreaProvider> */}
           <View style={styles.head_container}>
             {/* <Text>导航头</Text> */}
             <TouchableOpacity onPress={showSideMenu}>

@@ -392,7 +392,12 @@ const MyLogPage = () => {
                       编辑资料
                     </Text>
                   </TouchableOpacity>
-                  <TouchableOpacity style={styles.button}>
+                  <TouchableOpacity
+                    onPress={() => {
+                      navigation.navigate("Setting");
+                    }}
+                    style={styles.button}
+                  >
                     {/* <Icon name="image" color="#FFF" /> */}
                     <Icon
                       style={{ alignItems: "flex-end" }}

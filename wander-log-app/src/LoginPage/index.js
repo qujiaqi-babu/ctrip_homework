@@ -1,6 +1,13 @@
+import React, { useState } from "react";
 import { StyleSheet, View, TouchableOpacity } from "react-native";
+// import CheckBox from "@react-native-community/checkbox";
 import { Button, Icon, Text, Image } from "@rneui/themed";
+// import { CheckBox } from "@rneui/base";
+import { useNavigation } from "@react-navigation/native";
 export default function LoginScreen() {
+  const navigation = useNavigation();
+  // const [checked, setChecked] = React.useState(true);
+  // const toggleCheckbox = () => setChecked(!checked);
   return (
     <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
       <View style={{ flex: 3, justifyContent: "center" }}>
@@ -25,7 +32,9 @@ export default function LoginScreen() {
             width: 250,
             marginVertical: 10,
           }}
-          onPress={() => console.log("aye")}
+          onPress={() => {
+            navigation.navigate("Home");
+          }}
         >
           <Icon name="wechat" color="white" />
           <Text style={{ fontSize: 18, color: "#FFF" }}>微信登录</Text>
@@ -47,6 +56,7 @@ export default function LoginScreen() {
           alignContent: "center",
         }}
       >
+        <Icon containerStyle={{}} name="check-box-outline-blank" color="#000" />
         <Text style={{ color: "#778899" }}>我已阅读并同意</Text>
         <TouchableOpacity>
           <Text>《用户协议》</Text>

@@ -9,6 +9,8 @@ import LoginScreen from "./src/LoginPage";
 import LogPublicScreen from "./src/LogPublicPage";
 import MyLogScreen from "./src/MyLogPage";
 import UserInfoScreen from "./src/UserInfoPage";
+import SettingScreen from "./src/SettingPage";
+
 import { MaterialIcons, Ionicons } from "@expo/vector-icons";
 
 // 屏幕高度
@@ -59,7 +61,20 @@ function MyLogStackScreen() {
       <MyLogStack.Screen
         name="UserInfo"
         component={UserInfoScreen}
-        options={{ headerShown: true, headerTitleAlign: "center" }}
+        options={{
+          headerShown: true,
+          headerTitleAlign: "center",
+          headerTitle: "编辑信息",
+        }}
+      />
+      <MyLogStack.Screen
+        name="Setting"
+        component={SettingScreen}
+        options={{
+          headerShown: true,
+          headerTitleAlign: "center",
+          headerTitle: "设置",
+        }}
       />
     </MyLogStack.Navigator>
   );

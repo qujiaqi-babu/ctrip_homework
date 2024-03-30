@@ -373,7 +373,7 @@ const MyLogPage = () => {
                 >
                   <TouchableOpacity
                     onPress={() => {
-                      navigation.navigate("LogDetail");
+                      navigation.navigate("UserInfo");
                     }}
                     style={styles.button}
                   >
@@ -427,6 +427,7 @@ const MyLogPage = () => {
                 <TabView.Item style={{ width: "100%" }}>
                   {data ? (
                     <FlatList
+                      showsVerticalScrollIndicator={false}
                       data={data}
                       numColumns={2}
                       renderItem={({ item, index }) => (

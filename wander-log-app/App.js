@@ -53,7 +53,7 @@ function MyLogStackScreen() {
       <MyLogStack.Screen
         name="UserInfo"
         component={UserInfoScreen}
-        options={{ headerShown: false }}
+        options={{ headerShown: true }}
       />
     </MyLogStack.Navigator>
   );

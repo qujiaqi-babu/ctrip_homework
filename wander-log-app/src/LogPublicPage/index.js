@@ -389,7 +389,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   pickerText: {
-    fontSize: 18,
+    fontSize: 16,
     color: "black",
   },
   monthPicker: {
@@ -441,7 +441,7 @@ const styles = StyleSheet.create({
     height: 25,
   },
   placeText: {
-    fontSize: 18,
+    fontSize: 16,
     marginLeft: 10,
   },
   six: {

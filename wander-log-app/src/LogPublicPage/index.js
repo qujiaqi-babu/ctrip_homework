@@ -1,5 +1,5 @@
 import "rn-overlay";
-import { Overlay } from "react-native";
+import { Overlay, ScrollView } from "react-native";
 import React, { useState } from "react";
 import {
   StyleSheet,
@@ -14,7 +14,9 @@ import {
 } from "react-native";
 import { Button } from "@rneui/themed";
 import { MaterialIcons, Ionicons } from "@expo/vector-icons";
-import ModalPicker from "react-native-picker-select";
+import MonthPicker from "./component/monthPicker";
+import RangeButtonGroup from "./component/rangeButtonGroup";
+import StarRating from "./component/starRating";
 
 const Toast = Overlay.Toast;
 
@@ -22,22 +24,13 @@ const LogPublicPage = () => {
   const [title, setTitle] = useState("");
   const maxTitleLength = 20;
 
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
+
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [selectedMonth, setSelectedMonth] = useState(null);
-  const months = [
-    { key: "1", value: "一月" },
-    { key: "2", value: "二月" },
-    { key: "3", value: "三月" },
-    { key: "4", value: "四月" },
-    { key: "5", value: "五月" },
-    { key: "6", value: "六月" },
-    { key: "7", value: "七月" },
-    { key: "8", value: "八月" },
-    { key: "9", value: "九月" },
-    { key: "10", value: "十月" },
-    { key: "11", value: "十一月" },
-    { key: "12", value: "十二月" },
-  ];
+  const [selectedRange, setSelectedRange] = useState(null);
+  const ranges = ["0—500", "500—1000", "1000—2000", "2000以上"];
+  const [rating, setRating] = useState(0);
 
   // 返回事件
   const handleEditBack = () => {
@@ -74,6 +67,12 @@ const LogPublicPage = () => {
     }
   };
 
+  // 添加图片点击事件
+  const handleImageClick = (image) => {
+    setSelectedImage(image);
+    setModalVisible(true);
+  };
+
   // 处理添加标签的逻辑
   const handleAddLabel = () => {};
 
@@ -81,8 +80,19 @@ const LogPublicPage = () => {
     setIsModalVisible(true);
   };
 
+  // 悬浮框关闭
   const handleModalClose = () => {
     setIsModalVisible(false);
+  };
+
+  // 人均消费选择框
+  const handleRangePress = (range) => {
+    setSelectedRange((prevRange) => (prevRange === range ? null : range));
+  };
+
+  // 点击星星事件
+  const handleClickStar = (index) => {
+    setRating(index + 1); // 评级分数1~5
   };
 
   return (
@@ -99,8 +109,41 @@ const LogPublicPage = () => {
         </View>
         <View style={styles.one}>
           <View style={styles.imageContainer}>
+            {/* <TouchableOpacity onPress={handleImageClick}> */}
             <Image source={require("./1.jpg")} style={styles.image} />
+            {/* </TouchableOpacity> */}
           </View>
+          {/* <View> */}
+          {/* {images.map((image, index) => (
+            <TouchableOpacity key={index} onPress={() => handleImageClick(image)}>
+              <Image
+                style={{ width: 100, height: 100 }}
+                source={{ uri: image }}
+              />
+            </TouchableOpacity>
+          ))} */}
+          {/* <Modal
+            animationType="slide"
+            transparent={false}
+            visible={modalVisible}
+            onRequestClose={() => setModalVisible(false)}
+          >
+            <View
+              style={{
+                flex: 1,
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <TouchableOpacity onPress={() => setModalVisible(false)}>
+                <Image
+                  style={{ width: "100%", height: "100%" }}
+                  source={{ uri: selectedImage }}
+                />
+              </TouchableOpacity>
+            </View>
+          </Modal> */}
+          {/* 点击图片可以方法查看的模态框 */}
           <View style={styles.imageContainer}>
             <Button
               title="+"
@@ -139,7 +182,7 @@ const LogPublicPage = () => {
           />
           <View style={styles.bottomContent}>
             <TouchableOpacity style={styles.addLabel} onPress={handleAddLabel}>
-              <Text style={styles.addLabelText}># 话题</Text>
+              <Text style={styles.addLabelText}># 主题</Text>
             </TouchableOpacity>
             <TouchableOpacity onPress={handleModalShow}>
               <MaterialIcons name="keyboard-arrow-up" size={24} color="black" />
@@ -148,22 +191,67 @@ const LogPublicPage = () => {
         </View>
         <View style={styles.line}></View>
         <View style={styles.four}>
-          {/* <ModalPicker>
-            模态选择器的内容
-            data={months}
-            accessible={true}
-            keyExtractor={(item) => item.key.toString()}
-            renderItem=
-            {({ item }) => (
-              <TouchableOpacity onPress={() => setSelectedMonth(item.value)}>
-                <Text style={styles.monthItem}>{item.value}</Text>
-              </TouchableOpacity>
-            )}
-          </ModalPicker> */}
-          {/* 有问题 */}
+          <View style={styles.picker}>
+            <Text style={styles.pickerText}>出行月份:</Text>
+            <View style={styles.monthPicker}>
+              <MonthPicker />
+            </View>
+          </View>
+          <View style={styles.picker}>
+            <Text style={styles.pickerText}>人均消费:</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              <View style={styles.rangeContainer}>
+                <RangeButtonGroup
+                  ranges={ranges}
+                  selectedRange={selectedRange}
+                  onPress={handleRangePress}
+                />
+              </View>
+            </ScrollView>
+          </View>
+          <View style={styles.picker}>
+            <Text style={styles.pickerText}>满意度:</Text>
+            <View style={styles.rateContainer}>
+              <StarRating
+                rating={rating}
+                starSize={30}
+                totalStars={5}
+                onPress={handleClickStar}
+              />
+            </View>
+          </View>
         </View>
-        <View style={styles.five}></View>
-        <View style={styles.six}></View>
+        <View style={styles.line}></View>
+        <View style={styles.five}>
+          <TouchableOpacity style={styles.five}>
+            <View style={styles.left}>
+              <Image
+                source={require("../LogPublicPage/public/place.png")}
+                style={styles.placeIcon}
+              />
+              <Text style={styles.placeText}>添加地点</Text>
+            </View>
+            <MaterialIcons
+              name="keyboard-arrow-right"
+              size={24}
+              color="#B7B7B7"
+            />
+          </TouchableOpacity>
+        </View>
+        <View style={styles.six}>
+          <TouchableOpacity>
+            <View style={styles.draftBack}>
+              <Image
+                source={require("../LogPublicPage/public/draft.png")}
+                style={styles.draftIcon}
+              />
+            </View>
+            <Text style={styles.draftText}>存草稿</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.publicArea}>
+            <Text style={styles.publicText}>发布笔记</Text>
+          </TouchableOpacity>
+        </View>
       </View>
       <Modal
         visible={isModalVisible}
@@ -255,7 +343,7 @@ const styles = StyleSheet.create({
     marginVertical: 10,
   },
   three: {
-    flex: 4,
+    flex: 3,
     marginTop: 5,
   },
   contentInput: {
@@ -294,15 +382,104 @@ const styles = StyleSheet.create({
   },
   four: {
     flex: 3,
-    marginTop: 10,
+  },
+  picker: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  pickerText: {
+    fontSize: 18,
+    color: "black",
+  },
+  monthPicker: {
+    width: 120,
+    height: 50,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  rangeContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+  },
+  rangeButton: {
+    width: 80,
+    height: 35,
+    backgroundColor: "#E3E6E8",
+    borderRadius: 20,
+    justifyContent: "center",
+    alignItems: "center",
+    fontSize: 16,
+  },
+  selectedRangeButton: {
+    borderColor: "#52BE80",
+    backgroundColor: "#DEE4DC",
+    borderWidth: 2,
+  },
+  rateContainer: {
+    height: 20,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    marginLeft: 10,
   },
   five: {
     flex: 1,
-    backgroundColor: "purple",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  left: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  placeIcon: {
+    width: 25,
+    height: 25,
+  },
+  placeText: {
+    fontSize: 18,
+    marginLeft: 10,
   },
   six: {
     flex: 3,
-    backgroundColor: "gray",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-end",
+  },
+  draftBox: {},
+  draftBack: {
+    width: 40,
+    height: 40,
+    borderRadius: 40,
+    backgroundColor: "#E3E6E8",
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 10,
+    marginBottom: 3,
+  },
+  draftIcon: {
+    width: 25,
+    height: 25,
+  },
+  draftText: {
+    fontSize: 14,
+    color: "#717070",
+  },
+  publicArea: {
+    width: 200,
+    height: 50,
+    borderRadius: 25,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#2E86C1",
+  },
+  publicText: {
+    color: "white",
+    fontSize: 18,
   },
 });
 

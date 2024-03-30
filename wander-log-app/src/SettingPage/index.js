@@ -20,7 +20,7 @@ import {
 } from "@rneui/themed";
 
 import { useNavigation } from "@react-navigation/native";
-const UserInforPage = () => {
+const SettingPage = () => {
   const data = {
     avatar_url: "https://randomuser.me/api/portraits/men/36.jpg",
     username: "王权",
@@ -214,7 +214,7 @@ const UserInforPage = () => {
     </View>
   );
 };
-export default UserInforPage;
+export default SettingPage;
 const sideMenuStyles = StyleSheet.create({
   container: {
     flex: 1,

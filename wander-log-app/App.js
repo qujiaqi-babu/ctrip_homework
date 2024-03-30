@@ -59,7 +59,7 @@ function MyLogStackScreen() {
       <MyLogStack.Screen
         name="UserInfo"
         component={UserInfoScreen}
-        options={{ headerShown: false, headerTitleAlign: "center" }}
+        options={{ headerShown: true, headerTitleAlign: "center" }}
       />
     </MyLogStack.Navigator>
   );

@@ -1,10 +1,15 @@
 import React, { useState, useEffect } from "react";
-import { View, Button, Text, StyleSheet, ScrollView } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TextInput,
+  ScrollView,
+  TouchableWithoutFeedback,
+} from "react-native";
 import WaterfallFlow from "react-native-waterfall-flow";
 import TravelLogCard from "./component/TravelLogCard";
-import SearchBox from "./component/SearchBox";
-import HorizontalTopicScroll from "./component/HorizontalTopicScroll";
-import Picker from "./component/Picker";
+import { Feather } from "@expo/vector-icons";
 
 // 游记数据
 const imageList = [
@@ -53,6 +58,7 @@ const HomePage = ({ navigation }) => {
   const [numColumns, setNumColumns] = useState(2);
   const [travelLogs, setTravelLogs] = useState(initalTravelLogs);
   const [searchContent, setSearchContent] = useState("");
+  const [searchInput, setSearchInput] = useState("");
   const [selectedTopic, setSelectedTopic] = useState(topicList[0]);
 
   const [requestStatus, setRequestStatus] = useState(RequestStatus.IDLE);
@@ -87,24 +93,66 @@ const HomePage = ({ navigation }) => {
       });
   }, [searchContent, selectedTopic]);
 
+  const handleSearchPress = () => {
+    setSearchContent(searchInput);
+  };
+
+  const handleTopicPress = (index) => {
+    setSelectedTopic(topicList[index]);
+    setSearchContent("");
+    setSearchInput("");
+  };
+
   return (
     <View style={styles.container}>
-      <SearchBox />
-      {/* <Picker /> */}
-      {/* {numColumns === 2 && (
-        <Button title="单栏" onPress={() => setNumColumns(3 - numColumns)} />
-      )}
-      {numColumns === 1 && (
-        <Button title="双栏" onPress={() => setNumColumns(3 - numColumns)} />
-      )} */}
-      <HorizontalTopicScroll
-        topicList={topicList}
-        selectedTopic={selectedTopic}
-        setSelectedTopic={setSelectedTopic}
-      />
+      {/* 搜索框 */}
+      <View style={styles.searchBoxContainer}>
+        <View style={styles.searchBox}>
+          <Feather
+            name="search"
+            color="gray"
+            size={20}
+            style={styles.searchIcon}
+          />
+          <TextInput
+            style={styles.searchInput}
+            // placeholder="Enter search keyword"
+            onChangeText={setSearchInput}
+            value={searchInput}
+          />
+        </View>
+        <TouchableWithoutFeedback onPress={handleSearchPress}>
+          <Text style={styles.searchButton}>搜索</Text>
+        </TouchableWithoutFeedback>
+      </View>
+
+      {/* 主题滚动条 */}
+      <View style={styles.topicScrollContainer}>
+        <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
+          {topicList.map((topic, index) => (
+            <TouchableWithoutFeedback
+              key={index}
+              onPress={() => handleTopicPress(index)}
+            >
+              <Text
+                style={[
+                  styles.topic,
+                  topic === selectedTopic && styles.selectedTopic,
+                ]}
+              >
+                {topic}
+              </Text>
+            </TouchableWithoutFeedback>
+          ))}
+        </ScrollView>
+      </View>
+
+      {/* 数据加载页 */}
       {requestStatus === RequestStatus.PENDING && (
         <Text style={styles.loading}>游记列表加载中... ^o^</Text>
       )}
+
+      {/* 游记卡片瀑布流 */}
       {requestStatus === RequestStatus.SUCCESS && (
         <WaterfallFlow
           style={styles.waterfallFlow}
@@ -129,8 +177,55 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#fff",
   },
+
+  searchBoxContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginHorizontal: 10,
+    marginTop: 55,
+  },
+  searchBox: {
+    flex: 9,
+    flexDirection: "row",
+    alignItems: "center",
+    height: 40,
+    backgroundColor: "#eeeeee",
+    borderRadius: 20,
+  },
+  searchIcon: {
+    marginLeft: 8,
+    marginRight: 10,
+  },
+  searchInput: {
+    flex: 1,
+    height: 40,
+    fontSize: 16,
+    borderRadius: 5,
+    marginRight: 10,
+  },
+  searchButton: {
+    fontSize: 16,
+    marginLeft: 10,
+    color: "gray",
+  },
+
+  topicScrollContainer: {
+    marginVertical: 5,
+  },
+  topic: {
+    paddingHorizontal: 10,
+    paddingVertical: 2,
+    fontSize: 16,
+    color: "gray",
+  },
+  selectedTopic: {
+    fontWeight: "bold",
+    color: "#3498DB",
+    borderBottomWidth: 2,
+    borderBottomColor: "#3498DB",
+  },
+
   waterfallFlow: {
-    // padding: 10,
     backgroundColor: "#f0f0f0",
   },
   loading: {

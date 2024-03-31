@@ -37,7 +37,7 @@ const LogPublicPage = () => {
   // 返回事件
   const handleEditBack = () => {
     console.log("Icon pressed!");
-    navigation.navigate("");  // 这里的路由需要修改
+    navigation.goBack(); // 这里的路由需要修改
   };
 
   // 清空文本框

@@ -1,5 +1,4 @@
 import * as React from "react";
-import { useEffect } from "react";
 import {
   StyleSheet,
   Dimensions,
@@ -49,6 +48,7 @@ function HomeTabScreen() {
           headerShown: false,
           tabBarLabelStyle: styles.tabBarText,
           tabBarHideOnKeyboard: true,
+          tabBarActiveTintColor: "#3498DB",
         }}
       >
         <Tab.Screen
@@ -154,7 +154,7 @@ const styles = StyleSheet.create({
     top: height + 6,
     left: width / 2 - 30,
     borderRadius: 15,
-    backgroundColor: "#007AFF",
+    backgroundColor: "#3498DB",
     alignItems: "center",
     justifyContent: "center",
   },

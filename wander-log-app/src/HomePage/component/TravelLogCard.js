@@ -3,13 +3,12 @@ import {
   TouchableWithoutFeedback,
   View,
   Text,
-  Button,
   StyleSheet,
   Image,
   Dimensions,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { FontAwesome, AntDesign } from "@expo/vector-icons";
+import { AntDesign } from "@expo/vector-icons";
 
 // 屏幕宽度
 const screenWidth = Dimensions.get("window").width;

@@ -18,8 +18,7 @@ import {
   Octicons,
 } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
-
-const screenWidth = Dimensions.get("window").width;
+import ImageSlider from "./component/imageSlider";
 
 const LogDetailPage = () => {
   const navigation = useNavigation();
@@ -33,6 +32,15 @@ const LogDetailPage = () => {
   const [comments, setComments] = useState(0);
   const [likeScaleValue] = useState(new Animated.Value(1));
   const [collectScaleValue] = useState(new Animated.Value(1));
+
+  const images = [
+    "https://pic1.zhimg.com/50/v2-e814c1e763ea9e1d996426a24901d2ad_hd.jpg?source=1940ef5c",
+    "https://pic1.zhimg.com/v2-19989b3136b39a0cc9379c29babbd3f2_r.jpg?source=1940ef5c",
+    "https://ts1.cn.mm.bing.net/th/id/R-C.08edbf54f0ac46c135bf4f4d777dc16a?rik=9saq7P38Oq2Gfw&riu=http%3a%2f%2fwww.people.com.cn%2fmediafile%2fpic%2f20170411%2f33%2f11988651533966682221.jpg&ehk=G%2fRSTCp7gBimJXBm9kDpdP2PwavXVAg3MbuluFbhGb0%3d&risl=&pid=ImgRaw&r=0",
+    "https://pic1.zhimg.com/50/v2-86c2d637bfbc6074a9cced94d8983a75_hd.jpg?source=1940ef5c",
+    "https://pic2.zhimg.com/v2-0dda71bc9ced142bf7bb2d6adbebe4f0_r.jpg?source=1940ef5c",
+    "https://tse3-mm.cn.bing.net/th/id/OIP-C.LqD3h9bP0iU4Tu7ckbcGRgHaHa?rs=1&pid=ImgDetMain",
+  ];
 
   // 点击昵称或者头像可进入该用户主页
   const handleGoToMyPage = () => {
@@ -135,26 +143,40 @@ const LogDetailPage = () => {
         </View>
       </View>
 
-      <View style={[styles.imageContainer, { width: screenWidth }]}>
-        <Image
-          source={require("./2.jpg")}
-          resizeMode="contain"
-          style={{ width: screenWidth, height: 300 }}
-        />
-      </View>
-
       {/* 中间的滚动视图 */}
-      {/* <View style={{ flex: 1, backgroundColor: "red" }}>
-        <ScrollView style={{ backgroundColor: "blue" }}>
-          <View style={[styles.imageContainer, { width: screenWidth }]}>
-            <Image
-              source={require("./2.jpg")}
-              // resizeMode="contain"
-              style={{ width: screenWidth, height: 300 }}
-            />
+      <ScrollView style={{ flex: 1 }}>
+        <ImageSlider imageUrls={images} />
+        <Text style={styles.titleText}>笔记标题</Text>
+        <View style={{ justifyContent: "center", alignItems: "center" }}>
+          <View style={styles.labelBox}>
+            <View style={styles.label}>
+              <Text style={styles.labelText}>地点</Text>
+              <Text style={styles.labelData}>xx</Text>
+            </View>
+            <View style={styles.label}>
+              <Text style={styles.labelText}>出行月份</Text>
+              <Text style={styles.labelData}>x月</Text>
+            </View>
+            <View style={styles.label}>
+              <Text style={styles.labelText}>人均花费</Text>
+              <Text style={styles.labelData}>1-2k</Text>
+            </View>
+            <View style={[styles.label, { marginRight: 10 }]}>
+              <Text style={styles.labelText}>推荐指数</Text>
+              <Text style={[styles.labelData, { color: "#F5B041" }]}>3.5</Text>
+            </View>
           </View>
-        </ScrollView>
-      </View> */}
+        </View>
+        <View style={{ marginTop: 10 }}>
+          <Text style={styles.contentText}>笔记内容</Text>
+        </View>
+        <View
+          style={{ height: 1, backgroundColor: "#D1CFCF", marginVertical: 10 }}
+        ></View>
+        <View>
+          <Text style={styles.contentText}>评论区</Text>
+        </View>
+      </ScrollView>
 
       {/* 底部导航栏 */}
       <View style={styles.topScreen}>
@@ -345,9 +367,44 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   imageContainer: {
-    width: 400,
-    height: 300,
-    backgroundColor: "yellow",
+    flex: 1,
+    height: 800,
+  },
+  titleText: {
+    fontSize: 22,
+    marginBottom: 10,
+    marginLeft: 10,
+    marginRight: 10,
+  },
+  labelBox: {
+    width: "98%",
+    height: 80,
+    borderRadius: 20,
+    backgroundColor: "#D4E6F1",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  label: {
+    width: 100,
+    justifyContent: "center",
+    alignItems: "center",
+    flexDirection: "column",
+  },
+  labelText: {
+    fontSize: 16,
+    color: "#808B96",
+  },
+  labelData: {
+    fontSize: 22,
+    fontWeight: "bold",
+    marginTop: 5,
+  },
+  contentText: {
+    fontSize: 18,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    textAlign: "left",
   },
 });
 

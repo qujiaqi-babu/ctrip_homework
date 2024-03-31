@@ -17,10 +17,12 @@ import { MaterialIcons, Ionicons } from "@expo/vector-icons";
 import MonthPicker from "./component/monthPicker";
 import RangeButtonGroup from "./component/rangeButtonGroup";
 import StarRating from "./component/starRating";
+import { useNavigation } from "@react-navigation/native";
 
 const Toast = Overlay.Toast;
 
 const LogPublicPage = () => {
+  const navigation = useNavigation();
   const [title, setTitle] = useState("");
   const maxTitleLength = 20;
 
@@ -35,6 +37,7 @@ const LogPublicPage = () => {
   // 返回事件
   const handleEditBack = () => {
     console.log("Icon pressed!");
+    navigation.navigate("");  // 这里的路由需要修改
   };
 
   // 清空文本框
@@ -293,8 +296,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     flexDirection: "column",
-    marginLeft: 10,
-    marginRight: 10,
+    marginLeft: 5,
+    marginRight: 5,
   },
   topBottom: {
     flex: 1,
@@ -476,6 +479,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "#2E86C1",
+    marginBottom: 10,
   },
   publicText: {
     color: "white",

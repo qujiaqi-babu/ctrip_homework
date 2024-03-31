@@ -107,6 +107,7 @@ const HomePage = ({ navigation }) => {
       )}
       {requestStatus === RequestStatus.SUCCESS && (
         <WaterfallFlow
+          style={styles.waterfallFlow}
           data={travelLogs}
           numColumns={numColumns}
           renderItem={({ item, index, columnIndex }) => (
@@ -124,13 +125,13 @@ const HomePage = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  scrollView: {
-    padding: 10,
-    backgroundColor: "#f0f0f0",
-  },
   container: {
     flex: 1,
-    backgroundColor: "#e0e0e0",
+    backgroundColor: "#fff",
+  },
+  waterfallFlow: {
+    // padding: 10,
+    backgroundColor: "#f0f0f0",
   },
   loading: {
     flex: 1,

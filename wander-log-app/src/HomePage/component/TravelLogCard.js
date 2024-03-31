@@ -23,38 +23,14 @@ const TravelLogCard = ({ item, columnIndex, numColumns }) => {
   // 获取导航对象
   const navigation = useNavigation();
 
-  // const getImageSizeAsync = (imageUrl) => {
-  //   return new Promise((resolve, reject) => {
-  //     Image.getSize(
-  //       imageUrl,
-  //       (width, height) => {
-  //         resolve({ width, height });
-  //       },
-  //       reject
-  //     );
-  //   });
-  // };
-  // const loadImageAndCalculateHeight = async (itemImage) => {
-  //   try {
-  //     const { width, height } = await getImageSizeAsync(itemImage);
-  //     const newHeight = Math.floor((screenWidth / numColumns / width) * height);
-  //     setImageHeight(newHeight);
-  //     setIsRendered(true);
-  //   } catch (error) {
-  //     console.error("Error loading image:", error);
-  //   }
-  // };
-
   useEffect(() => {
     Image.getSize(item.image, (width, height) => {
       // 计算图片在瀑布流中的高度;
       const newHeight = Math.floor((screenWidth / numColumns / width) * height);
       setImageHeight(newHeight);
+    }).then(() => {
+      setIsRendered(true);
     });
-    setIsRendered(true);
-
-    // 调用异步函数
-    // loadImageAndCalculateHeight(item.image);
   }, []);
 
   const handlePress = () => {
@@ -106,7 +82,7 @@ const TravelLogCard = ({ item, columnIndex, numColumns }) => {
   );
 };
 
-const borderRadius = 8;
+const borderRadius = 4;
 
 const styles = StyleSheet.create({
   card: {

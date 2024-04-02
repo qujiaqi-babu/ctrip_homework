@@ -1,3 +1,4 @@
+import "rn-overlay";
 import React, { useState, useEffect } from "react";
 import {
   View,
@@ -5,11 +6,14 @@ import {
   StyleSheet,
   TextInput,
   ScrollView,
-  TouchableWithoutFeedback,
+  TouchableOpacity,
+  Overlay,
 } from "react-native";
 import WaterfallFlow from "react-native-waterfall-flow";
 import TravelLogCard from "./component/TravelLogCard";
-import { Feather } from "@expo/vector-icons";
+import { Feather, MaterialIcons } from "@expo/vector-icons";
+
+const Toast = Overlay.Toast;
 
 // 游记数据
 const imageList = [
@@ -93,6 +97,36 @@ const HomePage = ({ navigation }) => {
       });
   }, [searchContent, selectedTopic]);
 
+  // 分中英文计算字符长度
+  const calculateLength = (str) => {
+    let length = 0;
+    for (let i = 0; i < str.length; i++) {
+      // 检查是否是中文字符，如果是，则计数+2，否则+1
+      const charCode = str.charCodeAt(i);
+      if (charCode >= 0x4e00 && charCode <= 0x9fff) {
+        length += 1; // 中文字符
+      } else {
+        length += 0.5; // 英文字符
+      }
+    }
+    return length;
+  };
+
+  const maxInputLength = 20;
+
+  const handleInputChange = (input) => {
+    const length = calculateLength(input);
+    if (length <= maxInputLength) {
+      setSearchInput(input);
+    } else {
+      Toast.show(`标题长度不能超过${maxInputLength}个字符`);
+    }
+  };
+
+  const handleInputDelete = () => {
+    setSearchInput("");
+  };
+
   const handleSearchPress = () => {
     setSearchContent(searchInput);
   };
@@ -108,29 +142,34 @@ const HomePage = ({ navigation }) => {
       {/* 搜索框 */}
       <View style={styles.searchBoxContainer}>
         <View style={styles.searchBox}>
-          <Feather
-            name="search"
-            color="gray"
-            size={20}
-            style={styles.searchIcon}
-          />
+          <Feather name="search" color="gray" size={20} style={styles.icon} />
           <TextInput
             style={styles.searchInput}
             // placeholder="Enter search keyword"
-            onChangeText={setSearchInput}
+            onChangeText={handleInputChange}
             value={searchInput}
           />
+          {searchInput.length > 0 && (
+            <TouchableOpacity onPress={handleInputDelete}>
+              <MaterialIcons
+                name="cancel"
+                size={24}
+                color="#989797"
+                style={styles.icon}
+              />
+            </TouchableOpacity>
+          )}
         </View>
-        <TouchableWithoutFeedback onPress={handleSearchPress}>
+        <TouchableOpacity onPress={handleSearchPress}>
           <Text style={styles.searchButton}>搜索</Text>
-        </TouchableWithoutFeedback>
+        </TouchableOpacity>
       </View>
 
       {/* 主题滚动条 */}
       <View style={styles.topicScrollContainer}>
         <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
           {topicList.map((topic, index) => (
-            <TouchableWithoutFeedback
+            <TouchableOpacity
               key={index}
               onPress={() => handleTopicPress(index)}
             >
@@ -142,7 +181,7 @@ const HomePage = ({ navigation }) => {
               >
                 {topic}
               </Text>
-            </TouchableWithoutFeedback>
+            </TouchableOpacity>
           ))}
         </ScrollView>
       </View>
@@ -192,9 +231,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#eeeeee",
     borderRadius: 20,
   },
-  searchIcon: {
-    marginLeft: 8,
-    marginRight: 10,
+  icon: {
+    marginHorizontal: 10,
   },
   searchInput: {
     flex: 1,

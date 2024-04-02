@@ -11,6 +11,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Modal,
+  Alert,
 } from "react-native";
 import { Button } from "@rneui/themed";
 import { MaterialIcons, Ionicons } from "@expo/vector-icons";
@@ -18,6 +19,8 @@ import MonthPicker from "./component/monthPicker";
 import RangeButtonGroup from "./component/rangeButtonGroup";
 import StarRating from "./component/starRating";
 import { useNavigation } from "@react-navigation/native";
+import * as ImagePicker from "expo-image-picker";
+import { TouchableWithoutFeedback } from "@ui-kitten/components/devsupport";
 
 const Toast = Overlay.Toast;
 
@@ -26,10 +29,13 @@ const LogPublicPage = () => {
   const [title, setTitle] = useState("");
   const maxTitleLength = 20;
 
-  const [modalVisible, setModalVisible] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false); // 上传照片模态框
+  const [imageUrl, setImageUrl] = useState([]);
+
+  const [imageVisible, setImageVisible] = useState(false); // 图片预览模态框
   const [selectedImage, setSelectedImage] = useState(null);
 
-  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isModalVisible, setIsModalVisible] = useState(false); // 正文模态框
   const [selectedRange, setSelectedRange] = useState(null);
   const ranges = ["0—500", "500—1000", "1000—2000", "2000以上"];
   const [rating, setRating] = useState(0);
@@ -70,10 +76,101 @@ const LogPublicPage = () => {
     }
   };
 
-  // 添加图片点击事件
-  const handleImageClick = (image) => {
-    setSelectedImage(image);
+  const verifyPermission = async () => {
+    const result = await ImagePicker.getCameraPermissionsAsync();
+    // console.log(result);
+    if (!result.granted) {
+      Toast.show("需要相机权限才能使用相机");
+      const askPermission = await ImagePicker.requestCameraPermissionsAsync();
+      // console.log(askPermission);
+      if (!askPermission.granted) {
+        Alert.alert(
+          "Insufficient Permissions",
+          "You need to grant camera permissions to be able to upload your images",
+          [{ text: "OK" }]
+        );
+        return false;
+      }
+    }
+    return true;
+  };
+
+  // 点击上传图像的按钮打开模态框
+  const handleOpenModal = () => {
+    if (imageUrl.length >= 6) {
+      Toast.show("最多只能上传6张图片哦~");
+      return;
+    }
     setModalVisible(true);
+  };
+
+  // 相册图片上传
+  const handleUploadImage = async () => {
+    const hasPermission = await verifyPermission();
+    if (!hasPermission) {
+      return;
+    }
+    // 返回一个promise对象
+    const image = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.All, // 允许选择所有类型的媒体
+      allowsEditing: true,
+      quality: 0.5,
+    });
+    const url = image.assets[0].uri;
+    setImageUrl([...imageUrl, url]);
+    setModalVisible(false); // 拍照上传后关闭模态框
+  };
+
+  // 拍照上传
+  const handleTakeImage = async () => {
+    const hasPermission = await verifyPermission();
+    if (!hasPermission) {
+      return;
+    }
+    // 返回一个promise对象
+    const image = await ImagePicker.launchCameraAsync({
+      allowsEditing: true,
+      quality: 0.5,
+    });
+    const url = image.assets[0].uri;
+    setImageUrl([...imageUrl, url]);
+    // 获取imageData
+    setModalVisible(false); // 拍照上传后关闭模态框
+  };
+
+  // 添加图片点击事件
+  const handleImagePress = (image) => {
+    setSelectedImage(image);
+    setImageVisible(true);
+  };
+
+  // 长按删除图片
+  const handleDeleteImage = (index) => {
+    Alert.alert(
+      "删除图片",
+      "确定要删除这张图片吗？",
+      [
+        // 提示框不好看！！！！！把需要复用的组件写出去！！！
+        {
+          text: "取消",
+          style: "cancel",
+        },
+        {
+          text: "删除",
+          onPress: () => {
+            const newImageUrl = [...imageUrl];
+            newImageUrl.splice(index, 1);
+            setImageUrl(newImageUrl);
+          },
+        },
+      ],
+      { cancelable: false }
+    );
+  };
+
+  // 处理标签输入框的变化
+  const handleChangeLabel = (label) => {
+    setLabel(label);
   };
 
   // 处理添加标签的逻辑
@@ -81,11 +178,6 @@ const LogPublicPage = () => {
 
   const handleModalShow = () => {
     setIsModalVisible(true);
-  };
-
-  // 悬浮框关闭
-  const handleModalClose = () => {
-    setIsModalVisible(false);
   };
 
   // 人均消费选择框
@@ -103,6 +195,7 @@ const LogPublicPage = () => {
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       style={styles.container}
     >
+      {/* 解决安卓平台患处键盘，页面上挤的问题 */}
       <View style={styles.container}>
         {/* 顶部放导航栏的地方 */}
         <View style={styles.topBottom}>
@@ -110,52 +203,112 @@ const LogPublicPage = () => {
             <MaterialIcons name="chevron-left" size={36} color="#989797" />
           </TouchableOpacity>
         </View>
-        <View style={styles.one}>
-          <View style={styles.imageContainer}>
-            {/* <TouchableOpacity onPress={handleImageClick}> */}
-            <Image source={require("./1.jpg")} style={styles.image} />
-            {/* </TouchableOpacity> */}
-          </View>
-          {/* <View> */}
-          {/* {images.map((image, index) => (
-            <TouchableOpacity key={index} onPress={() => handleImageClick(image)}>
-              <Image
-                style={{ width: 100, height: 100 }}
-                source={{ uri: image }}
+        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+          <View style={styles.one}>
+            <View style={{ flexDirection: "row" }}>
+              {imageUrl.map((url, index) => (
+                <TouchableWithoutFeedback
+                  key={index}
+                  onPress={() => handleImagePress(url)}
+                  onLongPress={() => {
+                    handleDeleteImage(index);
+                  }}
+                >
+                  <Image
+                    key={index}
+                    style={styles.imageContainer}
+                    source={{ uri: url }}
+                  />
+                </TouchableWithoutFeedback>
+              ))}
+              <Modal
+                visible={imageVisible}
+                onRequestClose={() => setImageVisible(false)}
+              >
+                <TouchableWithoutFeedback
+                  style={{ flex: 1 }}
+                  onPress={() => setImageVisible(false)}
+                >
+                  <View style={{ flex: 1, backgroundColor: "black" }}>
+                    <Image
+                      source={{ uri: selectedImage }}
+                      style={{ width: "100%", height: "100%" }}
+                      resizeMode="contain"
+                    />
+                  </View>
+                </TouchableWithoutFeedback>
+              </Modal>
+            </View>
+            <View style={styles.imageContainer}>
+              <Button
+                title="+"
+                // disabled
+                buttonStyle={{
+                  width: 80,
+                  height: 80,
+                  backgroundColor: "#E3E6E8",
+                }}
+                titleStyle={{ fontSize: 24, color: "gray" }}
+                onPress={handleOpenModal}
               />
-            </TouchableOpacity>
-          ))} */}
-          {/* <Modal
-            animationType="slide"
-            transparent={false}
-            visible={modalVisible}
-            onRequestClose={() => setModalVisible(false)}
+            </View>
+          </View>
+        </ScrollView>
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={modalVisible}
+          onRequestClose={() => {
+            setModalVisible(false);
+          }}
+        >
+          <View
+            style={{
+              flex: 1,
+              backgroundColor: "rgba(0,0,0,0.5)",
+              justifyContent: "flex-end",
+            }}
           >
             <View
               style={{
-                flex: 1,
-                justifyContent: "center",
-                alignItems: "center",
+                height: "20%",
+                backgroundColor: "white",
+                borderRadius: 10,
+                padding: 20,
+                marginTop: 20,
               }}
             >
-              <TouchableOpacity onPress={() => setModalVisible(false)}>
-                <Image
-                  style={{ width: "100%", height: "100%" }}
-                  source={{ uri: selectedImage }}
-                />
+              <TouchableOpacity
+                onPress={handleTakeImage}
+                style={{
+                  flex: 1,
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <Text style={{ fontSize: 20 }}>拍照</Text>
+              </TouchableOpacity>
+              <View
+                style={{
+                  height: 2,
+                  width: "100%",
+                  backgroundColor: "#D1CFCF",
+                  marginVertical: 10,
+                }}
+              ></View>
+              <TouchableOpacity
+                onPress={handleUploadImage}
+                style={{
+                  flex: 1,
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <Text style={{ fontSize: 20 }}>从相册上传</Text>
               </TouchableOpacity>
             </View>
-          </Modal> */}
-          {/* 点击图片可以方法查看的模态框 */}
-          <View style={styles.imageContainer}>
-            <Button
-              title="+"
-              disabled
-              buttonStyle={{ width: 80, height: 80 }}
-              titleStyle={{ fontSize: 24 }}
-            />
           </View>
-        </View>
+        </Modal>
         <View style={styles.two}>
           <TextInput
             value={title}
@@ -259,7 +412,9 @@ const LogPublicPage = () => {
       <Modal
         visible={isModalVisible}
         animationType="slide"
-        onRequestClose={handleModalClose}
+        onRequestClose={() => {
+          setIsModalVisible(false);
+        }}
       >
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
@@ -277,7 +432,11 @@ const LogPublicPage = () => {
               >
                 <Text style={styles.addLabelText}># 话题</Text>
               </TouchableOpacity>
-              <TouchableOpacity onPress={handleModalClose}>
+              <TouchableOpacity
+                onPress={() => {
+                  setIsModalVisible(false);
+                }}
+              >
                 <MaterialIcons
                   name="keyboard-arrow-down"
                   size={24}

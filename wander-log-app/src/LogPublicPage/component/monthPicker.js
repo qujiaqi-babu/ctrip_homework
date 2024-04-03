@@ -34,10 +34,6 @@ const MonthPicker = ({ onSelectMonth }) => {
       <Text
         style={[
           styles.monthItem,
-          {
-            backgroundColor:
-              selectedMonth === item.name ? "light-gray" : "transparent",
-          },
         ]}
       >
         {item.name}

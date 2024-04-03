@@ -24,6 +24,10 @@ import * as FileSystem from "expo-file-system";
 import { TouchableWithoutFeedback } from "@ui-kitten/components/devsupport";
 import axios from "axios";
 
+axios.defaults.headers = {
+  "Access-Control-Allow-Origin": "*",
+};
+
 const Toast = Overlay.Toast;
 
 const LogPublicPage = () => {
@@ -224,7 +228,7 @@ const LogPublicPage = () => {
   };
 
   // 月份选择框
-  const handleSelectMonth = (month) =>{
+  const handleSelectMonth = (month) => {
     setSelectedMonth(month);
   };
 
@@ -239,26 +243,46 @@ const LogPublicPage = () => {
   };
 
   // 提交页面数据
-  const handleSubmitData = () => {
+  const handleSubmitData = async () => {
     if (imageUrl.length === 0 || !title || !content) {
       Toast.show("请至少上传一张图片，填写标题和内容~", { duration: 2000 });
     }
-    axios.post("http://localhost:3000/", {
-      imageData: imageData,
-      title: title,
-      content: content,
-      topic: labelText,
-      travelMonth: selectedMonth,
-      percost: selectedRange,
-      rate: rating,
-      destination: null,
-    }).then((res) => {
-      console.log("提交成功:", res.data);
-      // 提交成功后跳转到我的游记页面，并刷新
-      navigation.navigate("MyLog");
-    }).catch((err) => {
-      console.log("提交失败:", err);
-    })
+    try {
+      const response = await axios.post(
+        "http://localhost:5000/api/uploadTravelLog",
+        {
+          imageData: [["data", "jpeg"]],
+          title: "aaa",
+          content: "aaa",
+          topic: "aaa",
+          travelMonth: "一月",
+          percost: "0-500",
+          rate: 4,
+          destination: null,
+          userId: "660d0fd0f9982da9ba7ecfe9",
+          // imageData: imageData,
+          // title: title,
+          // content: content,
+          // topic: labelText,
+          // travelMonth: selectedMonth,
+          // percost: selectedRange,
+          // rate: rating,
+          // destination: null,
+          // userId: "660d0fd0f9982da9ba7ecfe9",
+        }
+      );
+      console.log(response.message);
+      // .then((res) => {
+      //   console.log("提交成功:", res.data);
+      //   // 提交成功后跳转到我的游记页面，并刷新
+      //   navigation.navigate("MyLog");
+      // })
+      // .catch((err) => {
+      //   console.log("提交失败:", err);
+      // });
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (
@@ -627,7 +651,9 @@ const LogPublicPage = () => {
           {/* 提交按钮，将数据上传 */}
           <TouchableOpacity
             style={styles.publicArea}
-            onPress={() => {handleSubmitData();}}
+            onPress={() => {
+              handleSubmitData();
+            }}
           >
             <Text style={styles.publicText}>发布笔记</Text>
           </TouchableOpacity>

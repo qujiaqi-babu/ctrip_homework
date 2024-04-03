@@ -3,6 +3,9 @@ const session = require("express-session"); // 将数据以session的形式保�
 const cookieParser = require("cookie-parser"); // 通过cookie将数据保存在在客户端中
 const cors = require("cors");
 const bcrypt = require("bcrypt");
+const fs = require("fs").promises;
+const path = require("path");
+const crypto = require("crypto");
 const { User, TravelLog, TravelLogState, Manager } = require("./models");
 
 const app = express();
@@ -104,6 +107,109 @@ app.post("/api/login", async (req, res) => {
 app.post("/api/logout", (req, res) => {
   req.session.destroy();
   res.json({ message: "Logged out successfully" });
+});
+
+const calaMD5 = (data) => {
+  return crypto.createHash("md5").update(data).digest("hex");
+};
+
+// 检查目录是否存在
+const directoryExists = async (directoryPath) => {
+  try {
+    await fs.access(directoryPath);
+    return true;
+  } catch (error) {
+    return false;
+  }
+};
+
+// 检查文件是否存在
+const fileExists = async (filePath) => {
+  try {
+    await fs.access(filePath);
+    return true;
+  } catch (error) {
+    return false;
+  }
+};
+
+const saveImage = async (data, fileName) => {
+  try {
+    const outputDirectory = path.resolve(__dirname, "image");
+    if (!(await directoryExists(outputDirectory))) {
+      await fs.mkdir(outputDirectory);
+    }
+    const fileOutputPath = path.resolve(outputDirectory, fileName);
+    if (await fileExists(fileOutputPath)) {
+      console.log(`File ${fileOutputPath} already exists.`);
+      return;
+    }
+    console.log(`Saving image to ${fileOutputPath}`);
+    await fs.writeFile(fileOutputPath, data);
+  } catch (error) {
+    console.error("Error saving image:", error);
+  }
+};
+
+const createSuccessResponse = (message) => {
+  return {
+    success: true,
+    message,
+  };
+};
+
+const createErrorResponse = (message) => {
+  return {
+    success: false,
+    message,
+  };
+};
+
+// 游记发布提交
+app.post("/api/uploadTravelLog", async (req, res) => {
+  const {
+    title,
+    content,
+    imageData,
+    travelMonth,
+    percost,
+    rate,
+    destination,
+    topic,
+    userId,
+  } = req.body;
+  res.setHeader("content-type", "application/json");
+  // 保存游记图片
+  try {
+    // console.log(imageData); // 打印出来是乱码但是没有关系
+    const fileNameList = imageData.map((data) => {
+      const md5 = calaMD5(data[0]);
+      const ext = data[1];
+      return `${md5}.${ext}`;
+    }); // 摘要运算得到加密文件名
+    console.log(fileNameList);
+    fileNameList.forEach((fileName, index) =>
+      saveImage(imageData[index][0], fileName)
+    );
+
+    const travelLog = new TravelLog({
+      title,
+      content,
+      fileNameList,
+      travelMonth,
+      percost,
+      rate,
+      destination,
+      topic,
+      userId,
+    });
+    await travelLog.save();
+    res.status(201).json(createSuccessResponse("游记发布成功！"));
+  } catch (err) {
+    console.error(err);
+    res.status(500).json(createErrorResponse(err));
+    return;
+  }
 });
 
 // // 获取用户列表

@@ -242,8 +242,11 @@ const LogPublicPage = () => {
   const handleSubmitData = async () => {
     if (imageUrl.length === 0 || !title || !content) {
       Toast.show("请至少上传一张图片，填写标题和内容~", { duration: 2000 });
+      return;
     }
-    await axios.post("http://10.0.2.2:5000/api/uploadTravelLog", // 虚拟机不能使用localhost
+    await axios
+      .post(
+        "http://10.0.2.2:5000/api/uploadTravelLog", // 虚拟机不能使用localhost
         {
           imageData: imageData,
           title: title,
@@ -255,11 +258,13 @@ const LogPublicPage = () => {
           destination: null,
           userId: "660d0fd0f9982da9ba7ecfe9",
         }
-      ).then((res) => {
+      )
+      .then((res) => {
         console.log("提交成功:", res.data.message);
         // 提交成功后跳转到我的游记页面，并刷新
         navigation.navigate("MyLog");
-      }).catch((err) => {
+      })
+      .catch((err) => {
         console.log("提交失败:", err);
       });
   };

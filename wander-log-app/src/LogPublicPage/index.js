@@ -20,7 +20,9 @@ import RangeButtonGroup from "./component/rangeButtonGroup";
 import StarRating from "./component/starRating";
 import { useNavigation } from "@react-navigation/native";
 import * as ImagePicker from "expo-image-picker";
+import * as FileSystem from "expo-file-system";
 import { TouchableWithoutFeedback } from "@ui-kitten/components/devsupport";
+import axios from "axios";
 
 const Toast = Overlay.Toast;
 
@@ -33,6 +35,7 @@ const LogPublicPage = () => {
 
   const [modalVisible, setModalVisible] = useState(false); // 上传照片模态框
   const [imageUrl, setImageUrl] = useState([]);
+  const [imageData, setImageData] = useState([]);
 
   const [imageVisible, setImageVisible] = useState(false); // 图片预览模态框
   const [selectedImage, setSelectedImage] = useState(null);
@@ -41,6 +44,7 @@ const LogPublicPage = () => {
   const [labelModal, setLabelModal] = useState(false); // 标签模态框
   const [labelText, setLabelText] = useState("# 主题"); // 主题标签
 
+  const [selectedMonth, setSelectedMonth] = useState(null);
   const [selectedRange, setSelectedRange] = useState(null);
   const ranges = ["0—500", "500—1000", "1000—2000", "2000以上"];
   const [rating, setRating] = useState(0);
@@ -123,6 +127,18 @@ const LogPublicPage = () => {
       quality: 0.5,
     });
     const url = image.assets[0].uri;
+    const suffix = url.substring(url.lastIndexOf(".") + 1);
+    try {
+      // 读取图片的内容
+      const data = await FileSystem.readAsStringAsync(url, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+      // 传给后端图片数据和后缀名
+      setImageData([...imageData, [data, suffix]]);
+    } catch (error) {
+      console.log("Error reading image file:", error);
+    }
+
     setImageUrl([...imageUrl, url]);
     setModalVisible(false); // 拍照上传后关闭模态框
   };
@@ -139,6 +155,17 @@ const LogPublicPage = () => {
       quality: 0.5,
     });
     const url = image.assets[0].uri;
+    const suffix = url.substring(url.lastIndexOf(".") + 1);
+    try {
+      // 读取图片的内容
+      const data = await FileSystem.readAsStringAsync(url, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+      setImageData([...imageData, [data, suffix]]);
+    } catch (error) {
+      console.log("Error reading image file:", error);
+    }
+
     setImageUrl([...imageUrl, url]);
     // 获取imageData
     setModalVisible(false); // 拍照上传后关闭模态框
@@ -166,6 +193,9 @@ const LogPublicPage = () => {
             const newImageUrl = [...imageUrl];
             newImageUrl.splice(index, 1);
             setImageUrl(newImageUrl);
+            const newImageData = [...imageData];
+            newImageData.splice(index, 1);
+            setImageData(newImageData);
           },
         },
       ],
@@ -193,6 +223,11 @@ const LogPublicPage = () => {
     setIsModalVisible(true);
   };
 
+  // 月份选择框
+  const handleSelectMonth = (month) =>{
+    setSelectedMonth(month);
+  };
+
   // 人均消费选择框
   const handleRangePress = (range) => {
     setSelectedRange((prevRange) => (prevRange === range ? null : range));
@@ -201,6 +236,29 @@ const LogPublicPage = () => {
   // 点击星星事件
   const handleClickStar = (index) => {
     setRating(index + 1); // 评级分数1~5
+  };
+
+  // 提交页面数据
+  const handleSubmitData = () => {
+    if (imageUrl.length === 0 || !title || !content) {
+      Toast.show("请至少上传一张图片，填写标题和内容~", { duration: 2000 });
+    }
+    axios.post("http://localhost:3000/", {
+      imageData: imageData,
+      title: title,
+      content: content,
+      topic: labelText,
+      travelMonth: selectedMonth,
+      percost: selectedRange,
+      rate: rating,
+      destination: null,
+    }).then((res) => {
+      console.log("提交成功:", res.data);
+      // 提交成功后跳转到我的游记页面，并刷新
+      navigation.navigate("MyLog");
+    }).catch((err) => {
+      console.log("提交失败:", err);
+    })
   };
 
   return (
@@ -510,7 +568,7 @@ const LogPublicPage = () => {
           <View style={styles.picker}>
             <Text style={styles.pickerText}>出行月份:</Text>
             <View style={styles.monthPicker}>
-              <MonthPicker />
+              <MonthPicker onSelectMonth={handleSelectMonth} />
             </View>
           </View>
           <View style={styles.picker}>
@@ -567,7 +625,10 @@ const LogPublicPage = () => {
             <Text style={styles.draftText}>存草稿</Text>
           </TouchableOpacity>
           {/* 提交按钮，将数据上传 */}
-          <TouchableOpacity style={styles.publicArea}>
+          <TouchableOpacity
+            style={styles.publicArea}
+            onPress={() => {handleSubmitData();}}
+          >
             <Text style={styles.publicText}>发布笔记</Text>
           </TouchableOpacity>
         </View>

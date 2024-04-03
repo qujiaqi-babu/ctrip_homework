@@ -7,7 +7,7 @@ import {
   StyleSheet,
 } from "react-native";
 
-const MonthPicker = () => {
+const MonthPicker = ({ onSelectMonth }) => {
   const [selectedMonth, setSelectedMonth] = useState(null);
   const months = [
     { id: 1, name: "一月" },
@@ -24,8 +24,13 @@ const MonthPicker = () => {
     { id: 12, name: "十二月" },
   ];
 
+  const handleMonthSelect = (month) => {
+    setSelectedMonth(month);
+    onSelectMonth(month);
+  }
+
   const renderItem = ({ item }) => (
-    <TouchableOpacity onPress={() => setSelectedMonth(item.name)}>
+    <TouchableOpacity onPress={() => handleMonthSelect(item.name)}>
       <Text
         style={[
           styles.monthItem,

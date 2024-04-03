@@ -24,10 +24,6 @@ import * as FileSystem from "expo-file-system";
 import { TouchableWithoutFeedback } from "@ui-kitten/components/devsupport";
 import axios from "axios";
 
-axios.defaults.headers = {
-  "Access-Control-Allow-Origin": "*",
-};
-
 const Toast = Overlay.Toast;
 
 const LogPublicPage = () => {
@@ -247,42 +243,25 @@ const LogPublicPage = () => {
     if (imageUrl.length === 0 || !title || !content) {
       Toast.show("请至少上传一张图片，填写标题和内容~", { duration: 2000 });
     }
-    try {
-      const response = await axios.post(
-        "http://localhost:5000/api/uploadTravelLog",
+    await axios.post("http://10.0.2.2:5000/api/uploadTravelLog", // 虚拟机不能使用localhost
         {
-          imageData: [["data", "jpeg"]],
-          title: "aaa",
-          content: "aaa",
-          topic: "aaa",
-          travelMonth: "一月",
-          percost: "0-500",
-          rate: 4,
+          imageData: imageData,
+          title: title,
+          content: content,
+          topic: labelText,
+          travelMonth: selectedMonth,
+          percost: selectedRange,
+          rate: rating,
           destination: null,
           userId: "660d0fd0f9982da9ba7ecfe9",
-          // imageData: imageData,
-          // title: title,
-          // content: content,
-          // topic: labelText,
-          // travelMonth: selectedMonth,
-          // percost: selectedRange,
-          // rate: rating,
-          // destination: null,
-          // userId: "660d0fd0f9982da9ba7ecfe9",
         }
-      );
-      console.log(response.message);
-      // .then((res) => {
-      //   console.log("提交成功:", res.data);
-      //   // 提交成功后跳转到我的游记页面，并刷新
-      //   navigation.navigate("MyLog");
-      // })
-      // .catch((err) => {
-      //   console.log("提交失败:", err);
-      // });
-    } catch (error) {
-      console.log(error);
-    }
+      ).then((res) => {
+        console.log("提交成功:", res.data.message);
+        // 提交成功后跳转到我的游记页面，并刷新
+        navigation.navigate("MyLog");
+      }).catch((err) => {
+        console.log("提交失败:", err);
+      });
   };
 
   return (

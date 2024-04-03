@@ -22,7 +22,7 @@ import { useNavigation } from "@react-navigation/native";
 import * as ImagePicker from "expo-image-picker";
 import * as FileSystem from "expo-file-system";
 import { TouchableWithoutFeedback } from "@ui-kitten/components/devsupport";
-import { api } from "../../util";
+import axios from "axios";
 
 const Toast = Overlay.Toast;
 
@@ -242,31 +242,31 @@ const LogPublicPage = () => {
   const handleSubmitData = async () => {
     if (imageUrl.length === 0 || !title || !content) {
       Toast.show("请至少上传一张图片，填写标题和内容~", { duration: 2000 });
+      return;
     }
-    try {
-      const response = await api.post("/logPublic/upload", {
-        imageData: imageData,
-        title: title,
-        content: content,
-        topic: labelText,
-        travelMonth: selectedMonth,
-        percost: selectedRange,
-        rate: rating,
-        destination: null,
-        userId: "660d0fd0f9982da9ba7ecfe9",
+    await axios
+      .post(
+        "http://10.0.2.2:5000/api/uploadTravelLog", // 虚拟机不能使用localhost
+        {
+          imageData: imageData,
+          title: title,
+          content: content,
+          topic: labelText,
+          travelMonth: selectedMonth,
+          percost: selectedRange,
+          rate: rating,
+          destination: null,
+          userId: "660d0fd0f9982da9ba7ecfe9",
+        }
+      )
+      .then((res) => {
+        console.log("提交成功:", res.data.message);
+        // 提交成功后跳转到我的游记页面，并刷新
+        navigation.navigate("MyLog");
+      })
+      .catch((err) => {
+        console.log("提交失败:", err);
       });
-      console.log(response.data.message);
-      // .then((res) => {
-      //   console.log("提交成功:", res.data);
-      //   // 提交成功后跳转到我的游记页面，并刷新
-      //   navigation.navigate("MyLog");
-      // })
-      // .catch((err) => {
-      //   console.log("提交失败:", err);
-      // });
-    } catch (error) {
-      console.log(error);
-    }
   };
 
   return (

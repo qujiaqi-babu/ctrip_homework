@@ -22,11 +22,7 @@ import { useNavigation } from "@react-navigation/native";
 import * as ImagePicker from "expo-image-picker";
 import * as FileSystem from "expo-file-system";
 import { TouchableWithoutFeedback } from "@ui-kitten/components/devsupport";
-import axios from "axios";
-
-axios.defaults.headers = {
-  "Access-Control-Allow-Origin": "*",
-};
+import { api } from "../../util";
 
 const Toast = Overlay.Toast;
 
@@ -248,30 +244,18 @@ const LogPublicPage = () => {
       Toast.show("请至少上传一张图片，填写标题和内容~", { duration: 2000 });
     }
     try {
-      const response = await axios.post(
-        "http://localhost:5000/api/uploadTravelLog",
-        {
-          imageData: [["data", "jpeg"]],
-          title: "aaa",
-          content: "aaa",
-          topic: "aaa",
-          travelMonth: "一月",
-          percost: "0-500",
-          rate: 4,
-          destination: null,
-          userId: "660d0fd0f9982da9ba7ecfe9",
-          // imageData: imageData,
-          // title: title,
-          // content: content,
-          // topic: labelText,
-          // travelMonth: selectedMonth,
-          // percost: selectedRange,
-          // rate: rating,
-          // destination: null,
-          // userId: "660d0fd0f9982da9ba7ecfe9",
-        }
-      );
-      console.log(response.message);
+      const response = await api.post("/logPublic/upload", {
+        imageData: imageData,
+        title: title,
+        content: content,
+        topic: labelText,
+        travelMonth: selectedMonth,
+        percost: selectedRange,
+        rate: rating,
+        destination: null,
+        userId: "660d0fd0f9982da9ba7ecfe9",
+      });
+      console.log(response.data.message);
       // .then((res) => {
       //   console.log("提交成功:", res.data);
       //   // 提交成功后跳转到我的游记页面，并刷新

@@ -48,15 +48,11 @@ const TravelLogSchema = new Schema({
   favorites: { type: Number, default: 0 }, // 收藏量
   userId: { type: Schema.Types.ObjectId, ref: "User" }, // 用户 ID
   editTime: { type: Date, default: Date.now }, // 最后编辑时间
-});
 
-// 游记状态模型
-const TravelLogStateSchema = new Schema({
-  travelLogId: { type: Schema.Types.ObjectId, ref: "TravelLog" }, // 游记 ID
   state: {
     // 游记状态
     type: String,
-    enum: ["待审核", "已通过", "未通过"],
+    enum: ["待审核", "已通过", "未通过", "未发布"],
     default: "待审核",
   },
   instruction: { type: String, default: "" }, // 未通过理由
@@ -74,7 +70,6 @@ const ManagerSchema = new Schema({
 
 const User = mongoose.model("User", UserSchema);
 const TravelLog = mongoose.model("TravelLog", TravelLogSchema);
-const TravelLogState = mongoose.model("TravelLogState", TravelLogStateSchema);
 const Manager = mongoose.model("Manager", ManagerSchema);
 
-module.exports = { User, TravelLog, TravelLogState, Manager };
+module.exports = { User, TravelLog, Manager };

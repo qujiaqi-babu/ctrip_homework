@@ -9,7 +9,7 @@ const crypto = require("crypto");
 const { User, TravelLog, TravelLogState, Manager } = require("./models");
 
 const app = express();
-const PORT = 3000;
+const PORT = 5000;
 
 // 中间件
 app.use(cors());
@@ -159,6 +159,7 @@ const createSuccessResponse = (message) => {
 };
 
 const createErrorResponse = (message) => {
+  console.log("Babu");
   return {
     success: false,
     message,

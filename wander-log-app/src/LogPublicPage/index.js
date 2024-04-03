@@ -29,6 +29,8 @@ const LogPublicPage = () => {
   const [title, setTitle] = useState("");
   const maxTitleLength = 20;
 
+  const [content, setContent] = useState(""); // 正文状态
+
   const [modalVisible, setModalVisible] = useState(false); // 上传照片模态框
   const [imageUrl, setImageUrl] = useState([]);
 
@@ -36,6 +38,9 @@ const LogPublicPage = () => {
   const [selectedImage, setSelectedImage] = useState(null);
 
   const [isModalVisible, setIsModalVisible] = useState(false); // 正文模态框
+  const [labelModal, setLabelModal] = useState(false); // 标签模态框
+  const [labelText, setLabelText] = useState("# 主题"); // 主题标签
+
   const [selectedRange, setSelectedRange] = useState(null);
   const ranges = ["0—500", "500—1000", "1000—2000", "2000以上"];
   const [rating, setRating] = useState(0);
@@ -76,6 +81,7 @@ const LogPublicPage = () => {
     }
   };
 
+  // 第一次使用图片上传功能时会先授权
   const verifyPermission = async () => {
     const result = await ImagePicker.getCameraPermissionsAsync();
     // console.log(result);
@@ -150,7 +156,6 @@ const LogPublicPage = () => {
       "删除图片",
       "确定要删除这张图片吗？",
       [
-        // 提示框不好看！！！！！把需要复用的组件写出去！！！
         {
           text: "取消",
           style: "cancel",
@@ -168,13 +173,21 @@ const LogPublicPage = () => {
     );
   };
 
-  // 处理标签输入框的变化
-  const handleChangeLabel = (label) => {
-    setLabel(label);
+  // 获取文本框中的值
+  const handleInputContent = (text) => {
+    setContent(text);
   };
 
   // 处理添加标签的逻辑
-  const handleAddLabel = () => {};
+  const handleAddLabel = () => {
+    setLabelModal(true);
+  };
+
+  // 选择标签
+  const handleLabelPress = (label) => {
+    setLabelText(label);
+    setLabelModal(false);
+  };
 
   const handleModalShow = () => {
     setIsModalVisible(true);
@@ -203,6 +216,7 @@ const LogPublicPage = () => {
             <MaterialIcons name="chevron-left" size={36} color="#989797" />
           </TouchableOpacity>
         </View>
+        {/* 第一块布局放图片和添加按钮 */}
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
           <View style={styles.one}>
             <View style={{ flexDirection: "row" }}>
@@ -254,6 +268,7 @@ const LogPublicPage = () => {
             </View>
           </View>
         </ScrollView>
+        {/* 图片上传方式选择模态框 */}
         <Modal
           animationType="slide"
           transparent={true}
@@ -262,53 +277,59 @@ const LogPublicPage = () => {
             setModalVisible(false);
           }}
         >
-          <View
-            style={{
-              flex: 1,
-              backgroundColor: "rgba(0,0,0,0.5)",
-              justifyContent: "flex-end",
-            }}
+          <TouchableWithoutFeedback
+            style={{ flex: 1 }}
+            onPress={() => setModalVisible(false)}
           >
             <View
               style={{
-                height: "20%",
-                backgroundColor: "white",
-                borderRadius: 10,
-                padding: 20,
-                marginTop: 20,
+                flex: 1,
+                backgroundColor: "rgba(0,0,0,0.5)",
+                justifyContent: "flex-end",
               }}
             >
-              <TouchableOpacity
-                onPress={handleTakeImage}
-                style={{
-                  flex: 1,
-                  justifyContent: "center",
-                  alignItems: "center",
-                }}
-              >
-                <Text style={{ fontSize: 20 }}>拍照</Text>
-              </TouchableOpacity>
               <View
                 style={{
-                  height: 2,
-                  width: "100%",
-                  backgroundColor: "#D1CFCF",
-                  marginVertical: 10,
-                }}
-              ></View>
-              <TouchableOpacity
-                onPress={handleUploadImage}
-                style={{
-                  flex: 1,
-                  justifyContent: "center",
-                  alignItems: "center",
+                  height: "20%",
+                  backgroundColor: "white",
+                  borderRadius: 10,
+                  padding: 20,
+                  marginTop: 20,
                 }}
               >
-                <Text style={{ fontSize: 20 }}>从相册上传</Text>
-              </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={handleTakeImage}
+                  style={{
+                    flex: 1,
+                    justifyContent: "center",
+                    alignItems: "center",
+                  }}
+                >
+                  <Text style={{ fontSize: 20 }}>拍照</Text>
+                </TouchableOpacity>
+                <View
+                  style={{
+                    height: 2,
+                    width: "100%",
+                    backgroundColor: "#D1CFCF",
+                    marginVertical: 10,
+                  }}
+                ></View>
+                <TouchableOpacity
+                  onPress={handleUploadImage}
+                  style={{
+                    flex: 1,
+                    justifyContent: "center",
+                    alignItems: "center",
+                  }}
+                >
+                  <Text style={{ fontSize: 20 }}>从相册上传</Text>
+                </TouchableOpacity>
+              </View>
             </View>
-          </View>
+          </TouchableWithoutFeedback>
         </Modal>
+        {/* 标题栏 */}
         <View style={styles.two}>
           <TextInput
             value={title}
@@ -328,6 +349,7 @@ const LogPublicPage = () => {
           </Text>
         </View>
         <View style={styles.line}></View>
+        {/* 正文栏 */}
         <View style={styles.three}>
           <TextInput
             style={styles.contentInput}
@@ -335,17 +357,155 @@ const LogPublicPage = () => {
             numberOfLines={4}
             textAlignVertical="top" // 设置文本垂直对齐方式为顶部
             placeholder="添加正文"
+            onChangeText={handleInputContent}
+            value={content}
           />
           <View style={styles.bottomContent}>
             <TouchableOpacity style={styles.addLabel} onPress={handleAddLabel}>
-              <Text style={styles.addLabelText}># 主题</Text>
+              <Text style={styles.addLabelText}>{labelText}</Text>
             </TouchableOpacity>
             <TouchableOpacity onPress={handleModalShow}>
               <MaterialIcons name="keyboard-arrow-up" size={24} color="black" />
             </TouchableOpacity>
           </View>
         </View>
+        {/* 标签模态框 */}
+        <Modal
+          visible={labelModal}
+          animationType="slide"
+          onRequestClose={() => {
+            setLabelModal(false);
+          }}
+        >
+          <TouchableWithoutFeedback
+            style={{ flex: 1 }}
+            onPress={() => setLabelModal(false)}
+          >
+            <View
+              style={{
+                flex: 1,
+                backgroundColor: "rgba(0,0,0,0.5)",
+                justifyContent: "flex-end",
+              }}
+            >
+              <View
+                style={{
+                  height: "70%",
+                  backgroundColor: "white",
+                  borderRadius: 10,
+                  padding: 20,
+                  marginTop: 20,
+                }}
+              >
+                <View
+                  style={{ justifyContent: "center", alignItems: "center" }}
+                >
+                  <Text style={{ fontSize: 20, fontWeight: "bold" }}>
+                    添加标签
+                  </Text>
+                </View>
+                <View style={{ justifyContent: "center" }}>
+                  <TouchableOpacity
+                    onPress={() => handleLabelPress("# 亲子出游")}
+                  >
+                    <Text style={{ fontSize: 18, marginTop: 10 }}>
+                      # 亲子出游
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+                <View style={styles.line}></View>
+                <View style={{ justifyContent: "center" }}>
+                  <TouchableOpacity
+                    onPress={() => handleLabelPress("# 情侣出行")}
+                  >
+                    <Text style={{ fontSize: 18, marginTop: 10 }}>
+                      # 情侣出行
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+                <View style={styles.line}></View>
+                <View style={{ justifyContent: "center" }}>
+                  <TouchableOpacity
+                    onPress={() => handleLabelPress("# 特种兵")}
+                  >
+                    <Text style={{ fontSize: 18, marginTop: 10 }}>
+                      # 特种兵
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+                <View style={styles.line}></View>
+                <View style={{ justifyContent: "center" }}>
+                  <TouchableOpacity
+                    onPress={() => handleLabelPress("# CityWalk")}
+                  >
+                    <Text style={{ fontSize: 18, marginTop: 10 }}>
+                      # CityWalk
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+                <View style={styles.line}></View>
+                <View style={{ justifyContent: "center" }}>
+                  <TouchableOpacity
+                    onPress={() => handleLabelPress("# 朋友一起嗨")}
+                  >
+                    <Text style={{ fontSize: 18, marginTop: 10 }}>
+                      # 朋友一起嗨
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+                <View style={styles.line}></View>
+                <View style={{ justifyContent: "center" }}>
+                  <TouchableOpacity onPress={() => handleLabelPress("# 其他")}>
+                    <Text style={{ fontSize: 18, marginTop: 10 }}># 其他</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+          </TouchableWithoutFeedback>
+        </Modal>
+        {/* 正文模态框 */}
+        <Modal
+          visible={isModalVisible}
+          animationType="slide"
+          onRequestClose={() => {
+            setIsModalVisible(false);
+          }}
+        >
+          <View style={styles.modalContainer}>
+            <View style={styles.modalContent}>
+              <TextInput
+                style={styles.contentInput}
+                multiline={true} // 允许多行输入
+                numberOfLines={4}
+                textAlignVertical="top" // 设置文本垂直对齐方式为顶部
+                placeholder="添加正文"
+                onChangeText={handleInputContent}
+                value={content}
+              />
+              <View style={styles.bottomContent}>
+                <TouchableOpacity
+                  style={styles.addLabel}
+                  onPress={handleAddLabel}
+                >
+                  <Text style={styles.addLabelText}>{labelText}</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => {
+                    setIsModalVisible(false);
+                  }}
+                >
+                  <MaterialIcons
+                    name="keyboard-arrow-down"
+                    size={24}
+                    color="black"
+                  />
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
         <View style={styles.line}></View>
+        {/* 选择框 */}
         <View style={styles.four}>
           <View style={styles.picker}>
             <Text style={styles.pickerText}>出行月份:</Text>
@@ -378,6 +538,7 @@ const LogPublicPage = () => {
           </View>
         </View>
         <View style={styles.line}></View>
+        {/* 添加地点 */}
         <View style={styles.five}>
           <TouchableOpacity style={styles.five}>
             <View style={styles.left}>
@@ -394,6 +555,7 @@ const LogPublicPage = () => {
             />
           </TouchableOpacity>
         </View>
+        {/* 底部操作栏 */}
         <View style={styles.six}>
           <TouchableOpacity>
             <View style={styles.draftBack}>
@@ -404,53 +566,17 @@ const LogPublicPage = () => {
             </View>
             <Text style={styles.draftText}>存草稿</Text>
           </TouchableOpacity>
+          {/* 提交按钮，将数据上传 */}
           <TouchableOpacity style={styles.publicArea}>
             <Text style={styles.publicText}>发布笔记</Text>
           </TouchableOpacity>
         </View>
       </View>
-      <Modal
-        visible={isModalVisible}
-        animationType="slide"
-        onRequestClose={() => {
-          setIsModalVisible(false);
-        }}
-      >
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <TextInput
-              style={styles.contentInput}
-              multiline={true} // 允许多行输入
-              numberOfLines={4}
-              textAlignVertical="top" // 设置文本垂直对齐方式为顶部
-              placeholder="添加正文"
-            />
-            <View style={styles.bottomContent}>
-              <TouchableOpacity
-                style={styles.addLabel}
-                onPress={handleAddLabel}
-              >
-                <Text style={styles.addLabelText}># 话题</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => {
-                  setIsModalVisible(false);
-                }}
-              >
-                <MaterialIcons
-                  name="keyboard-arrow-down"
-                  size={24}
-                  color="black"
-                />
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
     </KeyboardAvoidingView>
   );
 };
 
+// CSS
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -522,7 +648,7 @@ const styles = StyleSheet.create({
   addLabel: {
     borderRadius: 20,
     padding: 10,
-    width: 70,
+    // width: 70,
     height: 40,
     justifyContent: "center",
     alignItems: "center",
@@ -530,6 +656,8 @@ const styles = StyleSheet.create({
   },
   addLabelText: {
     textAlign: "center",
+    marginLeft: 5,
+    marginRight: 5,
   },
   modalContainer: {
     flex: 1,

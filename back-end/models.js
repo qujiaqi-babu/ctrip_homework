@@ -13,8 +13,7 @@ const UserSchema = new Schema({
   password: { type: String, required: true },
   userAvatar: {
     type: String,
-    default:
-      "https://bpic.588ku.com/element_pic/20/07/01/3b2e533368dd628150d33b29be947d2f.jpg!/fw/224/quality/90/unsharp/true/compress/true",
+    default: "1.jpg",
   }, // 用户头像的 URL
 });
 

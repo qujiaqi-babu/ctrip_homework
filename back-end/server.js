@@ -27,6 +27,10 @@ app.use(
   })
 );
 
+// 静态文件目录
+app.use("/image", express.static("image"));
+app.use("/userAvatar", express.static("userAvatar"));
+
 app.use("/home", homeRoutes);
 app.use("/logDetail", logDetailRoutes);
 app.use("/login", loginRoutes);

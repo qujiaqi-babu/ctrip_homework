@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from "react";
 import {
   TouchableWithoutFeedback,
+  TouchableOpacity,
   View,
   Text,
+  Animated,
   StyleSheet,
   Image,
   Dimensions,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { AntDesign } from "@expo/vector-icons";
+import { AntDesign, Ionicons } from "@expo/vector-icons";
 
 // 屏幕宽度
 const screenWidth = Dimensions.get("window").width;
@@ -19,11 +21,15 @@ const TravelLogCard = ({ item, columnIndex, numColumns }) => {
 
   // 图片高度
   const [imageHeight, setImageHeight] = useState(200);
+
+  const [liked, setLiked] = useState(false);
+  const [likeScaleValue] = useState(new Animated.Value(1));
+
   // 获取导航对象
   const navigation = useNavigation();
 
   useEffect(() => {
-    Image.getSize(item.image, (width, height) => {
+    Image.getSize(item.imageUrl, (width, height) => {
       // 计算图片在瀑布流中的高度;
       const newHeight = Math.floor((screenWidth / numColumns / width) * height);
       setImageHeight(newHeight);
@@ -33,7 +39,42 @@ const TravelLogCard = ({ item, columnIndex, numColumns }) => {
   }, []);
 
   const handlePress = () => {
-    navigation.navigate("LogDetail");
+    navigation.navigate("LogDetail", { item: item });
+  };
+
+  // 点赞功能的点击效果
+  const handleIconPress = (type) => {
+    // if (type === "like") {
+    setLiked(!liked);
+    // setLikes(liked ? likes - 1 : likes + 1);
+    Animated.sequence([
+      Animated.timing(likeScaleValue, {
+        toValue: 1.2,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+      Animated.timing(likeScaleValue, {
+        toValue: 1,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+    ]).start();
+    // } else if (type === "collect") {
+    //   setCollected(!collected);
+    //   setCollects(collected ? collects - 1 : collects + 1);
+    //   Animated.sequence([
+    //     Animated.timing(collectScaleValue, {
+    //       toValue: 1.2,
+    //       duration: 100,
+    //       useNativeDriver: true,
+    //     }),
+    //     Animated.timing(collectScaleValue, {
+    //       toValue: 1,
+    //       duration: 100,
+    //       useNativeDriver: true,
+    //     }),
+    //   ]).start();
+    // }
   };
 
   return (
@@ -52,7 +93,7 @@ const TravelLogCard = ({ item, columnIndex, numColumns }) => {
             }
           >
             <Image
-              source={{ uri: item.image }}
+              source={{ uri: item.imageUrl }}
               style={{ ...styles.image, height: imageHeight }}
             />
             <Text style={styles.title}>{item.title}</Text>
@@ -63,15 +104,26 @@ const TravelLogCard = ({ item, columnIndex, numColumns }) => {
                   source={{ uri: item.userAvatar }}
                   style={styles.userAvatar}
                 />
-                <Text style={styles.userText}>{item.userName}</Text>
+                <Text style={styles.userText}>{item.username}</Text>
               </View>
               <View style={{ ...styles.rowContainer, width: 60 }}>
-                <AntDesign
+                {/* <AntDesign
                   name="eyeo"
                   color="black"
                   size={styles.userAvatar.width}
-                />
-                <Text style={styles.userText}>{item.clickCount}</Text>
+                /> */}
+                <TouchableOpacity onPress={() => handleIconPress("like")}>
+                  <Animated.View
+                    style={[{ transform: [{ scale: likeScaleValue }] }]}
+                  >
+                    <Ionicons
+                      name={liked ? "heart" : "heart-outline"}
+                      size={styles.userAvatar.width}
+                      color={liked ? "red" : "black"}
+                    />
+                  </Animated.View>
+                </TouchableOpacity>
+                <Text style={styles.userText}>{item.hits}</Text>
               </View>
             </View>
           </View>

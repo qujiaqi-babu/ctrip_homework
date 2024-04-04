@@ -49,17 +49,6 @@ const LogPublicPage = () => {
   const ranges = ["0—500", "500—1000", "1000—2000", "2000以上"];
   const [rating, setRating] = useState(0);
 
-  // 返回事件
-  const handleEditBack = () => {
-    console.log("Icon pressed!");
-    navigation.goBack(); // 这里的路由需要修改
-  };
-
-  // 清空文本框
-  const handleTitleDelete = () => {
-    setTitle("");
-  };
-
   // 分中英文计算字符长度
   const calculateLength = (str) => {
     let length = 0;
@@ -219,10 +208,6 @@ const LogPublicPage = () => {
     setLabelModal(false);
   };
 
-  const handleModalShow = () => {
-    setIsModalVisible(true);
-  };
-
   // 月份选择框
   const handleSelectMonth = (month) => {
     setSelectedMonth(month);
@@ -278,7 +263,11 @@ const LogPublicPage = () => {
       <View style={styles.container}>
         {/* 顶部放导航栏的地方 */}
         <View style={styles.topBottom}>
-          <TouchableOpacity onPress={handleEditBack}>
+          <TouchableOpacity
+            onPress={() => {
+              navigation.goBack();
+            }}
+          >
             <MaterialIcons name="chevron-left" size={36} color="#989797" />
           </TouchableOpacity>
         </View>
@@ -406,7 +395,11 @@ const LogPublicPage = () => {
             keyboardShouldPersistTaps="handled"
           />
           {title.length > 0 && (
-            <TouchableOpacity onPress={handleTitleDelete}>
+            <TouchableOpacity
+              onPress={() => {
+                setTitle("");
+              }}
+            >
               <MaterialIcons name="cancel" size={24} color="#989797" />
             </TouchableOpacity>
           )}
@@ -430,7 +423,11 @@ const LogPublicPage = () => {
             <TouchableOpacity style={styles.addLabel} onPress={handleAddLabel}>
               <Text style={styles.addLabelText}>{labelText}</Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={handleModalShow}>
+            <TouchableOpacity
+              onPress={() => {
+                setIsModalVisible(true);
+              }}
+            >
               <MaterialIcons name="keyboard-arrow-up" size={24} color="black" />
             </TouchableOpacity>
           </View>

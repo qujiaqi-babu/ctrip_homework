@@ -42,7 +42,7 @@ const LogPublicPage = () => {
 
   const [isModalVisible, setIsModalVisible] = useState(false); // 正文模态框
   const [labelModal, setLabelModal] = useState(false); // 标签模态框
-  const [labelText, setLabelText] = useState("# 主题"); // 主题标签
+  const [labelText, setLabelText] = useState("主题"); // 主题标签
   const labelThemes = [
     "亲子出游",
     "情侣出行",
@@ -477,7 +477,7 @@ const LogPublicPage = () => {
                 </View>
                 <View style={{ marginTop: 20 }}>
                   {labelThemes.map((labelTheme, index) => (
-                    <View style={{ justifyContent: "center" }}>
+                    <View key={index} style={{ justifyContent: "center" }}>
                       <TouchableOpacity
                         onPress={() => {
                           handleLabelPress(labelTheme);

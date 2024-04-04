@@ -43,6 +43,14 @@ const LogPublicPage = () => {
   const [isModalVisible, setIsModalVisible] = useState(false); // 正文模态框
   const [labelModal, setLabelModal] = useState(false); // 标签模态框
   const [labelText, setLabelText] = useState("# 主题"); // 主题标签
+  const labelThemes = [
+    "亲子出游",
+    "情侣出行",
+    "特种兵",
+    "CityWalk",
+    "朋友一起嗨",
+    "其他",
+  ];
 
   const [selectedMonth, setSelectedMonth] = useState(null);
   const [selectedRange, setSelectedRange] = useState(null);
@@ -421,7 +429,7 @@ const LogPublicPage = () => {
           />
           <View style={styles.bottomContent}>
             <TouchableOpacity style={styles.addLabel} onPress={handleAddLabel}>
-              <Text style={styles.addLabelText}>{labelText}</Text>
+              <Text style={styles.addLabelText}># {labelText}</Text>
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() => {
@@ -467,60 +475,21 @@ const LogPublicPage = () => {
                     添加标签
                   </Text>
                 </View>
-                <View style={{ justifyContent: "center" }}>
-                  <TouchableOpacity
-                    onPress={() => handleLabelPress("# 亲子出游")}
-                  >
-                    <Text style={{ fontSize: 18, marginTop: 10 }}>
-                      # 亲子出游
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-                <View style={styles.line}></View>
-                <View style={{ justifyContent: "center" }}>
-                  <TouchableOpacity
-                    onPress={() => handleLabelPress("# 情侣出行")}
-                  >
-                    <Text style={{ fontSize: 18, marginTop: 10 }}>
-                      # 情侣出行
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-                <View style={styles.line}></View>
-                <View style={{ justifyContent: "center" }}>
-                  <TouchableOpacity
-                    onPress={() => handleLabelPress("# 特种兵")}
-                  >
-                    <Text style={{ fontSize: 18, marginTop: 10 }}>
-                      # 特种兵
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-                <View style={styles.line}></View>
-                <View style={{ justifyContent: "center" }}>
-                  <TouchableOpacity
-                    onPress={() => handleLabelPress("# CityWalk")}
-                  >
-                    <Text style={{ fontSize: 18, marginTop: 10 }}>
-                      # CityWalk
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-                <View style={styles.line}></View>
-                <View style={{ justifyContent: "center" }}>
-                  <TouchableOpacity
-                    onPress={() => handleLabelPress("# 朋友一起嗨")}
-                  >
-                    <Text style={{ fontSize: 18, marginTop: 10 }}>
-                      # 朋友一起嗨
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-                <View style={styles.line}></View>
-                <View style={{ justifyContent: "center" }}>
-                  <TouchableOpacity onPress={() => handleLabelPress("# 其他")}>
-                    <Text style={{ fontSize: 18, marginTop: 10 }}># 其他</Text>
-                  </TouchableOpacity>
+                <View style={{ marginTop: 20 }}>
+                  {labelThemes.map((labelTheme, index) => (
+                    <View style={{ justifyContent: "center" }}>
+                      <TouchableOpacity
+                        onPress={() => {
+                          handleLabelPress(labelTheme);
+                        }}
+                      >
+                        <Text style={{ fontSize: 18, marginTop: 10 }}>
+                          # {labelTheme}
+                        </Text>
+                      </TouchableOpacity>
+                      <View style={styles.line}></View>
+                    </View>
+                  ))}
                 </View>
               </View>
             </View>
@@ -710,7 +679,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingHorizontal: 10,
+    paddingHorizontal: 5,
     paddingVertical: 5,
   },
   addLabel: {

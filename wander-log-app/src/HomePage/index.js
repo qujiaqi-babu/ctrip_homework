@@ -12,6 +12,7 @@ import {
 import WaterfallFlow from "react-native-waterfall-flow";
 import TravelLogCard from "./component/TravelLogCard";
 import { Feather, MaterialIcons } from "@expo/vector-icons";
+import { api } from "../../util";
 
 const Toast = Overlay.Toast;
 
@@ -23,7 +24,7 @@ const imageList = [
 ];
 
 const topicList = [
-  "推荐",
+  "",
   "亲子",
   "情侣",
   "美食",
@@ -67,34 +68,51 @@ const HomePage = ({ navigation }) => {
 
   const [requestStatus, setRequestStatus] = useState(RequestStatus.IDLE);
 
-  // 通过 fetch 走本地 json 数据获取游记列表
-  const forkFetch = () => {
-    return new Promise((resolve) => {
-      // 假设请求返回最新的数据
-      const newTravelLogs = initalTravelLogs.filter(
-        (log) =>
-          log.title.includes(searchContent) && log.topic === selectedTopic
-      );
-      // 模拟网络延时
-      setTimeout(() => {
-        resolve(newTravelLogs);
-      }, 1 * 1000);
-    });
+  // 获取游记列表
+  const fetchTravelLog = async () => {
+    try {
+      const response = await api.get("/home/travelLogs", {
+        selectedTopic: selectedTopic,
+        searchContent: searchContent,
+      });
+      // if (response.data.success) {
+      //   throw new Error("Network response was not ok");
+      // }
+      setTravelLogs(response.data);
+      // 数据加载成功
+      setRequestStatus(RequestStatus.SUCCESS);
+    } catch (error) {
+      // 数据加载失败
+      setRequestStatus(RequestStatus.ERROR);
+    }
+
+    // return new Promise((resolve) => {
+    //   // 假设请求返回最新的数据
+    //   const newTravelLogs = initalTravelLogs.filter(
+    //     (log) =>
+    //       log.title.includes(searchContent) && log.topic === selectedTopic
+    //   );
+    //   // 模拟网络延时
+    //   setTimeout(() => {
+    //     resolve(newTravelLogs);
+    //   }, 1 * 1000);
+    // });
   };
 
   useEffect(() => {
     // 等待容器加载数据
     setRequestStatus(RequestStatus.PENDING);
-    forkFetch()
-      .then((newTravelLogs) => {
-        setTravelLogs(newTravelLogs);
-        // 数据加载成功
-        setRequestStatus(RequestStatus.SUCCESS);
-      })
-      .catch(() => {
-        // 数据加载失败
-        setRequestStatus(RequestStatus.ERROR);
-      });
+    // forkFetch()
+    //   .then((newTravelLogs) => {
+    //     setTravelLogs(newTravelLogs);
+    //     // 数据加载成功
+    //     setRequestStatus(RequestStatus.SUCCESS);
+    //   })
+    //   .catch(() => {
+    //     // 数据加载失败
+    //     setRequestStatus(RequestStatus.ERROR);
+    //   });
+    fetchTravelLog();
   }, [searchContent, selectedTopic]);
 
   // 分中英文计算字符长度
@@ -179,7 +197,7 @@ const HomePage = ({ navigation }) => {
                   topic === selectedTopic && styles.selectedTopic,
                 ]}
               >
-                {topic}
+                {topic ? topic : "推荐"}
               </Text>
             </TouchableOpacity>
           ))}

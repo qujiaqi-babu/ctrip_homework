@@ -80,20 +80,20 @@ router.post("/upload", async (req, res) => {
   // 保存游记图片
   try {
     // console.log(imageData); // 打印出来是乱码但是没有关系
-    const fileNameList = imageData.map((data) => {
+    const imagesUrl = imageData.map((data) => {
       const md5 = calaMD5(data[0]);
       const ext = data[1];
       return `${md5}.${ext}`;
     }); // 摘要运算得到加密文件名
-    console.log(fileNameList);
-    fileNameList.forEach((fileName, index) =>
+    console.log(imagesUrl);
+    imagesUrl.forEach((fileName, index) =>
       saveImage(imageData[index][0], fileName)
     );
 
     const travelLog = new TravelLog({
       title,
       content,
-      fileNameList,
+      imagesUrl,
       travelMonth,
       percost,
       rate,

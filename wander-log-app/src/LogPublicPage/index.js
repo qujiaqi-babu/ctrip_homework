@@ -519,7 +519,7 @@ const LogPublicPage = () => {
                   style={styles.addLabel}
                   onPress={handleAddLabel}
                 >
-                  <Text style={styles.addLabelText}>{labelText}</Text>
+                  <Text style={styles.addLabelText}># {labelText}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   onPress={() => {

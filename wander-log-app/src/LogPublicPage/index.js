@@ -22,7 +22,7 @@ import { useNavigation } from "@react-navigation/native";
 import * as ImagePicker from "expo-image-picker";
 import * as FileSystem from "expo-file-system";
 import { TouchableWithoutFeedback } from "@ui-kitten/components/devsupport";
-import axios from "axios";
+import { api } from "../../util";
 
 const Toast = Overlay.Toast;
 
@@ -229,9 +229,9 @@ const LogPublicPage = () => {
       Toast.show("请至少上传一张图片，填写标题和内容~", { duration: 2000 });
       return;
     }
-    await axios
+    await api
       .post(
-        "http://10.0.2.2:5000/api/uploadTravelLog", // 虚拟机不能使用localhost
+        "/logPublic/upload", // 虚拟机不能使用localhost
         {
           imageData: imageData,
           title: title,

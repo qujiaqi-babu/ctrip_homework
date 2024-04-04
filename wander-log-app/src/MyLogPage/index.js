@@ -8,6 +8,9 @@ import {
   FlatList,
   Image,
   Button,
+  Modal,
+  Overlay,
+  ImageBackground,
 } from "react-native";
 import {
   Icon,
@@ -18,11 +21,19 @@ import {
   Divider,
   BottomSheet,
   ListItem,
+  Badge,
 } from "@rneui/themed";
 import Drawer from "react-native-drawer";
 import { useNavigation } from "@react-navigation/native";
+import * as ImagePicker from "expo-image-picker";
+import { TouchableWithoutFeedback } from "@ui-kitten/components/devsupport";
+import * as FileSystem from "expo-file-system";
 
+const Toast = Overlay.Toast;
+
+//侧边菜单栏
 const ContentView = () => {
+  const navigation = useNavigation();
   return (
     <View style={sideMenuStyles.container}>
       <View
@@ -74,7 +85,11 @@ const ContentView = () => {
           justifyContent: "space-evenly",
         }}
       >
-        <TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => {
+            navigation.navigate("Setting");
+          }}
+        >
           <View>
             <View
               style={{
@@ -120,6 +135,7 @@ const ContentView = () => {
     </View>
   );
 };
+//内容为空组件
 const EmyptyItem = ({ name, color, label }) => {
   return (
     <View
@@ -145,17 +161,45 @@ const EmyptyItem = ({ name, color, label }) => {
     </View>
   );
 };
+//渲染组件
 const RenderItem = ({ value }) => {
+  const navigation = useNavigation();
   return (
-    <Card containerStyle={{ borderRadius: 10, padding: 0 }}>
-      <Card.Image
-        style={{ padding: 0 }}
-        source={{
-          uri: value,
-        }}
-      />
-      <Card.Title>上海一日游</Card.Title>
-    </Card>
+    <TouchableOpacity
+      onPress={() => {
+        navigation.navigate("LogPublic");
+      }}
+    >
+      <Card containerStyle={{ borderRadius: 10, padding: 0 }}>
+        <Card.Image
+          style={{ padding: 0 }}
+          source={{
+            uri: value,
+          }}
+        />
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-evenly",
+            marginBottom: 10,
+            marginTop: 5,
+          }}
+        >
+          <Text>上海一日游</Text>
+          <Text>
+            <Badge
+              badgeStyle={{}}
+              containerStyle={{}}
+              status="primary"
+              textProps={{}}
+              textStyle={{ color: "#EFE" }}
+              value="审核中"
+              options={{}}
+            />
+          </Text>
+        </View>
+      </Card>
+    </TouchableOpacity>
   );
 };
 
@@ -163,6 +207,9 @@ const MyLogPage = () => {
   const navigation = useNavigation();
   const [visible, setVisible] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
+  const [imageUrl, setImageUrl] = useState();
+  const [imageData, setImageData] = useState();
+  const [modalVisible, setModalVisible] = useState(false); // 上传照片模态框
   const list = [
     { title: "List Item 1" },
     { title: "List Item 2" },
@@ -208,8 +255,144 @@ const MyLogPage = () => {
   const closeSideMenu = () => {
     setVisible(false);
   };
+  // 第一次使用图片上传功能时会先授权
+  const verifyPermission = async () => {
+    const result = await ImagePicker.getCameraPermissionsAsync();
+    // console.log(result);
+    if (!result.granted) {
+      Toast.show("需要相机权限才能使用相机");
+      const askPermission = await ImagePicker.requestCameraPermissionsAsync();
+      // console.log(askPermission);
+      if (!askPermission.granted) {
+        Alert.alert(
+          "Insufficient Permissions",
+          "You need to grant camera permissions to be able to upload your images",
+          [{ text: "OK" }]
+        );
+        return false;
+      }
+    }
+    return true;
+  };
+  // 相册图片上传
+  const handleUploadImage = async () => {
+    const hasPermission = await verifyPermission();
+    if (!hasPermission) {
+      return;
+    }
+    // 返回一个promise对象
+    const image = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images, // 允许选择所有类型的媒体
+      allowsEditing: true,
+      quality: 0.5,
+    });
+    const url = image.assets[0].uri;
+    const suffix = url.substring(url.lastIndexOf(".") + 1);
+    try {
+      // 读取图片的内容
+      const data = await FileSystem.readAsStringAsync(url, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+      // 传给后端图片数据和后缀名
+      setImageData([data, suffix]);
+    } catch (error) {
+      console.log("Error reading image file:", error);
+    }
+
+    setImageUrl(url);
+    setModalVisible(false); // 拍照上传后关闭模态框
+  };
+
+  // 拍照上传
+  const handleTakeImage = async () => {
+    const hasPermission = await verifyPermission();
+    if (!hasPermission) {
+      return;
+    }
+    // 返回一个promise对象
+    const image = await ImagePicker.launchCameraAsync({
+      allowsEditing: true,
+      quality: 0.5,
+    });
+    const url = image.assets[0].uri;
+    const suffix = url.substring(url.lastIndexOf(".") + 1);
+    try {
+      // 读取图片的内容
+      const data = await FileSystem.readAsStringAsync(url, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+      setImageData([data, suffix]);
+    } catch (error) {
+      console.log("Error reading image file:", error);
+    }
+
+    setImageUrl(url);
+    // 获取imageData
+    setModalVisible(false); // 拍照上传后关闭模态框
+  };
   return (
     <>
+      {/* 图片上传方式选择模态框 */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => {
+          setModalVisible(false);
+        }}
+      >
+        <TouchableWithoutFeedback
+          style={{ flex: 1 }}
+          onPress={() => setModalVisible(false)}
+        >
+          <View
+            style={{
+              flex: 1,
+              backgroundColor: "rgba(0,0,0,0.5)",
+              justifyContent: "flex-end",
+            }}
+          >
+            <View
+              style={{
+                height: "20%",
+                backgroundColor: "white",
+                borderRadius: 10,
+                padding: 20,
+                marginTop: 20,
+              }}
+            >
+              <TouchableOpacity
+                onPress={handleTakeImage}
+                style={{
+                  flex: 1,
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <Text style={{ fontSize: 20 }}>拍照</Text>
+              </TouchableOpacity>
+              <View
+                style={{
+                  height: 2,
+                  width: "100%",
+                  backgroundColor: "#D1CFCF",
+                  marginVertical: 10,
+                }}
+              ></View>
+              <TouchableOpacity
+                onPress={handleUploadImage}
+                style={{
+                  flex: 1,
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <Text style={{ fontSize: 20 }}>从相册上传</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
       <Drawer
         type="overlay"
         open={visible}
@@ -243,144 +426,26 @@ const MyLogPage = () => {
               </ListItem>
             </BottomSheet>
           </SafeAreaProvider> */}
-          <View style={styles.head_container}>
-            {/* <Text>导航头</Text> */}
-            <TouchableOpacity onPress={showSideMenu}>
-              <Icon name="menu" size={28} color="#FFF" />
-            </TouchableOpacity>
-            <View style={{ flexDirection: "row" }}>
-              <TouchableOpacity style={styles.button}>
-                {/* <Icon name="image" color="#FFF" /> */}
-                <Icon
-                  style={{ alignItems: "flex-end" }}
-                  name="image"
-                  color="#FFF"
-                />
-                <Text
-                  style={
-                    styles.buttonLabel
-                    // selectedValue === value && styles.selectedLabel,
-                  }
-                >
-                  设置背景
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity>
-                <Icon name="share" size={28} color="#FFF" />
-              </TouchableOpacity>
-            </View>
-          </View>
-          <View style={styles.content_container}>
-            <View style={styles.detail_container}>
-              {/* <Text>用户信息</Text> */}
-              <View
-                style={{
-                  flex: 3,
-                  // backgroundColor: "chocolate",
-                  flexDirection: "row",
-                }}
-              >
-                <View
-                  style={{
-                    flex: 2,
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  <TouchableOpacity>
-                    <Avatar
-                      size={96}
-                      rounded
-                      source={{
-                        uri: "https://randomuser.me/api/portraits/men/36.jpg",
-                      }}
-                    />
-                  </TouchableOpacity>
-                </View>
-
-                <View
-                  style={{
-                    flex: 3,
-                    alignItems: "flex-start",
-                    justifyContent: "center",
-                  }}
-                >
-                  <Text
-                    style={{
-                      fontWeight: "bold",
-                      color: "#FFF",
-                      fontSize: 20,
-                      fontFamily: "serif",
-                    }}
-                  >
-                    王权
-                  </Text>
-                  <Text
-                    style={{ color: "#FFF", fontSize: 15, fontFamily: "serif" }}
-                  >
-                    游客号:123456789
-                  </Text>
-                </View>
-              </View>
-              <View style={{ flex: 1, justifyContent: "center" }}>
-                <Text
-                  style={{
-                    color: "#FFF",
-                    paddingLeft: 20,
-                    fontFamily: "serif",
-                    fontWeight: "bold",
-                  }}
-                >
-                  热爱生活，喜欢游戏，永远在路上
-                </Text>
-              </View>
-              <View
-                style={{
-                  flex: 2,
-                  // backgroundColor: "cornsilk",
-                  flexDirection: "row",
-                  // justifyContent: "space-evenly",
-                  alignContent: "center",
-                }}
-              >
-                <View style={{ ...styles.box_center, flex: 1 }}>
-                  <TouchableOpacity>
-                    <Text style={styles.text_center}>0</Text>
-                    <Text style={styles.text_center}>关注</Text>
-                  </TouchableOpacity>
-                </View>
-                <View style={{ ...styles.box_center, flex: 1 }}>
-                  <TouchableOpacity>
-                    <Text style={styles.text_center}>0</Text>
-                    <Text style={styles.text_center}>粉丝</Text>
-                  </TouchableOpacity>
-                </View>
-                <View style={{ ...styles.box_center, flex: 2 }}>
-                  <TouchableOpacity>
-                    <Text style={styles.text_center}>0</Text>
-                    <Text style={styles.text_center}>获赞与收藏</Text>
-                  </TouchableOpacity>
-                </View>
-                <View
-                  style={{
-                    alignItems: "center",
-                    textAlign: "center",
-                    flexDirection: "row",
-                    justifyContent: "flex-end",
-
-                    flex: 3,
-                  }}
-                >
+          <View style={styles.user_container}>
+            <ImageBackground
+              source={imageUrl ? { uri: imageUrl } : {}}
+              resizeMode="cover"
+              style={styles.background_image}
+            >
+              <View style={styles.head_container}>
+                {/* <Text>导航头</Text> */}
+                <TouchableOpacity onPress={showSideMenu}>
+                  <Icon name="menu" size={28} color="#FFF" />
+                </TouchableOpacity>
+                <View style={{ flexDirection: "row" }}>
                   <TouchableOpacity
-                    onPress={() => {
-                      navigation.navigate("UserInfo");
-                    }}
                     style={styles.button}
+                    onPress={() => setModalVisible(true)}
                   >
                     {/* <Icon name="image" color="#FFF" /> */}
                     <Icon
                       style={{ alignItems: "flex-end" }}
-                      name="person"
+                      name="image"
                       color="#FFF"
                     />
                     <Text
@@ -389,26 +454,159 @@ const MyLogPage = () => {
                         // selectedValue === value && styles.selectedLabel,
                       }
                     >
-                      编辑资料
+                      设置背景
                     </Text>
                   </TouchableOpacity>
-                  <TouchableOpacity
-                    onPress={() => {
-                      navigation.navigate("Setting");
-                    }}
-                    style={styles.button}
-                  >
-                    {/* <Icon name="image" color="#FFF" /> */}
-                    <Icon
-                      style={{ alignItems: "flex-end" }}
-                      name="settings"
-                      color="#FFF"
-                    />
+                  <TouchableOpacity>
+                    <Icon name="share" size={28} color="#FFF" />
                   </TouchableOpacity>
                 </View>
-                {/* <View style={{ ...styles.box_center, flex: 1 }}></View> */}
               </View>
-            </View>
+              <View style={styles.detail_container}>
+                {/* <Text>用户信息</Text> */}
+                <View
+                  style={{
+                    flex: 3,
+                    // backgroundColor: "chocolate",
+                    flexDirection: "row",
+                  }}
+                >
+                  <View
+                    style={{
+                      flex: 2,
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <TouchableOpacity>
+                      <Avatar
+                        size={96}
+                        rounded
+                        source={{
+                          uri: "https://randomuser.me/api/portraits/men/36.jpg",
+                        }}
+                      />
+                    </TouchableOpacity>
+                  </View>
+
+                  <View
+                    style={{
+                      flex: 3,
+                      alignItems: "flex-start",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <Text
+                      style={{
+                        fontWeight: "bold",
+                        color: "#FFF",
+                        fontSize: 20,
+                        fontFamily: "serif",
+                      }}
+                    >
+                      王权
+                    </Text>
+                    <Text
+                      style={{
+                        color: "#FFF",
+                        fontSize: 15,
+                        fontFamily: "serif",
+                      }}
+                    >
+                      游客号:123456789
+                    </Text>
+                  </View>
+                </View>
+                <View style={{ flex: 1, justifyContent: "center" }}>
+                  <Text
+                    style={{
+                      color: "#FFF",
+                      paddingLeft: 20,
+                      fontFamily: "serif",
+                      fontWeight: "bold",
+                    }}
+                  >
+                    热爱生活，喜欢游戏，永远在路上
+                  </Text>
+                </View>
+                <View
+                  style={{
+                    flex: 2,
+                    // backgroundColor: "cornsilk",
+                    flexDirection: "row",
+                    // justifyContent: "space-evenly",
+                    alignContent: "center",
+                  }}
+                >
+                  <View style={{ ...styles.box_center, flex: 1 }}>
+                    <TouchableOpacity>
+                      <Text style={styles.text_center}>0</Text>
+                      <Text style={styles.text_center}>关注</Text>
+                    </TouchableOpacity>
+                  </View>
+                  <View style={{ ...styles.box_center, flex: 1 }}>
+                    <TouchableOpacity>
+                      <Text style={styles.text_center}>0</Text>
+                      <Text style={styles.text_center}>粉丝</Text>
+                    </TouchableOpacity>
+                  </View>
+                  <View style={{ ...styles.box_center, flex: 2 }}>
+                    <TouchableOpacity>
+                      <Text style={styles.text_center}>0</Text>
+                      <Text style={styles.text_center}>获赞与收藏</Text>
+                    </TouchableOpacity>
+                  </View>
+                  <View
+                    style={{
+                      alignItems: "center",
+                      textAlign: "center",
+                      flexDirection: "row",
+                      justifyContent: "flex-end",
+
+                      flex: 3,
+                    }}
+                  >
+                    <TouchableOpacity
+                      onPress={() => {
+                        navigation.navigate("UserInfo");
+                      }}
+                      style={styles.button}
+                    >
+                      {/* <Icon name="image" color="#FFF" /> */}
+                      <Icon
+                        style={{ alignItems: "flex-end" }}
+                        name="person"
+                        color="#FFF"
+                      />
+                      <Text
+                        style={
+                          styles.buttonLabel
+                          // selectedValue === value && styles.selectedLabel,
+                        }
+                      >
+                        编辑资料
+                      </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={() => {
+                        navigation.navigate("Setting");
+                      }}
+                      style={styles.button}
+                    >
+                      {/* <Icon name="image" color="#FFF" /> */}
+                      <Icon
+                        style={{ alignItems: "flex-end" }}
+                        name="settings"
+                        color="#FFF"
+                      />
+                    </TouchableOpacity>
+                  </View>
+                  {/* <View style={{ ...styles.box_center, flex: 1 }}></View> */}
+                </View>
+              </View>
+            </ImageBackground>
+          </View>
+          <View style={styles.content_container}>
             <View style={styles.log_container}>
               <Tab
                 value={index}
@@ -475,7 +673,7 @@ export default MyLogPage;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "lightslategrey",
+
     margin: 0,
     padding: 0,
   },
@@ -518,14 +716,22 @@ const styles = StyleSheet.create({
     color: "white",
   },
   content_container: {
-    flex: 18,
-    // height: 2000,
-    // backgroundColor: "steelblue",
+    flex: 12,
+    margin: 0,
+    padding: 0,
+  },
+  background_image: {
+    width: "100%",
+    height: "100%",
+    backgroundColor: "#828282",
+  },
+  user_container: {
+    flex: 8,
     margin: 0,
     padding: 0,
   },
   detail_container: {
-    flex: 1,
+    flex: 6,
     // height: "25%",
     // backgroundColor: "honeydew",
     margin: 0,
@@ -536,7 +742,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   log_container: {
-    flex: 2,
+    flex: 12,
     // height: "66%",
     backgroundColor: "white",
     margin: 0,

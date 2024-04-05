@@ -3,7 +3,7 @@ const Schema = mongoose.Schema;
 
 // 连接 MongoDB 数据库
 mongoose
-  .connect("mongodb://localhost:27017/AuditManagementSystem")
+  .connect("mongodb://127.0.0.1:27017/AuditManagementSystem")
   .then(() => console.log("Connected to MongoDB"))
   .catch((err) => console.error("Failed to connect to MongoDB", err));
 

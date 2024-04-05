@@ -16,6 +16,7 @@ import {
 import HomeScreen from "./src/HomePage";
 import LogDetailScreen from "./src/LogDetailPage";
 import LoginScreen from "./src/LoginPage";
+import RegisterScreen from "./src/RegisterPage";
 import LogPublicScreen from "./src/LogPublicPage";
 import MyLogScreen from "./src/MyLogPage";
 import UserInfoScreen from "./src/UserInfoPage";
@@ -108,6 +109,7 @@ function HomeStackScreen() {
           headerTitle: "设置",
         }}
       />
+
       <Stack.Screen
         name="UserInfo"
         component={UserInfoScreen}
@@ -118,6 +120,15 @@ function HomeStackScreen() {
         }}
       />
       {/* Todo 此处应设置新页面-UserLogPage */}
+      <Stack.Screen
+        name="Register"
+        component={RegisterScreen}
+        options={{
+          headerShown: true,
+          headerTitleAlign: "center",
+          headerTitle: "",
+        }}
+      />
       <Stack.Screen
         name="MyLogPage"
         component={MyLogScreen}

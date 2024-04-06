@@ -13,7 +13,6 @@ import {
 const screenWidth = Dimensions.get("window").width;
 
 const ImageSlider = ({ imageUrls }) => {
-  console.log(imageUrls);
   const [maxRatio, setMaxRatio] = useState(0);
   const [containerHeight, setContainerHeight] = useState(0);
 

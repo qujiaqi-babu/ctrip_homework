@@ -23,7 +23,6 @@ import { api } from "../../util";
 
 const LogDetailPage = ({ route }) => {
   const { item } = route.params; // 主页传来的值
-  console.log(item);
   const logId = item._id;
   const userId = item.userId;
   const userAvatar = item.userAvatar;
@@ -77,7 +76,6 @@ const LogDetailPage = ({ route }) => {
         const data = await response.data;
         setTravelLog({
           ...travelLog,
-          // imagesUrl: data.imagesUrl, // 获得一个图片数组
           title: data.title,
           destination: data.destination,
           month: data.travelMonth,

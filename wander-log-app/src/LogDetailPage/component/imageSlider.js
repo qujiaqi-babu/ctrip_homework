@@ -70,8 +70,7 @@ const ImageSlider = ({ imageUrls }) => {
     const { contentOffset } = event.nativeEvent;
     const page = Math.floor((contentOffset.x + 1) / screenWidth);
     setCurrentPage(page);
-  }
-
+  };
 
   return (
     <View style={{ flex: 1 }}>
@@ -85,7 +84,8 @@ const ImageSlider = ({ imageUrls }) => {
         style={{ backgroundColor: "white" }}
       />
       <View style={styles.dotContainer}>
-        {imageUrls.length <= 6 &&
+        {imageUrls.length > 1 &&
+          imageUrls.length <= 6 &&
           imageUrls.map((_, index) => (
             <View
               key={index}

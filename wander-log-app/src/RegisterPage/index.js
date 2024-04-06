@@ -6,6 +6,7 @@ import {
   Overlay,
   TextInput,
 } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 // import CheckBox from "@react-native-community/checkbox";
 import { Button, Icon, Text, Image } from "@rneui/themed";
 // import { CheckBox } from "@rneui/base";
@@ -21,6 +22,16 @@ const Login = () => {
   const [password, setPassword] = useState();
   const [errorMessage, setErrorMessage] = useState("");
   const [checked, setChecked] = useState(false);
+
+  const storeData = async (key, value) => {
+    try {
+      await AsyncStorage.setItem(key, value);
+    } catch (e) {
+      // saving error
+      console.log(e);
+    }
+    console.log("存储用户信息成功");
+  };
   const handleInputUsername = (text) => {
     setUsername(text);
   };
@@ -51,8 +62,11 @@ const Login = () => {
           }
         )
         .then((res) => {
-          console.log("提交成功:", res.data.message);
-          // 提交成功后跳转到我的游记页面，并刷新
+          // console.log("提交成功:", res.data.message);
+          console.log(res.data.data.token);
+          console.log(res.data.data.userInfo);
+          storeData("token", res.data.data.token);
+          storeData("userInfo", JSON.stringify(res.data.data.userInfo));
           navigation.navigate("Home");
         })
         .catch((err) => {

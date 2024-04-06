@@ -20,6 +20,7 @@
     "jsonwebtoken": "^9.0.2",
     "md5": "^2.3.0",
     "mongoose": "^8.2.1",
+    "mongoose-sequence": "^6.0.1",
     "path": "^0.12.7"
   }
 }

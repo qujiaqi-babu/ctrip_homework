@@ -51,6 +51,8 @@ const LogPublicPage = () => {
   const ranges = ["0—500", "500—1000", "1000—2000", "2000以上"];
   const [rating, setRating] = useState(0);
 
+  const formaDate = new FormData();
+
   // 分中英文计算字符长度
   const calculateLength = (str) => {
     let length = 0;
@@ -125,6 +127,7 @@ const LogPublicPage = () => {
         encoding: FileSystem.EncodingType.Base64,
       });
       // 传给后端图片数据和后缀名
+      // console.log(data.length);
       setImageData([...imageData, [data, suffix]]);
     } catch (error) {
       console.log("Error reading image file:", error);
@@ -231,11 +234,15 @@ const LogPublicPage = () => {
       Toast.show("请至少上传一张图片，填写标题和内容~", { duration: 2000 });
       return;
     }
+
+    formaDate.append("images", imageData);
+    console.log(formaDate);
+
     await api
       .post(
         "/logPublic/upload", // 虚拟机不能使用localhost
         {
-          imageData: imageData,
+          images: formaDate,
           title: title,
           content: content,
           topic: labelText,
@@ -243,7 +250,7 @@ const LogPublicPage = () => {
           percost: selectedRange,
           rate: rating,
           destination: null,
-          userId: "660d0fd0f9982da9ba7ecfe9",
+          userId: "6610f91f6f39390aa7506803",
         }
       )
       .then((res) => {

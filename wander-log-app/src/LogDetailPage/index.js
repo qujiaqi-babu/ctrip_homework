@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -8,19 +8,20 @@ import {
   TouchableOpacity,
   TextInput,
   Animated,
-  Dimensions,
   Modal,
 } from "react-native";
-import {
-  MaterialIcons,
-  Ionicons,
-  AntDesign,
-  Octicons,
-} from "@expo/vector-icons";
+import { MaterialIcons, Ionicons, AntDesign } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import ImageSlider from "./component/imageSlider";
+import { api } from "../../util";
 
-const LogDetailPage = () => {
+const LogDetailPage = ({ route }) => {
+  const { item } = route.params; // 主页传来的值
+  const logId = item._id;
+  const userId = item.userId;
+  const userAvatar = item.userAvatar;
+  const userName = item.userName;
+
   const navigation = useNavigation();
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
@@ -33,19 +34,59 @@ const LogDetailPage = () => {
   const [likeScaleValue] = useState(new Animated.Value(1));
   const [collectScaleValue] = useState(new Animated.Value(1));
 
-  const images = [
-    "https://pic1.zhimg.com/50/v2-e814c1e763ea9e1d996426a24901d2ad_hd.jpg?source=1940ef5c",
-    "https://pic1.zhimg.com/v2-19989b3136b39a0cc9379c29babbd3f2_r.jpg?source=1940ef5c",
-    "https://ts1.cn.mm.bing.net/th/id/R-C.08edbf54f0ac46c135bf4f4d777dc16a?rik=9saq7P38Oq2Gfw&riu=http%3a%2f%2fwww.people.com.cn%2fmediafile%2fpic%2f20170411%2f33%2f11988651533966682221.jpg&ehk=G%2fRSTCp7gBimJXBm9kDpdP2PwavXVAg3MbuluFbhGb0%3d&risl=&pid=ImgRaw&r=0",
-    "https://pic1.zhimg.com/50/v2-86c2d637bfbc6074a9cced94d8983a75_hd.jpg?source=1940ef5c",
-    "https://pic2.zhimg.com/v2-0dda71bc9ced142bf7bb2d6adbebe4f0_r.jpg?source=1940ef5c",
-    "https://tse3-mm.cn.bing.net/th/id/OIP-C.LqD3h9bP0iU4Tu7ckbcGRgHaHa?rs=1&pid=ImgDetMain",
-  ];
+  const [travelLog, setTravelLog] = useState(null);
 
-  // 点击昵称或者头像可进入该用户主页
-  const handleGoToMyPage = () => {
-    navigation.navigate("MyLogPage");
+  // 调整数据格式
+  const mapPerCost = (cost) => {
+    if (cost === "500—1000") {
+      return "500-1k";
+    } else if (cost === "1000—2000") {
+      return "1k-2k";
+    } else if (cost === "2000以上") {
+      return "2k+";
+    } else {
+      return cost;
+    }
   };
+
+  const mapRate = (rate) => {
+    return parseFloat(rate).toFixed(1);
+  };
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    const year = date.getFullYear();
+    const month = (date.getMonth() + 1).toString().padStart(2, "0");
+    const day = date.getDate().toString().padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
+
+  useEffect(() => {
+    // console.log("fetching log detail...");
+    const fetchLogDetail = async () => {
+      try {
+        const response = await api.get(`/logDetail/findLog/${logId}`);
+        const data = await response.data;
+        setTravelLog({
+          ...travelLog,
+          imagesUrl: data.imagesUrl,
+          title: data.title,
+          destination: data.destination,
+          month: data.travelMonth,
+          perCost: mapPerCost(data.percost),
+          recomRate: mapRate(data.rate),
+          content: data.content,
+          topic: data.topic,
+          editTime: formatDate(data.editTime),
+          favorites: data.favorites,
+          hits: data.hits,
+        });
+      } catch (error) {
+        console.error(error);
+      }
+    };
+    fetchLogDetail();
+  }, []);
 
   // 关注用户功能
   const handleSubscribe = () => {
@@ -107,15 +148,20 @@ const LogDetailPage = () => {
               style={{ marginLeft: 10 }}
             />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.userInfo} onPress={handleGoToMyPage}>
+          <TouchableOpacity
+            style={styles.userInfo}
+            onPress={() => {
+              navigation.navigate("MyLogPage", { userId: userId });
+            }}
+          >
+            {/* 根据传过来的用户Id进行查找，跳到对应的id用户界面 */}
             <View style={styles.avatarContainer}>
-              <Image
-                source={require("../LogPublicPage/1.jpg")}
-                style={styles.avatar}
-              />
+              <Image source={{ uri: userAvatar }} style={styles.avatar} />
             </View>
             <View style={styles.nickName}>
-              <Text style={styles.nameText}>哈哈豆包</Text>
+              <Text style={styles.nameText}>
+                {userName ? userName : "空的昵称"}
+              </Text>
             </View>
           </TouchableOpacity>
         </View>
@@ -145,30 +191,49 @@ const LogDetailPage = () => {
 
       {/* 中间的滚动视图 */}
       <ScrollView style={{ flex: 1 }}>
-        <ImageSlider imageUrls={images} />
-        <Text style={styles.titleText}>笔记标题</Text>
+        {travelLog && <ImageSlider imageUrl={travelLog.imagesUrl} />}
+        {travelLog && <Text style={styles.titleText}>{travelLog.title}</Text>}
         <View style={{ justifyContent: "center", alignItems: "center" }}>
           <View style={styles.labelBox}>
             <View style={styles.label}>
               <Text style={styles.labelText}>地点</Text>
-              <Text style={styles.labelData}>xx</Text>
+              {travelLog && (
+                <Text style={styles.labelData}>
+                  {travelLog.destination ? travelLog.destination : "xx"}
+                </Text>
+              )}
             </View>
             <View style={styles.label}>
               <Text style={styles.labelText}>出行月份</Text>
-              <Text style={styles.labelData}>x月</Text>
+              {travelLog && (
+                <Text style={styles.labelData}>{travelLog.month}</Text>
+              )}
             </View>
             <View style={styles.label}>
               <Text style={styles.labelText}>人均花费</Text>
-              <Text style={styles.labelData}>1-2k</Text>
+              {travelLog && (
+                <Text style={styles.labelData}>{travelLog.perCost}</Text>
+              )}
             </View>
             <View style={[styles.label, { marginRight: 10 }]}>
               <Text style={styles.labelText}>推荐指数</Text>
-              <Text style={[styles.labelData, { color: "#F5B041" }]}>3.5</Text>
+              {travelLog && (
+                <Text style={[styles.labelData, { color: "#F5B041" }]}>
+                  {travelLog.recomRate}
+                </Text>
+              )}
             </View>
           </View>
         </View>
         <View style={{ marginTop: 10 }}>
-          <Text style={styles.contentText}>笔记内容</Text>
+          {travelLog && (
+            <Text style={styles.contentText}>{travelLog.content}</Text>
+          )}
+        </View>
+        <View style={{ marginTop: 10 }}>
+          {travelLog && (
+            <Text style={styles.editTime}>{travelLog.editTime}</Text>
+          )}
         </View>
         <View
           style={{ height: 1, backgroundColor: "#D1CFCF", marginVertical: 10 }}
@@ -179,7 +244,7 @@ const LogDetailPage = () => {
       </ScrollView>
 
       {/* 底部导航栏 */}
-      <View style={styles.topScreen}>
+      <View style={styles.bottomScreen}>
         <View style={styles.leftBottomScreen}>
           <TouchableOpacity
             style={styles.commentBox}
@@ -405,6 +470,21 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 5,
     textAlign: "left",
+    marginTop: 10,
+  },
+  editTime: {
+    fontSize: 16,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    textAlign: "left",
+    color: "#808B96",
+  },
+  bottomScreen: {
+    height: 60,
+    backgroundColor: "white",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
 });
 

@@ -20,20 +20,48 @@ import {
 } from "@rneui/themed";
 
 import { useNavigation } from "@react-navigation/native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { api } from "../../util";
+// 在发送请求之前，添加 token 到请求头
+api.interceptors.request.use(
+  async (config) => {
+    const token = await AsyncStorage.getItem("token");
+    if (token) {
+      config.headers.Authorization = `${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
 const UserInforPage = () => {
-  const data = {
-    avatar_url: "https://randomuser.me/api/portraits/men/36.jpg",
-    username: "王权",
-    userId: "12345678",
-    introduction: " 热爱生活，喜欢游戏，永远在路上，热爱每一天!!",
-    gender: "男",
-    birthday: "",
-    work: "",
-    location: "",
-    school: "",
-    backgroundImage: "",
-    hobby: "",
+  // {
+  //   avatar_url: "https://randomuser.me/api/portraits/men/36.jpg",
+  //   username: "王权",
+  //   customId: "12345678",
+  //   profile: " 热爱生活，喜欢游戏，永远在路上，热爱每一天!!",
+  //   gender: "男",
+  //   birthday: "",
+  //   work: "",
+  //   location: "",
+  //   school: "",
+  //   backgroundImage: "",
+  //   hobby: "",
+  // }
+  const [data, setData] = useState({});
+  const fetchData = async () => {
+    try {
+      const response = await api.get("/userInfo/info");
+      // console.log(response.data.data);
+      setData(response.data.data);
+    } catch (e) {
+      console.log(e.response.data.message);
+    }
   };
+  useEffect(() => {
+    fetchData();
+  }, []);
   return (
     <View style={sideMenuStyles.container}>
       {data ? (
@@ -51,7 +79,9 @@ const UserInforPage = () => {
                 size={128}
                 rounded
                 source={{
-                  uri: "https://randomuser.me/api/portraits/men/36.jpg",
+                  uri: data
+                    ? data.userAvatar
+                    : "https://randomuser.me/api/portraits/men/36.jpg",
                 }}
               />
             </TouchableOpacity>
@@ -85,7 +115,7 @@ const UserInforPage = () => {
                     游客号
                   </ListItem.Title>
                   <View style={sideMenuStyles.valueItem}>
-                    <ListItem.Title>{data.userId}</ListItem.Title>
+                    <ListItem.Title>{data.customId}</ListItem.Title>
                     <Icon name="chevron-right"></Icon>
                   </View>
                 </ListItem.Content>
@@ -100,7 +130,7 @@ const UserInforPage = () => {
                   </ListItem.Title>
                   <View style={sideMenuStyles.valueItem}>
                     <ListItem.Title numberOfLines={3} style={{ flex: 1 }}>
-                      {data.introduction}
+                      {data.profile}
                     </ListItem.Title>
                     <Icon name="chevron-right"></Icon>
                   </View>
@@ -234,7 +264,7 @@ const sideMenuStyles = StyleSheet.create({
     textAlign: "center",
     flexDirection: "row",
     alignItems: "center",
-    maxWidth: "80%",
+    maxWidth: "60%",
     // overflow: "hidden",
   },
   field: {

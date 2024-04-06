@@ -1,9 +1,10 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
+const AutoIncrement = require("mongoose-sequence")(mongoose);
 
 // 连接 MongoDB 数据库
 mongoose
-  .connect("mongodb://localhost:27017/AuditManagementSystem")
+  .connect("mongodb://127.0.0.1:27017/AuditManagementSystem")
   .then(() => console.log("Connected to MongoDB"))
   .catch((err) => console.error("Failed to connect to MongoDB", err));
 
@@ -11,12 +12,26 @@ mongoose
 const UserSchema = new Schema({
   username: { type: String, required: true },
   password: { type: String, required: true },
+  customId: { type: Number },
   userAvatar: {
     type: String,
-    default: "1.jpg",
+    default: "f8f769da-109a-459e-8113-2239ab1f5d96.jpg",
+  }, // 用户头像的 URL
+  profile: {
+    type: String,
+    default: "有趣的灵魂万里挑一",
+  },
+  gender: {
+    type: String,
+    enum: ["男", "女", "other"],
+    default: "other",
+  },
+  backgroundImage: {
+    type: String,
+    default: "d2dc43736e4768139926d995db225f5f.jpeg",
   }, // 用户头像的 URL
 });
-
+UserSchema.plugin(AutoIncrement, { inc_field: "customId" });
 // 游记模型
 const TravelLogSchema = new Schema({
   title: { type: String, required: true }, // 标题

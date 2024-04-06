@@ -8,6 +8,7 @@ import {
   FlatList,
   Image,
   Button,
+  Alert,
 } from "react-native";
 import {
   Icon,
@@ -20,6 +21,7 @@ import {
 } from "@rneui/themed";
 
 import { useNavigation } from "@react-navigation/native";
+
 const SettingPage = () => {
   const navigation = useNavigation();
   const data = {
@@ -34,6 +36,15 @@ const SettingPage = () => {
     school: "",
     backgroundImage: "",
     hobby: "",
+  };
+  const removeValue = async (key) => {
+    try {
+      await AsyncStorage.removeItem(key);
+    } catch (e) {
+      // remove error
+    }
+
+    console.log("Done.");
   };
   return (
     <View style={sideMenuStyles.container}>
@@ -172,7 +183,26 @@ const SettingPage = () => {
             <View style={sideMenuStyles.box_container}>
               <TouchableOpacity
                 onPress={() => {
-                  navigation.navigate("Login");
+                  Alert.alert(
+                    "登出",
+                    "确定登出？",
+                    [
+                      {
+                        text: "取消",
+                        style: "cancel",
+                      },
+                      {
+                        text: "确定",
+                        onPress: () => {
+                          removeValue("userInfo");
+                          removeValue("token");
+                          navigation.popToTop();
+                          navigation.navigate("Login");
+                        },
+                      },
+                    ],
+                    { cancelable: false }
+                  );
                 }}
               >
                 <ListItem style={{ backgroundColor: "#E5E7E9" }}>

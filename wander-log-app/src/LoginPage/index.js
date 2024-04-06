@@ -1,22 +1,28 @@
 import React, { useState } from "react";
 import { StyleSheet, View, TouchableOpacity } from "react-native";
 // import CheckBox from "@react-native-community/checkbox";
-import { Button, Icon, Text, Image } from "@rneui/themed";
+import { Button, Icon, Text, Image, Input } from "@rneui/themed";
 // import { CheckBox } from "@rneui/base";
 import { useNavigation } from "@react-navigation/native";
+
 export default function LoginScreen() {
   const navigation = useNavigation();
-  // const [checked, setChecked] = React.useState(true);
-  // const toggleCheckbox = () => setChecked(!checked);
+
   return (
     <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-      <View style={{ flex: 3, justifyContent: "center" }}>
+      <View style={{ flex: 3, justifyContent: "flex-end" }}>
         <Image
           source={require("../../assets/logo_t.png")}
           style={styles.image}
         />
       </View>
-      <View style={{ flex: 1 }}>
+      <View
+        style={{
+          flex: 3,
+          justifyContent: "flex-start",
+          alignItems: "center",
+        }}
+      >
         <Button
           title="微信登录"
           loading={false}
@@ -33,34 +39,51 @@ export default function LoginScreen() {
             marginVertical: 10,
           }}
           onPress={() => {
-            navigation.navigate("Home");
+            navigation.navigate("Register", { type: "login" });
           }}
         >
-          <Icon name="wechat" color="white" />
-          <Text style={{ fontSize: 18, color: "#FFF" }}>微信登录</Text>
+          <Icon name="account-circle" color="white" />
+          <Text style={{ fontSize: 18, color: "#FFF" }}>登录</Text>
         </Button>
-        <View style={{ flexDirection: "row", justifyContent: "center" }}>
+        <Button
+          title="微信登录"
+          loading={false}
+          loadingProps={{ size: "small", color: "white" }}
+          buttonStyle={{
+            backgroundColor: "rgba(26, 173, 25, 1)",
+            borderRadius: 30,
+          }}
+          titleStyle={{ fontWeight: "bold", fontSize: 23 }}
+          containerStyle={{
+            marginHorizontal: 50,
+            height: 50,
+            width: 250,
+            marginVertical: 10,
+          }}
+          onPress={() => {
+            navigation.navigate("Register", { type: "register" });
+          }}
+        >
+          <Icon name="person-add-alt-1" color="white" />
+          <Text style={{ fontSize: 18, color: "#FFF" }}>注册</Text>
+        </Button>
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "center",
+          }}
+        >
           <Text
-            style={{ textAlign: "center", fontSize: 16, color: "midnightblue" }}
+            style={{
+              textAlign: "center",
+              fontSize: 16,
+              color: "midnightblue",
+            }}
           >
             其他登录方式
           </Text>
           <Icon name="chevron-right" color="#000" />
         </View>
-      </View>
-      <View
-        style={{
-          flex: 1,
-          flexDirection: "row",
-          justifyContent: "center",
-          alignContent: "center",
-        }}
-      >
-        <Icon containerStyle={{}} name="check-box-outline-blank" color="#000" />
-        <Text style={{ color: "#778899" }}>我已阅读并同意</Text>
-        <TouchableOpacity>
-          <Text>《用户协议》</Text>
-        </TouchableOpacity>
       </View>
     </View>
   );

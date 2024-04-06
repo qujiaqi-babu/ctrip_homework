@@ -19,7 +19,7 @@ export default function LoginScreen() {
       <View
         style={{
           flex: 3,
-          justifyContent: "center",
+          justifyContent: "flex-start",
           alignItems: "center",
         }}
       >
@@ -84,20 +84,6 @@ export default function LoginScreen() {
           </Text>
           <Icon name="chevron-right" color="#000" />
         </View>
-      </View>
-      <View
-        style={{
-          flex: 2,
-          flexDirection: "row",
-          justifyContent: "center",
-          alignItems: "center",
-        }}
-      >
-        <Icon containerStyle={{}} name="check-box-outline-blank" color="#000" />
-        <Text style={{ color: "#778899" }}>我已阅读并同意</Text>
-        <TouchableOpacity>
-          <Text>《用户协议》</Text>
-        </TouchableOpacity>
       </View>
     </View>
   );

@@ -8,8 +8,7 @@ const { User, TravelLog, Manager } = require("../models"); //引入模型
 const secretKey = "king";
 
 // 生成 JWT
-function generateToken(userId) {
-  const payload = { id: userId };
+function generateToken(payload) {
   const options = { expiresIn: "30d" }; // 设置过期时间
 
   return jwt.sign(payload, secretKey, options);
@@ -22,12 +21,14 @@ function authenticateToken(req, res, next) {
   const token = req.header("Authorization");
 
   if (!token) {
-    return res.status(401).json({ status: "error", message: "Unauthorized" });
+    return res.status(401).json({ status: "error", message: "请先进行登录" });
   }
 
   jwt.verify(token, secretKey, (err, user) => {
     if (err) {
-      return res.status(403).json({ status: "error", message: "Forbidden" });
+      return res
+        .status(403)
+        .json({ status: "error", message: "访问受限，请联系管理员" });
     }
 
     req.user = user;
@@ -42,21 +43,20 @@ router.post("/login", async (req, res) => {
   try {
     const user = await User.findOne({ username, password: md5(password) });
     if (user) {
-      const token = generateToken(user._id);
+      const payload = { id: user._id };
+      const token = generateToken();
       res.status(200).json({
         status: "success",
         message: "Login successful",
         data: { token },
       });
     } else {
-      res
-        .status(401)
-        .json({ status: "error", message: "Invalid username or password" });
+      res.status(401).json({ status: "error", message: "用户名或密码不正确" });
       console.log("Invalid username or password");
     }
   } catch (err) {
     console.error("Error querying database:", err);
-    res.status(500).json({ status: "error", message: "Internal server error" });
+    res.status(500).json({ status: "error", message: "出错了，请联系管理员" });
   }
 });
 

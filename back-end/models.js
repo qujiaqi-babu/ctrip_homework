@@ -15,6 +15,19 @@ const UserSchema = new Schema({
     type: String,
     default: "1.jpg",
   }, // 用户头像的 URL
+  Profile: {
+    type: String,
+    default: "",
+  },
+  gender: {
+    type: String,
+    enum: ["男", "女", "other"],
+    default: "other",
+  },
+  backgroundImage: {
+    type: String,
+    default: "1.jpg",
+  }, // 用户头像的 URL
 });
 
 // 游记模型

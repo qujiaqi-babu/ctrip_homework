@@ -20,6 +20,7 @@ const Login = () => {
   const [username, setUsername] = useState();
   const [password, setPassword] = useState();
   const [errorMessage, setErrorMessage] = useState("");
+  const [checked, setChecked] = useState(false);
   const handleInputUsername = (text) => {
     setUsername(text);
   };
@@ -31,6 +32,8 @@ const Login = () => {
       setErrorMessage("用户名不能为空");
     } else if (username == null) {
       setErrorMessage("密码");
+    } else if (checked == false) {
+      setErrorMessage("请先阅读并勾选用户协议");
     } else {
       setErrorMessage("");
       return true;
@@ -122,7 +125,7 @@ const Login = () => {
           containerStyle={{
             marginHorizontal: 50,
             height: 50,
-            width: 250,
+            width: "100%",
             marginVertical: 10,
           }}
           onPress={handleLogin}
@@ -143,6 +146,35 @@ const Login = () => {
         </Text>
         <Icon name="chevron-right" color="#000" />
       </View>
+      <View
+        style={{
+          flexDirection: "row",
+          justifyContent: "center",
+          alignItems: "center",
+          marginTop: 20,
+        }}
+      >
+        <TouchableOpacity
+          onPress={() => {
+            setChecked(!checked);
+          }}
+        >
+          {checked ? (
+            <Icon containerStyle={{}} name="check-box" color="red" />
+          ) : (
+            <Icon
+              containerStyle={{}}
+              name="check-box-outline-blank"
+              color="#000"
+            />
+          )}
+        </TouchableOpacity>
+
+        <Text style={{ color: "#778899" }}>我已阅读并同意</Text>
+        <TouchableOpacity>
+          <Text>《用户协议》</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };
@@ -152,6 +184,7 @@ const Register = () => {
   const [password, setPassword] = useState();
   const [secondPassword, setSecondPassword] = useState();
   const [errorMessage, setErrorMessage] = useState("");
+  const [checked, setChecked] = useState(false);
   const handleInputUsername = (text) => {
     setUsername(text);
   };
@@ -168,6 +201,8 @@ const Register = () => {
       setErrorMessage("密码不能为空");
     } else if (secondPassword != password) {
       setErrorMessage("两次输入的密码不一致");
+    } else if (checked == false) {
+      setErrorMessage("请先阅读并勾选用户协议");
     } else {
       setErrorMessage("");
       return true;
@@ -269,7 +304,12 @@ const Register = () => {
         <Text style={{ color: "red" }}>{errorMessage}</Text>
       </View>
 
-      <View style={{ width: "100%", alignItems: "center" }}>
+      <View
+        style={{
+          width: "100%",
+          alignItems: "center",
+        }}
+      >
         <Button
           title="微信登录"
           loading={false}
@@ -282,8 +322,8 @@ const Register = () => {
           titleStyle={{ fontWeight: "bold", fontSize: 23 }}
           containerStyle={{
             marginHorizontal: 50,
-            height: 50,
-            width: 250,
+            height: 60,
+            width: "100%",
             marginVertical: 10,
           }}
           onPress={handleReigster}
@@ -294,17 +334,34 @@ const Register = () => {
         </Button>
       </View>
 
-      <View style={{ flexDirection: "row", justifyContent: "center" }}>
-        <Text
-          style={{
-            textAlign: "center",
-            fontSize: 16,
-            color: "midnightblue",
+      <View
+        style={{
+          flexDirection: "row",
+          justifyContent: "center",
+          alignItems: "center",
+          marginTop: 20,
+        }}
+      >
+        <TouchableOpacity
+          onPress={() => {
+            setChecked(!checked);
           }}
         >
-          其他登录方式
-        </Text>
-        <Icon name="chevron-right" color="#000" />
+          {checked ? (
+            <Icon containerStyle={{}} name="check-box" color="red" />
+          ) : (
+            <Icon
+              containerStyle={{}}
+              name="check-box-outline-blank"
+              color="#000"
+            />
+          )}
+        </TouchableOpacity>
+
+        <Text style={{ color: "#778899" }}>我已阅读并同意</Text>
+        <TouchableOpacity>
+          <Text>《用户协议》</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );

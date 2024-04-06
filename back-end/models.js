@@ -17,7 +17,7 @@ const UserSchema = new Schema({
   }, // 用户头像的 URL
   Profile: {
     type: String,
-    default: "",
+    default: "有趣的灵魂万里挑一",
   },
   gender: {
     type: String,

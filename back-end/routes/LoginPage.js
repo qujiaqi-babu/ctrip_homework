@@ -44,7 +44,7 @@ router.post("/login", async (req, res) => {
     const user = await User.findOne({ username, password: md5(password) });
     if (user) {
       const payload = { id: user._id };
-      const token = generateToken();
+      const token = generateToken(payload);
       res.status(200).json({
         status: "success",
         message: "Login successful",

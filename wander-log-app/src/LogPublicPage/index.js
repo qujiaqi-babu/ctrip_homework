@@ -23,6 +23,7 @@ import * as ImagePicker from "expo-image-picker";
 import * as FileSystem from "expo-file-system";
 import { TouchableWithoutFeedback } from "@ui-kitten/components/devsupport";
 import { api } from "../../util";
+const config = require("../../config.json");
 
 const Toast = Overlay.Toast;
 
@@ -43,19 +44,14 @@ const LogPublicPage = () => {
   const [isModalVisible, setIsModalVisible] = useState(false); // 正文模态框
   const [labelModal, setLabelModal] = useState(false); // 标签模态框
   const [labelText, setLabelText] = useState("主题"); // 主题标签
-  const labelThemes = [
-    "亲子出游",
-    "情侣出行",
-    "特种兵",
-    "CityWalk",
-    "朋友一起嗨",
-    "其他",
-  ];
+  const labelThemes = config.topic;
 
   const [selectedMonth, setSelectedMonth] = useState(null);
   const [selectedRange, setSelectedRange] = useState(null);
   const ranges = ["0—500", "500—1000", "1000—2000", "2000以上"];
   const [rating, setRating] = useState(0);
+
+  const formaDate = new FormData();
 
   // 分中英文计算字符长度
   const calculateLength = (str) => {
@@ -131,6 +127,7 @@ const LogPublicPage = () => {
         encoding: FileSystem.EncodingType.Base64,
       });
       // 传给后端图片数据和后缀名
+      // console.log(data.length);
       setImageData([...imageData, [data, suffix]]);
     } catch (error) {
       console.log("Error reading image file:", error);
@@ -237,11 +234,15 @@ const LogPublicPage = () => {
       Toast.show("请至少上传一张图片，填写标题和内容~", { duration: 2000 });
       return;
     }
+
+    formaDate.append("images", imageData);
+    console.log(formaDate);
+
     await api
       .post(
         "/logPublic/upload", // 虚拟机不能使用localhost
         {
-          imageData: imageData,
+          images: formaDate,
           title: title,
           content: content,
           topic: labelText,

@@ -10,9 +10,14 @@ const logPublicRoutes = require("./routes/LogPublicPage");
 const myLogRoutes = require("./routes/MyLogPage");
 const settingRoutes = require("./routes/SettingPage");
 const userInfoRoutes = require("./routes/UserInfoPage");
+const bodyParser = require("body-parser");
 
 const app = express();
 const PORT = 8080;
+
+// 设置请求体大小限制为50MB
+app.use(bodyParser.json({ limit: "10mb" }));
+app.use(bodyParser.urlencoded({ limit: "10mb", extended: true }));
 
 // 中间件
 app.use(cors());

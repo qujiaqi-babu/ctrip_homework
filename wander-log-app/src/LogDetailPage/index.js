@@ -8,15 +8,9 @@ import {
   TouchableOpacity,
   TextInput,
   Animated,
-  Dimensions,
   Modal,
 } from "react-native";
-import {
-  MaterialIcons,
-  Ionicons,
-  AntDesign,
-  Octicons,
-} from "@expo/vector-icons";
+import { MaterialIcons, Ionicons, AntDesign } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import ImageSlider from "./component/imageSlider";
 import { api } from "../../util";
@@ -27,7 +21,6 @@ const LogDetailPage = ({ route }) => {
   const userId = item.userId;
   const userAvatar = item.userAvatar;
   const userName = item.userName;
-  const imagesUrl = [item.imageUrl];
 
   const navigation = useNavigation();
   const [isSubscribed, setIsSubscribed] = useState(false);
@@ -76,6 +69,7 @@ const LogDetailPage = ({ route }) => {
         const data = await response.data;
         setTravelLog({
           ...travelLog,
+          imagesUrl: data.imagesUrl,
           title: data.title,
           destination: data.destination,
           month: data.travelMonth,
@@ -197,7 +191,7 @@ const LogDetailPage = ({ route }) => {
 
       {/* 中间的滚动视图 */}
       <ScrollView style={{ flex: 1 }}>
-        <ImageSlider imageUrls={imagesUrl} />
+        {travelLog && <ImageSlider imageUrl={travelLog.imagesUrl} />}
         {travelLog && <Text style={styles.titleText}>{travelLog.title}</Text>}
         <View style={{ justifyContent: "center", alignItems: "center" }}>
           <View style={styles.labelBox}>
@@ -250,7 +244,7 @@ const LogDetailPage = ({ route }) => {
       </ScrollView>
 
       {/* 底部导航栏 */}
-      <View style={styles.topScreen}>
+      <View style={styles.bottomScreen}>
         <View style={styles.leftBottomScreen}>
           <TouchableOpacity
             style={styles.commentBox}
@@ -484,6 +478,13 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
     textAlign: "left",
     color: "#808B96",
+  },
+  bottomScreen: {
+    height: 60,
+    backgroundColor: "white",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
 });
 

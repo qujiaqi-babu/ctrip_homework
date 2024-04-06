@@ -65,10 +65,12 @@ const createErrorResponse = (message) => {
 
 // 游记发布提交
 router.post("/upload", async (req, res) => {
+  const contentLength = req.headers["content-length"];
+  console.log("请求体大小:", contentLength, "字节");
   const {
     title,
     content,
-    imageData,
+    images,
     travelMonth,
     percost,
     rate,
@@ -76,6 +78,7 @@ router.post("/upload", async (req, res) => {
     topic,
     userId,
   } = req.body;
+  const imageData = images._parts[0][1];
   res.setHeader("content-type", "application/json");
   // 保存游记图片
   try {

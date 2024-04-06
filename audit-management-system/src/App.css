@@ -1,3 +1,11 @@
+/* .Login-background {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background: url("../public/Trip.comGroup.gif") no-repeat center center fixed;
+  background-size: cover;
+} */
+
 .App {
   text-align: center;
 }

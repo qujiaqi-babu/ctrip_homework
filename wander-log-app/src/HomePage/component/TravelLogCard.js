@@ -59,22 +59,6 @@ const TravelLogCard = ({ item, columnIndex, numColumns }) => {
         useNativeDriver: true,
       }),
     ]).start();
-    // } else if (type === "collect") {
-    //   setCollected(!collected);
-    //   setCollects(collected ? collects - 1 : collects + 1);
-    //   Animated.sequence([
-    //     Animated.timing(collectScaleValue, {
-    //       toValue: 1.2,
-    //       duration: 100,
-    //       useNativeDriver: true,
-    //     }),
-    //     Animated.timing(collectScaleValue, {
-    //       toValue: 1,
-    //       duration: 100,
-    //       useNativeDriver: true,
-    //     }),
-    //   ]).start();
-    // }
   };
 
   return (

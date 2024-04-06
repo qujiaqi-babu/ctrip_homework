@@ -3,6 +3,7 @@ const session = require("express-session"); // 将数据以session的形式保�
 const cookieParser = require("cookie-parser"); // 通过cookie将数据保存在在客户端中
 const cors = require("cors");
 
+const auditManagementRoutes = require("./routes/AuditManagementPage");
 const homeRoutes = require("./routes/HomePage");
 const logDetailRoutes = require("./routes/LogDetailPage");
 const loginRoutes = require("./routes/LoginPage");
@@ -31,6 +32,7 @@ app.use(
 app.use("/image", express.static("image"));
 app.use("/userAvatar", express.static("userAvatar"));
 
+app.use("/auditManagement", auditManagementRoutes);
 app.use("/home", homeRoutes);
 app.use("/logDetail", logDetailRoutes);
 app.use("/login", loginRoutes);

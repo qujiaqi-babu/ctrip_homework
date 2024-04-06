@@ -22,25 +22,9 @@ const App = ({ isLoggedIn, handleLogout }) => {
     };
   }
 
-  const register = <NavLink to="/register">注册</NavLink>;
-  const login = <NavLink to="/login">登录</NavLink>;
   const logout = <span onClick={handleLogout}>退出登录</span>;
-  const userList = <NavLink to="/user-list">用户列表</NavLink>;
-  const permissionList = <NavLink to="/permission-list">权限列表</NavLink>;
-
-  const items_default = [
-    getItem("账号管理", "1", <HomeOutlined />, [
-      getItem(register, "register", <MailOutlined />),
-      getItem(login, "login", <UserOutlined />),
-    ]),
-    {
-      type: "divider",
-    },
-    getItem("权限管理", "2", <AppstoreOutlined />, [
-      getItem(userList, "userList", <TeamOutlined />),
-      getItem(permissionList, "permissionList", <ToolOutlined />),
-    ]),
-  ];
+  const userList = <NavLink to="/travelLogList">游记列表</NavLink>;
+  const permissionList = <NavLink to="/permissionList">权限列表</NavLink>;
 
   const items_isLoggedIn = [
     getItem("账号管理", "1", <HomeOutlined />, [
@@ -49,7 +33,7 @@ const App = ({ isLoggedIn, handleLogout }) => {
     {
       type: "divider",
     },
-    getItem("权限管理", "2", <AppstoreOutlined />, [
+    getItem("审核管理", "2", <AppstoreOutlined />, [
       getItem(userList, "userList", <TeamOutlined />),
       getItem(permissionList, "permissionList", <ToolOutlined />),
     ]),
@@ -60,7 +44,7 @@ const App = ({ isLoggedIn, handleLogout }) => {
       defaultSelectedKeys={["login"]}
       defaultOpenKeys={["1", "2"]}
       mode="inline"
-      items={isLoggedIn ? items_isLoggedIn : items_default}
+      items={items_isLoggedIn}
     />
   );
 };

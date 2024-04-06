@@ -66,7 +66,7 @@ const TravelLogSchema = new Schema({
 const ManagerSchema = new Schema({
   username: { type: String, required: true },
   password: { type: String, required: true },
-  userAvatar: { type: String }, // 管理员头像 URL
+  userAvatar: { type: String, default: "1.jpg" }, // 管理员头像 URL
   role: { type: String, enum: ["admin", "audit"], default: "audit" }, // 管理员/审核员角色
 });
 

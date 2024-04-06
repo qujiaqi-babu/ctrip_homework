@@ -23,16 +23,19 @@ import {
   ListItem,
   Badge,
 } from "@rneui/themed";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import Drawer from "react-native-drawer";
 import { useNavigation } from "@react-navigation/native";
 import * as ImagePicker from "expo-image-picker";
 import { TouchableWithoutFeedback } from "@ui-kitten/components/devsupport";
 import * as FileSystem from "expo-file-system";
+import { get } from "react-native/Libraries/TurboModule/TurboModuleRegistry";
+import { useFocusEffect } from "@react-navigation/native";
 
 const Toast = Overlay.Toast;
 
 //侧边菜单栏
-const ContentView = () => {
+const ContentView = ({ onCloseDrawer }) => {
   const navigation = useNavigation();
   return (
     <View style={sideMenuStyles.container}>
@@ -87,6 +90,7 @@ const ContentView = () => {
       >
         <TouchableOpacity
           onPress={() => {
+            onCloseDrawer();
             navigation.navigate("Setting");
           }}
         >
@@ -207,6 +211,7 @@ const MyLogPage = () => {
   const navigation = useNavigation();
   const [visible, setVisible] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
+  const [userInfo, setUserInfo] = useState({});
   const [imageUrl, setImageUrl] = useState();
   const [imageData, setImageData] = useState();
   const [modalVisible, setModalVisible] = useState(false); // 上传照片模态框
@@ -234,19 +239,28 @@ const MyLogPage = () => {
     "https://source.unsplash.com/random?sig=8",
     "https://source.unsplash.com/random?sig=9",
   ];
-  // useEffect(() => {
-  //   fetchData();
-  // });
-  // function fetchData() {
-  //   const response = Image.getSize(
-  //     "https://reactnative.dev/img/tiny_logo.png",
-  //     (width, height) => {
-  //       console.log(width);
-  //       setIsRender(true);
-  //       console.log(isRender);
-  //     }
-  //   );
-  // }
+  const fetchUserData = async () => {
+    try {
+      const jsonValue = await AsyncStorage.getItem("userInfo");
+      let user = JSON.parse(jsonValue);
+      setUserInfo(user);
+      setImageUrl(user.backgroundImage);
+    } catch (e) {
+      // error reading value
+      console.log(e);
+    }
+  };
+  useFocusEffect(
+    React.useCallback(() => {
+      // 在页面获取焦点时执行的操作
+      fetchUserData();
+      // console.log("Screen focused");
+      return () => {
+        // 在页面失去焦点时执行的清理操作（可选）
+        // console.log("Screen unfocused");
+      };
+    }, [])
+  );
   const [index, setIndex] = useState(0);
   // console.log(data);
   const showSideMenu = () => {
@@ -396,7 +410,7 @@ const MyLogPage = () => {
       <Drawer
         type="overlay"
         open={visible}
-        content={<ContentView />}
+        content={<ContentView onCloseDrawer={closeSideMenu} />}
         tapToClose={true}
         onClose={closeSideMenu}
         openDrawerOffset={0.3} // 20% gap on the right side of drawer
@@ -483,7 +497,7 @@ const MyLogPage = () => {
                         size={96}
                         rounded
                         source={{
-                          uri: "https://randomuser.me/api/portraits/men/36.jpg",
+                          uri: userInfo && userInfo.userAvatar,
                         }}
                       />
                     </TouchableOpacity>
@@ -504,7 +518,7 @@ const MyLogPage = () => {
                         fontFamily: "serif",
                       }}
                     >
-                      王权
+                      {userInfo ? userInfo.username : "游客请登录"}
                     </Text>
                     <Text
                       style={{
@@ -513,7 +527,7 @@ const MyLogPage = () => {
                         fontFamily: "serif",
                       }}
                     >
-                      游客号:123456789
+                      游客号:{userInfo ? userInfo.customId : ""}
                     </Text>
                   </View>
                 </View>
@@ -526,7 +540,7 @@ const MyLogPage = () => {
                       fontWeight: "bold",
                     }}
                   >
-                    热爱生活，喜欢游戏，永远在路上
+                    {userInfo ? userInfo.profile : "期待与你相遇"}
                   </Text>
                 </View>
                 <View

@@ -93,7 +93,7 @@ router.get("/travelLogs", async (req, res) => {
           title: item.title,
           imageUrl: imageUrl,
           hits: item.hits,
-          userId: item.userId,
+          userId: item.userId._id,
           username: item.userId.username,
           userAvatar: userAvatar,
         };

@@ -19,8 +19,6 @@ import {
   Dialog,
 } from "@rneui/themed";
 
-import { useNavigation } from "@react-navigation/native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { api } from "../../util";
 // 在发送请求之前，添加 token 到请求头
 

@@ -13,7 +13,7 @@ import {
 import { MaterialIcons, Ionicons, AntDesign } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import ImageSlider from "./component/imageSlider";
-import { api } from "../../util";
+import { api, getItemFromAS } from "../../util";
 
 const LogDetailPage = ({ route }) => {
   const { item } = route.params; // 主页传来的值
@@ -150,8 +150,14 @@ const LogDetailPage = ({ route }) => {
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.userInfo}
-            onPress={() => {
-              navigation.navigate("MyLogPage", { userId: userId });
+            onPress={async () => {
+              let user = await getItemFromAS("userInfo");
+              user = JSON.parse(user);
+              if (user.userId && user.userId == userId) {
+                navigation.navigate("MyLogPage");
+              } else {
+                navigation.navigate("OtherUserLog", { userId: userId });
+              }
             }}
           >
             {/* 根据传过来的用户Id进行查找，跳到对应的id用户界面 */}

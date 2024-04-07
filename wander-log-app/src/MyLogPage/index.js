@@ -23,7 +23,6 @@ import {
   ListItem,
   Badge,
 } from "@rneui/themed";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import Drawer from "react-native-drawer";
 import { useNavigation } from "@react-navigation/native";
 import * as ImagePicker from "expo-image-picker";
@@ -31,7 +30,13 @@ import { TouchableWithoutFeedback } from "@ui-kitten/components/devsupport";
 import * as FileSystem from "expo-file-system";
 import { get } from "react-native/Libraries/TurboModule/TurboModuleRegistry";
 import { useFocusEffect } from "@react-navigation/native";
-import { api } from "../../util";
+import {
+  api,
+  storeDataToAS,
+  removeValueFromAS,
+  getItemFromAS,
+} from "../../util";
+
 const Toast = Overlay.Toast;
 const formaDate = new FormData();
 //侧边菜单栏
@@ -249,20 +254,34 @@ const MyLogPage = () => {
       //   selectedTopic: selectedTopic,
       //   searchContent: searchContent,
       // };
+      await api.interceptors.request.use(
+        async (config) => {
+          config.interceptors = "AddAuthorizationToken";
+          const token = await getItemFromAS("token");
+          console.log(token);
+          if (token) {
+            config.headers.Authorization = `${token}`;
+          }
+          return config;
+        },
+        (error) => {
+          return Promise.reject(error);
+        }
+      );
       const response = await api.get("/myLog/getMyLogs");
-      console.log(response.data.data);
+      // console.log(response.data.data);
       if (response.data.data) {
         setMyLogDatas(response.data.data);
       }
     } catch (error) {
       // 数据加载失败
-      console.log("获取失败", error);
+      console.log("获取失败", error.response.data.message);
     }
   };
   const fetchUserData = async () => {
     try {
-      const jsonValue = await AsyncStorage.getItem("userInfo");
-      let user = JSON.parse(jsonValue);
+      let user = await getItemFromAS("userInfo");
+      user = JSON.parse(user);
       setUserInfo(user);
       setImageUrl(user.backgroundImage);
       setUserAvatarUrl(user.userAvatar);
@@ -310,15 +329,6 @@ const MyLogPage = () => {
     }
     return true;
   };
-  const storeData = async (key, value) => {
-    try {
-      await AsyncStorage.setItem(key, value);
-    } catch (e) {
-      // saving error
-      console.log(e);
-    }
-    console.log("存储用户信息成功");
-  };
   //用户上传头像或者背景图片
   const uploadImage = async (image, server_url, fieldName, setFunc) => {
     const url = image.assets[0].uri;
@@ -348,7 +358,7 @@ const MyLogPage = () => {
         let newUrl = res.data.data.url;
         setFunc(newUrl);
         let newUserInfo = { ...userInfo, [fieldName]: newUrl };
-        storeData("userInfo", JSON.stringify(newUserInfo));
+        storeDataToAS("userInfo", JSON.stringify(newUserInfo));
       })
       .catch((err) => {
         console.log("提交失败:", err.response.data.message);
@@ -744,7 +754,7 @@ const MyLogPage = () => {
               </Tab>
               <TabView value={index} onChange={setIndex} animationType="spring">
                 <TabView.Item style={{ width: "100%" }}>
-                  {data ? (
+                  {myLogDatas ? (
                     <FlatList
                       showsVerticalScrollIndicator={false}
                       data={myLogDatas}

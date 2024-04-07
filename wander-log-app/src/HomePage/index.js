@@ -17,27 +17,6 @@ const config = require("../../config.json");
 
 const Toast = Overlay.Toast;
 
-// 游记数据
-// const imageList = [
-//   "https://th.bing.com/th/id/R.63041927f4a82c69be9154fe7be5dcd8?rik=rEmOJUuEAW8hPQ&riu=http%3a%2f%2fpic.bizhi360.com%2fbbpic%2f22%2f1522.jpg&ehk=yPnRjbJRaymFBmY2UhpFn2DPanf0HBpPLctjo3h3vRA%3d&risl=&pid=ImgRaw&r=0",
-//   "https://th.bing.com/th/id/R.6b5df1bfe0e4778a44dba0753cd169c8?rik=QRQIMqvjWRCO5Q&riu=http%3a%2f%2fpic39.nipic.com%2f20140321%2f8857347_232251363165_2.jpg&ehk=7oAaMo6LCHJc%2bqpQ0IPvcH7v69jGRQhb2vDz%2fOd5720%3d&risl=&pid=ImgRaw&r=0",
-//   "https://th.bing.com/th/id/R.b61e85948514dde6c8f2997871c60766?rik=WSmrFRL1fzIM2A&riu=http%3a%2f%2fpic1.bbzhi.com%2ffengjingbizhi%2fdiqiuguibaodachicunziranfengjingbizhijingxuandiyiji%2fnature_2008_landscape_1680_desktop_01_20183_11.jpg&ehk=UHw5ouJjdlJ4utvTAdWd8UZTuIpkI%2fMSeyoP%2fjtTbpQ%3d&risl=&pid=ImgRaw&r=0",
-// ];
-
-// const initalTravelLogs = [];
-// const sampleNum = 100;
-// for (let i = 0; i < sampleNum; i++) {
-//   initalTravelLogs.push({
-//     id: `${i}`,
-//     title: `Title ${i}`,
-//     image: imageList[i % 3],
-//     userAvatar: imageList[i % 3],
-//     userName: `User ${i}`,
-//     clickCount: 200,
-//     topic: topicList[i % topicList.length],
-//   });
-// }
-
 const RequestStatus = {
   IDLE: "IDLE",
   PENDING: "PENDING",
@@ -49,52 +28,31 @@ const HomePage = ({ navigation }) => {
   // 瀑布流列数
   const [numColumns, setNumColumns] = useState(2);
   const topics = ["", ...config.topic];
-  // const [topics, setTopics] = useState([]);
-  const [travelLogs, setTravelLogs] = useState(null);
+
+  // 每次瀑布流加载countEachLoad个游记卡片
+  const countEachLoad = config.countEachLoad;
+  const [travelLogs, setTravelLogs] = useState([]);
+  // const [loadedCount, setLoadedCount] = useState(0);
+
   const [searchContent, setSearchContent] = useState("");
   const [searchInput, setSearchInput] = useState("");
   const [selectedTopic, setSelectedTopic] = useState("");
 
   const [requestStatus, setRequestStatus] = useState(RequestStatus.IDLE);
 
-  // 添加虚拟用户
-  const addUser = async () => {
-    try {
-      await api.post("/home/addUser", { username: "巴布", password: "123" });
-    } catch (error) {
-      // 数据加载失败
-      setRequestStatus(RequestStatus.ERROR);
-    }
-  };
-
-  // 获取游记主题
-  // const fetchTopic = async () => {
-  //   try {
-  //     const response = await api.get("/home/topics");
-  //     // if (response.data.success) {
-  //     //   throw new Error("Network response was not ok");
-  //     // }
-  //     setTopics(response.data);
-  //     setSelectedTopic(response.data[0]);
-  //     console.log("topicList");
-  //     console.log(topics);
-  //     // 数据加载成功
-  //     // setRequestStatus(RequestStatus.SUCCESS);
-  //   } catch (error) {
-  //     // 数据加载失败
-  //     setRequestStatus(RequestStatus.ERROR);
-  //   }
-  // };
-
   // 获取游记列表
-  const fetchTravelLog = async () => {
+  const fetchTravelLog = async (type) => {
     try {
       const params = {
         selectedTopic: selectedTopic,
         searchContent: searchContent,
+        count: countEachLoad,
+        // offset: loadedCount,
       };
       const response = await api.get("/home/travelLogs", { params });
-      setTravelLogs(response.data);
+      type === "fresh"
+        ? setTravelLogs(response.data) // 刷新游记
+        : setTravelLogs([...travelLogs, ...response.data]); // 增量获取
       // console.log(response.data);
       // 数据加载成功
       setRequestStatus(RequestStatus.SUCCESS);
@@ -104,16 +62,18 @@ const HomePage = ({ navigation }) => {
     }
   };
 
-  // useEffect(() => {
-  //   // addUser();
-  //   fetchTopic();
-  // }, []);
-
   useEffect(() => {
     // 等待容器加载数据
     setRequestStatus(RequestStatus.PENDING);
-    fetchTravelLog();
+    fetchTravelLog("append");
   }, [searchContent, selectedTopic]);
+
+  // 当滚动到顶部时刷新游记列表
+  const handleFresh = async () => {
+    setRequestStatus(RequestStatus.PENDING);
+    setTravelLogs([]);
+    await fetchTravelLog("fresh");
+  };
 
   // 分中英文计算字符长度
   const calculateLength = (str) => {
@@ -146,10 +106,14 @@ const HomePage = ({ navigation }) => {
   };
 
   const handleSearchPress = () => {
+    // setLoadedCount(0);
+    setTravelLogs([]);
     setSearchContent(searchInput);
   };
 
   const handleTopicPress = (index) => {
+    // setLoadedCount(0);
+    setTravelLogs([]);
     setSelectedTopic(topics[index]);
     setSearchContent("");
     setSearchInput("");
@@ -210,10 +174,17 @@ const HomePage = ({ navigation }) => {
       )} */}
 
       {/* 游记卡片瀑布流 */}
-      {requestStatus === RequestStatus.SUCCESS && (
+      {(requestStatus === RequestStatus.PENDING ||
+        requestStatus === RequestStatus.SUCCESS) && (
         <WaterfallFlow
           style={styles.waterfallFlow}
           data={travelLogs}
+          onRefresh={handleFresh}
+          refreshing={requestStatus === RequestStatus.PENDING}
+          onEndReached={() => {
+            fetchTravelLog("append");
+          }}
+          onEndReachedThreshold={0.1}
           numColumns={numColumns}
           renderItem={({ item, index, columnIndex }) => (
             <TravelLogCard

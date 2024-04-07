@@ -20,7 +20,7 @@ import PermissionList from "./views/PermissionList";
 import TravelLogList from "./views/TravelLogList";
 import StateEdit from "./views/StateEdit";
 import { api } from "./util";
-// import "./App.css";
+import "./App.css";
 
 const { Header, Sider, Content } = Layout;
 
@@ -69,7 +69,7 @@ const App = () => {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
 
-  if (!isLoggedIn) return <LoginForm setIsLoggedIn={setIsLoggedIn} />;
+  if (!isLoggedIn) return <LoginForm handleLogin={handleLogin} />;
   else {
     return (
       <Router>

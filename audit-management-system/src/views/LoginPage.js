@@ -1,36 +1,39 @@
 import React from "react";
-import { Form, Input, Button, message, Typography } from "antd";
+import { Form, Input, Button, message, Typography, Checkbox } from "antd";
+import { LockOutlined, UserOutlined } from "@ant-design/icons";
 import { api } from "../util";
-import gifBackground from "../assets/Trip.comGroup.gif";
 import cookie from "react-cookies";
+
 const { Title } = Typography;
-// 表单布局
-const layout = {
-  labelCol: {
-    span: 8,
-  },
-  wrapperCol: {
-    span: 16,
-  },
-};
-const tailLayout = {
-  wrapperCol: {
-    offset: 8,
-    span: 16,
-  },
-};
+
+// // 表单布局
+// const layout = {
+//   labelCol: {
+//     span: 8,
+//   },
+//   wrapperCol: {
+//     span: 16,
+//   },
+// };
+// const tailLayout = {
+//   wrapperCol: {
+//     offset: 8,
+//     span: 16,
+//   },
+// };
 
 // const {
 //   token: { colorBgContainer, borderRadiusLG },
 // } = theme.useToken();
 
-const LoginPage = ({ setIsLoggedIn }) => {
+const LoginPage = ({ handleLogin }) => {
   // const [form] = Form.useForm();
   const handleSubmit = async (values) => {
     await api
       .post("/auditManagement/login", values)
       .then((response) => {
         // console.log(response);
+        // setIsLoggedIn(true);
         message.success(response.data.message); // 登录成功提示
         // 登录成功后使用cookie存储用户Id，并设置过期时间
         let expireDate = new Date(new Date().getTime() + 24 * 60 * 60 * 1000); // 24小时后过期
@@ -38,7 +41,8 @@ const LoginPage = ({ setIsLoggedIn }) => {
           expires: expireDate,
           path: "/",
         });
-        setIsLoggedIn(true);
+        // setIsLoggedIn(true);
+        handleLogin(response.data.user);
         // form.resetFields();
         // setErrorMessage("");
       })
@@ -48,61 +52,69 @@ const LoginPage = ({ setIsLoggedIn }) => {
       });
   };
   return (
-    <div
-      style={{
-        backgroundImage: `url(${gifBackground})`,
-        backgroundSize: "cover",
-        height: "100vh",
-        display: "flex",
-        // flexDirection: "column",
-        justifyContent: "flex-end",
-        alignItems: "center",
-        padding: "0 20px",
-      }}
-    >
-      <div
-        style={{
-          backgroundColor: "rgba(255, 255, 255, 0.85)",
-          // width: "300px",
-          borderRadius: "10px",
-          padding: "0px 20px",
-          // display: "flex",
-          // justifyContent: "flex-end",
-        }}
-      >
-        <Title level={2} style={{ textAlign: "center", marginBottom: "20px" }}>
+    <div className="login-background">
+      <div className="login-box">
+        <Title
+          level={3}
+          style={{
+            textAlign: "center",
+            marginBottom: "20px",
+            color: "rgb(94, 98, 115)",
+          }}
+        >
           游记审核管理系统
         </Title>
-        <Form {...layout} name="login" onFinish={handleSubmit}>
+        <Form
+          name="normal_login"
+          className="login-form"
+          initialValues={{
+            remember: true,
+          }}
+          onFinish={handleSubmit}
+        >
           <Form.Item
-            label="用户名"
             name="username"
             rules={[
               {
                 required: true,
-                message: "Please input your username!",
+                message: "Please input your Username!",
               },
             ]}
           >
-            <Input />
+            <Input
+              prefix={<UserOutlined className="site-form-item-icon" />}
+              placeholder="Username"
+              style={{ fontSize: "18px" }}
+            />
           </Form.Item>
-
           <Form.Item
-            label="密码"
             name="password"
             rules={[
               {
                 required: true,
-                message: "Please input your password!",
+                message: "Please input your Password!",
               },
             ]}
           >
-            <Input.Password />
+            <Input
+              prefix={<LockOutlined className="site-form-item-icon" />}
+              type="password"
+              placeholder="Password"
+              style={{ fontSize: "18px" }}
+            />
           </Form.Item>
-
-          <Form.Item {...tailLayout}>
-            <Button type="primary" htmlType="submit">
-              登录
+          <Form.Item name="remember" valuePropName="checked" noStyle>
+            <Checkbox style={{ fontSize: "16px", marginBottom: "10px" }}>
+              Remember me
+            </Checkbox>
+          </Form.Item>
+          <Form.Item>
+            <Button
+              type="primary"
+              htmlType="submit"
+              style={{ fontSize: "16px", width: "100%" }}
+            >
+              Log in
             </Button>
           </Form.Item>
         </Form>

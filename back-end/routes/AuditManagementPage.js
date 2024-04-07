@@ -13,9 +13,10 @@ router.post("/register", async (req, res) => {
     });
     await user.save();
     console.log("管理员添加成功");
+    res.json({ message: "管理员添加成功" });
   } catch (error) {
     console.error(error);
-    res.status(500).json(createErrorResponse("管理员添加失败"));
+    res.status(500).json({ message: "管理员添加失败" });
   }
 });
 
@@ -38,9 +39,7 @@ router.post("/login", async (req, res) => {
     }
     // 设置 session
     req.session.user = user;
-    res
-      .status(201)
-      .send({ message: "管理员登录成功！", userId: user._id, user: user });
+    res.json({ message: "管理员登录成功！", userId: user._id, user: user });
   } catch (err) {
     console.error(err);
     res.status(500).send("服务器出错啦！管理员登录失败，请稍后重试~");
@@ -75,62 +74,89 @@ router.get("/userInfo", async (req, res) => {
   }
 });
 
+// 获取游记列表信息
 router.get("/travelLogs", async (req, res) => {
   try {
     const { searchContent, state } = req.query;
-    // console.log(selectedTopic);
-    const selectedFields = {
-      _id: 1,
-      title: 1,
-      content: 1,
-      imagesUrl: 1,
-      userId: 1,
-      state: 1,
-    }; // 选择要获取的字段，1表示包含该字段，0表示不包含该字段
-    const travelLogs = await TravelLog.find(
-      {
-        $and: [
-          { state: "已通过" }, // 查询状态为“已通过”的游记信息
-          //   { state: "待审核" }, // 之后改回
-          { topic: { $regex: selectedTopic, $options: "i" } },
-        ],
-      },
-      selectedFields
-    ).populate("userId", "username userAvatar"); //获取游记文档时返回关联作者的昵称和头像
-    const filteredTravelLogs = travelLogs
-      .filter((item) => {
-        const titleMatch = item.title.includes(searchContent);
-        const authorMatch = item.userId.username.includes(searchContent);
-        return titleMatch || authorMatch;
-      })
-      .sort((a, b) => b.hits - a.hits) // 按点击量降序排序
-      .map((item) => {
-        let imageUrl = item.imagesUrl[0]; // 只展示第一张图片
-        if (!imageUrl.startsWith("http")) {
-          imageUrl = `${config.baseURL}/image/${imageUrl}`;
-        }
 
-        let userAvatar = item.userId.userAvatar;
-        if (!userAvatar.startsWith("http")) {
-          userAvatar = `${config.baseURL}/userAvatar/${userAvatar}`;
-        }
-        // 将 MongoDB 文档对象转换为普通 JavaScript 对象
-        const newItem = {
-          _id: item._id,
-          title: item.title,
-          imageUrl: imageUrl,
-          hits: item.hits,
-          userId: item.userId,
-          username: item.userId.username,
-          userAvatar: userAvatar,
-        };
-        return newItem;
+    const travelLogs = await TravelLog.aggregate([
+      {
+        // 游记状态筛选并查找标题或内容与搜索内容匹配的游记
+        $match: {
+          $and: [
+            { state: { $regex: state, $options: "i" } },
+            {
+              $or: [
+                { title: { $regex: searchContent, $options: "i" } },
+                { content: { $regex: searchContent, $options: "i" } },
+              ],
+            },
+          ],
+        },
+      },
+      {
+        // 添加一个名为 sortOrder 的新字段，其值取决于每个文档中 state 字段的值
+        $addFields: {
+          sortOrder: {
+            $switch: {
+              branches: [
+                { case: { $eq: ["$state", "待审核"] }, then: 1 },
+                { case: { $eq: ["$state", "未通过"] }, then: 2 },
+                { case: { $eq: ["$state", "已通过"] }, then: 3 },
+              ],
+              default: 4, // 其他状态，默认为4
+            },
+          },
+        },
+      },
+      {
+        $sort: {
+          sortOrder: 1, // 按游记状态排序：待审核=>未通过=>已通过（=>未发布）
+          editTime: 1, // 按编辑时间顺序排序（由早及晚）
+        },
+      },
+      {
+        // 从文档中选择并返回指定的字段
+        $project: {
+          _id: 1,
+          title: 1,
+          content: 1,
+          imagesUrl: 1,
+          state: 1,
+          editTime: 1,
+        },
+      },
+    ]);
+
+    // 将 MongoDB 文档对象转换为普通 JavaScript 对象
+    const result = travelLogs.map((item) => {
+      const imagesUrl = item.imagesUrl.map(
+        (imageUrl) => `${config.localhost}/image/${imageUrl}`
+      );
+      const formattedDate = item.editTime.toLocaleDateString("zh-CN", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
       });
-    // console.log("==================");
-    // console.log(travelLogs);
-    // console.log("==================");
-    // console.log(filteredTravelLogs);
-    res.json(filteredTravelLogs);
+      const formattedTime = item.editTime.toLocaleTimeString("zh-CN", {
+        hour12: false,
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+      });
+      const newItem = {
+        _id: item._id,
+        title: item.title,
+        content: item.content,
+        imagesUrl: imagesUrl,
+        state: item.state,
+        editTime: `${formattedDate} ${formattedTime}`,
+      };
+      return newItem;
+    });
+
+    // console.log(result);
+    res.json(result);
   } catch (error) {
     console.error(error);
     res.status(500).json(createErrorResponse("游记列表获取失败")); // 如果出现错误，返回500错误

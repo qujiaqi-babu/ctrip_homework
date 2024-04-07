@@ -51,7 +51,11 @@
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
-
+/* 审核展示页 */
+.search-box {
+  width: "50%";
+  padding: 20px;
+}
 
 @keyframes App-logo-spin {
   from {

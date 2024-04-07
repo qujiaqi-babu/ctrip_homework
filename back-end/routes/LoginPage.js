@@ -22,7 +22,6 @@ function generateToken(payload) {
 // 处理用户登录请求
 router.post("/login", async (req, res) => {
   const { username, password } = req.body;
-
   try {
     const user = await User.findOne({ username, password: md5(password) });
     if (user) {

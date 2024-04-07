@@ -19,7 +19,7 @@ import {
   ListItem,
   Dialog,
 } from "@rneui/themed";
-
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native";
 
 const SettingPage = () => {

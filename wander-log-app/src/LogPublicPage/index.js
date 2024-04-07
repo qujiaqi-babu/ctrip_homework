@@ -21,6 +21,7 @@ import StarRating from "./component/starRating";
 import { useNavigation } from "@react-navigation/native";
 import * as ImagePicker from "expo-image-picker";
 import * as FileSystem from "expo-file-system";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { TouchableWithoutFeedback } from "@ui-kitten/components/devsupport";
 import { api } from "../../util";
 const config = require("../../config.json");
@@ -250,7 +251,6 @@ const LogPublicPage = () => {
           percost: selectedRange,
           rate: rating,
           destination: null,
-          userId: "6610f91f6f39390aa7506803",
         }
       )
       .then((res) => {

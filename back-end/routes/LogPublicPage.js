@@ -4,7 +4,7 @@ const router = express.Router();
 const fs = require("fs").promises;
 const path = require("path");
 const crypto = require("crypto");
-
+const { authenticateToken } = require("./auth");
 const calaMD5 = (data) => {
   return crypto.createHash("md5").update(data).digest("hex");
 };
@@ -64,7 +64,9 @@ const createErrorResponse = (message) => {
 };
 
 // 游记发布提交
-router.post("/upload", async (req, res) => {
+router.post("/upload", authenticateToken, async (req, res) => {
+  const userId = req.user.id;
+  // console.log(userId);
   const contentLength = req.headers["content-length"];
   console.log("请求体大小:", contentLength, "字节");
   const {
@@ -76,7 +78,6 @@ router.post("/upload", async (req, res) => {
     rate,
     destination,
     topic,
-    userId,
   } = req.body;
   const imageData = images._parts[0][1];
   res.setHeader("content-type", "application/json");

@@ -52,6 +52,8 @@ const Login = () => {
     return false;
   };
   const handleLogin = async () => {
+    // storeData("test", "hello");
+    // console.log("处理登录");
     if (handleCheck()) {
       await api
         .post(
@@ -67,11 +69,24 @@ const Login = () => {
           console.log(res.data.data.userInfo);
           storeData("token", res.data.data.token);
           storeData("userInfo", JSON.stringify(res.data.data.userInfo));
+          api.interceptors.request.use(
+            async (config) => {
+              const token = res.data.data.token;
+              if (token) {
+                config.headers.Authorization = `${token}`;
+              }
+              return config;
+            },
+            (error) => {
+              return Promise.reject(error);
+            }
+          );
           navigation.navigate("Home");
         })
         .catch((err) => {
           // console.log(username);
           // console.log(password);
+          console.log(err);
           console.log("提交失败:", err.response.data.message);
           setErrorMessage(err.response.data.message);
         });

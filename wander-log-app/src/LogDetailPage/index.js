@@ -20,7 +20,7 @@ const LogDetailPage = ({ route }) => {
   const logId = item._id;
   const userId = item.userId;
   const userAvatar = item.userAvatar;
-  const userName = item.userName;
+  const userName = item.username;
 
   const navigation = useNavigation();
   const [isSubscribed, setIsSubscribed] = useState(false);

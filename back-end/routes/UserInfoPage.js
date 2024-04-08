@@ -48,6 +48,54 @@ router.get("/info", authenticateToken, async (req, res) => {
     res.status(500).json({ status: "error", message: "出错了，请联系管理员" });
   }
 });
+router.get("/findUsers", authenticateToken, async (req, res) => {
+  // 获取token中的用户id
+  const userId = req.user.id;
+  console.log(userId);
+  const selectedFields = {
+    _id: 1,
+    username: 1,
+    userAvatar: 1, // 只获取第一张图片
+    profile: 1,
+  };
+  try {
+    const users = await User.find({
+      _id: { $ne: userId },
+    })
+      .select("_id username userAvatar profile")
+      .limit(50);
+    // console.log(users);
+    if (users) {
+      const newUsers = users.map((user) => {
+        let avatar = user.userAvatar; //用户头像
+        if (avatar != null && !avatar.startsWith("http")) {
+          avatar = `${config.baseURL}/${config.userAvatarPath}/${avatar}`;
+        }
+        console.log(avatar);
+        const newItem = {
+          userId: user._id,
+          username: user.username,
+          userAvatar: avatar,
+          profile: user.profile,
+        };
+        return newItem;
+      });
+
+      console.log("success");
+      res.status(200).json({
+        status: "success",
+        message: "Login successful",
+        data: newUsers,
+      });
+    } else {
+      res.status(401).json({ status: "error", message: "请先登录" });
+      console.log("用户不存在");
+    }
+  } catch (err) {
+    console.error("Error querying database:", err);
+    res.status(500).json({ status: "error", message: "出错了，请联系管理员" });
+  }
+});
 
 router.get("/getUserById/:id", async (req, res) => {
   // 获取token中的用户id

@@ -23,7 +23,7 @@ const App = ({ isLoggedIn, handleLogout }) => {
   }
 
   const logout = <span onClick={handleLogout}>退出登录</span>;
-  const userList = <NavLink to="/travelLogList">游记列表</NavLink>;
+  const travelLogList = <NavLink to="/travelLogList">游记列表</NavLink>;
   const permissionList = <NavLink to="/permissionList">权限列表</NavLink>;
 
   const items_isLoggedIn = [
@@ -34,14 +34,14 @@ const App = ({ isLoggedIn, handleLogout }) => {
       type: "divider",
     },
     getItem("审核管理", "2", <AppstoreOutlined />, [
-      getItem(userList, "userList", <TeamOutlined />),
+      getItem(travelLogList, "travelLogList", <TeamOutlined />),
       getItem(permissionList, "permissionList", <ToolOutlined />),
     ]),
   ];
 
   return (
     <Menu
-      defaultSelectedKeys={["login"]}
+      defaultSelectedKeys={["travelLogList"]}
       defaultOpenKeys={["1", "2"]}
       mode="inline"
       items={items_isLoggedIn}

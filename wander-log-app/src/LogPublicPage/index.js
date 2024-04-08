@@ -46,6 +46,10 @@ const LogPublicPage = () => {
   const [labelText, setLabelText] = useState("主题"); // 主题标签
   const labelThemes = config.topic;
 
+  const [destinationModal, setDestinationModal] = useState(false); // 地点模态框
+  const [destinationText, setDestinationText] = useState(null); // 目的地
+  const destinationThemes = config.destination;
+
   const [selectedMonth, setSelectedMonth] = useState(null);
   const [selectedRange, setSelectedRange] = useState(null);
   const ranges = ["0—500", "500—1000", "1000—2000", "2000以上"];
@@ -213,6 +217,17 @@ const LogPublicPage = () => {
     setLabelModal(false);
   };
 
+  // 处理添加地点的逻辑
+  const handleAddDestination = () => {
+    setDestinationModal(true);
+  };
+
+  // 选择地点
+  const handleDestinationPress = (label) => {
+    setDestinationText(label);
+    setDestinationModal(false);
+  };
+
   // 月份选择框
   const handleSelectMonth = (month) => {
     setSelectedMonth(month);
@@ -249,7 +264,7 @@ const LogPublicPage = () => {
           travelMonth: selectedMonth,
           percost: selectedRange,
           rate: rating,
-          destination: null,
+          destination: destinationText,
           userId: "6610f91f6f39390aa7506803",
         }
       )
@@ -496,6 +511,61 @@ const LogPublicPage = () => {
             </View>
           </TouchableWithoutFeedback>
         </Modal>
+        {/* 目的地模态框 */}
+        <Modal
+          visible={destinationModal}
+          animationType="slide"
+          onRequestClose={() => {
+            setDestinationModal(false);
+          }}
+        >
+          <TouchableWithoutFeedback
+            style={{ flex: 1 }}
+            onPress={() => setDestinationModal(false)}
+          >
+            <View
+              style={{
+                flex: 1,
+                backgroundColor: "rgba(0,0,0,0.5)",
+                justifyContent: "flex-end",
+              }}
+            >
+              <View
+                style={{
+                  height: "70%",
+                  backgroundColor: "white",
+                  borderRadius: 10,
+                  padding: 20,
+                  marginTop: 20,
+                }}
+              >
+                <View
+                  style={{ justifyContent: "center", alignItems: "center" }}
+                >
+                  <Text style={{ fontSize: 20, fontWeight: "bold" }}>
+                    添加地点
+                  </Text>
+                </View>
+                <View style={{ marginTop: 20 }}>
+                  {destinationThemes.map((destinationTheme, index) => (
+                    <View key={index} style={{ justifyContent: "center" }}>
+                      <TouchableOpacity
+                        onPress={() => {
+                          handleDestinationPress(destinationTheme);
+                        }}
+                      >
+                        <Text style={{ fontSize: 18, marginTop: 10 }}>
+                          # {destinationTheme}
+                        </Text>
+                      </TouchableOpacity>
+                      <View style={styles.line}></View>
+                    </View>
+                  ))}
+                </View>
+              </View>
+            </View>
+          </TouchableWithoutFeedback>
+        </Modal>
         {/* 正文模态框 */}
         <Modal
           visible={isModalVisible}
@@ -573,13 +643,15 @@ const LogPublicPage = () => {
         <View style={styles.line}></View>
         {/* 添加地点 */}
         <View style={styles.five}>
-          <TouchableOpacity style={styles.five}>
+          <TouchableOpacity style={styles.five} onPress={handleAddDestination}>
             <View style={styles.left}>
               <Image
                 source={require("../LogPublicPage/public/place.png")}
                 style={styles.placeIcon}
               />
-              <Text style={styles.placeText}>添加地点</Text>
+              <Text style={styles.placeText}>
+                {destinationText ? destinationText : "添加地点"}
+              </Text>
             </View>
             <MaterialIcons
               name="keyboard-arrow-right"

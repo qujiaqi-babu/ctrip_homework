@@ -29,7 +29,7 @@ const App = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false); // 当前用户是否已登录
   const [user, setUser] = useState(null);
   const userId = cookie.load("userId");
-  const roleToName = { admin: "管理员", user: "普通用户" };
+  const roleToName = { admin: "管理员", audit: "审核人员" };
 
   useEffect(() => {
     // 检查用户是否已登录
@@ -43,6 +43,12 @@ const App = () => {
         });
         setIsLoggedIn(true);
         setUser(response.data);
+
+        // 将用户的角色存到cookie中
+        cookie.save("role", response.data.role, {
+          path: "/",
+        });
+
       } catch (error) {
         setIsLoggedIn(false);
         console.log(error);
@@ -130,17 +136,7 @@ const App = () => {
             >
               {/* 子路由 */}
               <Routes>
-                <Route path="/" element={<Navigate to="/login" />} />
-                <Route
-                  path="/login"
-                  element={
-                    !isLoggedIn ? (
-                      <LoginForm handleLogin={handleLogin} />
-                    ) : (
-                      <Navigate to="/user-list" />
-                    )
-                  }
-                />
+                <Route path="/" element={<Navigate to="/travelLogList" />} />
                 <Route
                   path="/travelLogList"
                   element={<TravelLogList loginUser={user} />}

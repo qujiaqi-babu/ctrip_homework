@@ -12,6 +12,7 @@ import {
   message,
 } from "antd";
 import { CloseOutlined } from "@ant-design/icons";
+import cookie from "react-cookies";
 import { api } from "../util";
 const { TextArea } = Input;
 
@@ -27,6 +28,9 @@ const TravelLogCard = ({ logs, index, setTravelLogs, onDelete }) => {
     setOpen(false);
   };
 
+  // 获取cookie中的用户角色
+  const userRole = cookie.load("role");
+
   // 审核通过
   const handlePassState = async (newState) => {
     setTravelLogs(index, newState);
@@ -40,13 +44,13 @@ const TravelLogCard = ({ logs, index, setTravelLogs, onDelete }) => {
       .catch((error) => {
         console.error("游记状态更新失败:", error);
       });
-  }
+  };
 
   // 审核不通过
   const handleForbiddenState = async (newState) => {
     setNewState(newState);
     showDrawer();
-  }
+  };
 
   // 提交拒绝理由
   const handleSubmitInstruction = async () => {
@@ -72,16 +76,17 @@ const TravelLogCard = ({ logs, index, setTravelLogs, onDelete }) => {
   // 执行逻辑删除
   const handleDelete = async () => {
     onDelete(index);
-    await api.delete(`/auditManagement/travelLogDelete/${logs._id}`)
-    .then((response) => {
-      console.log("删除成功:", response.data);
-      message.success("删除成功");
-    })
-    .catch((error) => {
-      console.error("删除失败:", error);
-      message.error("删除失败");
-    });
-  }
+    await api
+      .delete(`/auditManagement/travelLogDelete/${logs._id}`)
+      .then((response) => {
+        console.log("删除成功:", response.data);
+        message.success("删除成功");
+      })
+      .catch((error) => {
+        console.error("删除失败:", error);
+        message.error("删除失败");
+      });
+  };
 
   const imageShow = (imagesUrl) => {
     if (imagesUrl.length > 1) {
@@ -118,9 +123,16 @@ const TravelLogCard = ({ logs, index, setTravelLogs, onDelete }) => {
         // style={{ width: '100%' }}
         styles={{ body: { padding: 20, overflow: "hidden" } }}
       >
-        <Flex justify="flex-end">
-          <CloseOutlined style={{ fontSize: "20px", color: "gray" }} onClick={() => {handleDelete()}}/>
-        </Flex>
+        {userRole === "admin" && (
+          <Flex justify="flex-end">
+            <CloseOutlined
+              style={{ fontSize: "20px", color: "gray" }}
+              onClick={() => {
+                handleDelete();
+              }}
+            />
+          </Flex>
+        )}
         <Flex justify="space-between" align="center">
           {/* 对图片进行判断，超过一张的使用走马灯，但图片的高宽比不一致，后续需要修改 */}
           {imageShow(logs.imagesUrl)}

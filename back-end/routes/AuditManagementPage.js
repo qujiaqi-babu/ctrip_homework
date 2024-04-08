@@ -39,7 +39,7 @@ router.post("/login", async (req, res) => {
     }
     // 设置 session
     req.session.user = user;
-    res.json({ message: "管理员登录成功！", userId: user._id, user: user });
+    res.json({ message: "登录成功！", userId: user._id, user: user });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "管理员登录失败" });

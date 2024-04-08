@@ -24,6 +24,7 @@ import * as FileSystem from "expo-file-system";
 import * as Location from "expo-location";
 import { TouchableWithoutFeedback } from "@ui-kitten/components/devsupport";
 import { api } from "../../util";
+import MapView from "react-native-maps";
 const config = require("../../config.json");
 
 const Toast = Overlay.Toast;
@@ -54,6 +55,12 @@ const LogPublicPage = () => {
   const [selectedMonth, setSelectedMonth] = useState(null);
   const [selectedRange, setSelectedRange] = useState(null);
   const [userLocation, setUserLocation] = useState();
+  const [mapRegion, setmapRegion] = useState({
+    latitude: 37.78825,
+    longitude: -122.4324,
+    latitudeDelta: 0.0922,
+    longitudeDelta: 0.0421,
+  });
   const ranges = ["0—500", "500—1000", "1000—2000", "2000以上"];
   const [rating, setRating] = useState(0);
 
@@ -248,14 +255,21 @@ const LogPublicPage = () => {
     const getLocation = async () => {
       try {
         let { status } = await Location.requestForegroundPermissionsAsync();
-
+        console.log(status);
         if (status !== "granted") {
           setLocationError("Location permission denied");
           return;
         }
 
-        let location = await Location.getCurrentPositionAsync({});
+        let location = await Location.getCurrentPositionAsync({
+          accuracy: Location.Accuracy.Highest,
+          maximumAge: 10000,
+        });
+        // let geocode = await Location.reverseGeocodeAsync(location.coords);
+        // let city = geocode[0].city;
+        // setUserLocation(city);
         setUserLocation(location);
+        console.log(location);
       } catch (error) {
         console.error("Error requesting location permission:", error);
       }
@@ -551,7 +565,7 @@ const LogPublicPage = () => {
             >
               <View
                 style={{
-                  height: "70%",
+                  height: "100%",
                   backgroundColor: "white",
                   borderRadius: 10,
                   padding: 20,
@@ -564,6 +578,12 @@ const LogPublicPage = () => {
                   <Text style={{ fontSize: 20, fontWeight: "bold" }}>
                     添加地点
                   </Text>
+                </View>
+                <View style={{ width: "100%" }}>
+                  <MapView
+                    style={{ alignSelf: "stretch", height: "100%" }}
+                    region={mapRegion}
+                  />
                 </View>
                 <View style={{ marginTop: 20 }}>
                   {destinationThemes.map((destinationTheme, index) => (

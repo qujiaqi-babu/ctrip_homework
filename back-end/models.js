@@ -61,8 +61,8 @@ const TravelLogSchema = new Schema({
   rate: { type: Number, enum: [1, 2, 3, 4, 5] }, // 评分
   destination: { type: String }, // 目的地
   topic: { type: String }, // 主题
-  hits: { type: Number, default: 0 }, // 点赞量
-  favorites: { type: Number, default: 0 }, // 收藏量
+  likes: { type: Number, default: 0 }, // 点赞量
+  collects: { type: Number, default: 0 }, // 收藏量
   userId: { type: Schema.Types.ObjectId, ref: "User" }, // 用户 ID
   editTime: { type: Date, default: Date.now }, // 最后编辑时间
 
@@ -85,8 +85,15 @@ const ManagerSchema = new Schema({
   role: { type: String, enum: ["admin", "audit"], default: "audit" }, // 管理员/审核员角色
 });
 
+// 点赞模型
+const LikeSchema = new Schema({
+  userId: { type: Schema.Types.ObjectId, ref: "User" }, // 用户 ID
+  travelLogId: { type: Schema.Types.ObjectId, ref: "TravelLog" }, // 游记 ID
+});
+
 const User = mongoose.model("User", UserSchema);
 const TravelLog = mongoose.model("TravelLog", TravelLogSchema);
 const Manager = mongoose.model("Manager", ManagerSchema);
+const Like = mongoose.model("Like", LikeSchema);
 
-module.exports = { User, TravelLog, Manager };
+module.exports = { User, TravelLog, Manager, Like };

@@ -11,6 +11,12 @@ import {
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { AntDesign, Ionicons } from "@expo/vector-icons";
+import {
+  api,
+  storeDataToAS,
+  removeValueFromAS,
+  getItemFromAS,
+} from "../../../util";
 
 // 屏幕宽度
 const screenWidth = Dimensions.get("window").width;
@@ -22,13 +28,25 @@ const TravelLogCard = ({ item, columnIndex, numColumns }) => {
   // 图片高度
   const [imageHeight, setImageHeight] = useState(200);
 
-  const [liked, setLiked] = useState(false);
+  const [likes, setLikes] = useState(item.likes); // 游记点赞量
+  const [liked, setLiked] = useState(false); // 当前用户是否点赞过该游记
   const [likeScaleValue] = useState(new Animated.Value(1));
 
   // 获取导航对象
   const navigation = useNavigation();
 
+  // 检查当前用户是否点赞过该游记
+  const checkLike = async () => {
+    const userInfo = await getItemFromAS("userInfo");
+    // 将存储的 JSON 字符串转换为 JavaScript 对象
+    const userId = JSON.parse(userInfo).userId;
+    // console.log(userId, item._id);
+    const response = await api.get(`/home/checkLike/${item._id}/${userId}`);
+    setLiked(response.data.liked);
+  };
+
   useEffect(() => {
+    checkLike(); // 当前用户是否点赞过该游记
     Image.getSize(item.imageUrl, (width, height) => {
       // 计算图片在瀑布流中的高度;
       const newHeight = Math.floor((screenWidth / numColumns / width) * height);
@@ -42,11 +60,21 @@ const TravelLogCard = ({ item, columnIndex, numColumns }) => {
     navigation.navigate("LogDetail", { item: item });
   };
 
+  // 当前用户点赞或取消点赞该游记，数据库同步更新
+  const handleLike = async () => {
+    const userInfo = await getItemFromAS("userInfo");
+    setLikes(liked ? likes - 1 : likes + 1);
+    const response = await api.post("/home/like", {
+      travelLogId: item._id,
+      userId: JSON.parse(userInfo).userId,
+    });
+    setLiked(response.data.liked);
+  };
+
   // 点赞功能的点击效果
   const handleIconPress = (type) => {
-    // if (type === "like") {
-    setLiked(!liked);
-    // setLikes(liked ? likes - 1 : likes + 1);
+    handleLike();
+    // setLiked(!liked);
     Animated.sequence([
       Animated.timing(likeScaleValue, {
         toValue: 1.2,
@@ -107,7 +135,7 @@ const TravelLogCard = ({ item, columnIndex, numColumns }) => {
                     />
                   </Animated.View>
                 </TouchableOpacity>
-                <Text style={styles.userText}>{item.hits}</Text>
+                <Text style={styles.userText}>{likes}</Text>
               </View>
             </View>
           </View>

@@ -13,14 +13,15 @@ import {
 import { MaterialIcons, Ionicons, AntDesign } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import ImageSlider from "./component/imageSlider";
-import { api } from "../../util";
+import { api, getItemFromAS } from "../../util";
 
 const LogDetailPage = ({ route }) => {
   const { item } = route.params; // 主页传来的值
   const logId = item._id;
   const userId = item.userId;
   const userAvatar = item.userAvatar;
-  const userName = item.userName;
+  // console.log(userAvatar);
+  const userName = item.username;
 
   const navigation = useNavigation();
   const [isSubscribed, setIsSubscribed] = useState(false);
@@ -150,8 +151,15 @@ const LogDetailPage = ({ route }) => {
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.userInfo}
-            onPress={() => {
-              navigation.navigate("MyLogPage", { userId: userId });
+            onPress={async () => {
+              let user = await getItemFromAS("userInfo");
+              user = JSON.parse(user);
+              if (user.userId && user.userId == userId) {
+                // navigation.goBack();
+                navigation.navigate("MyLog");
+              } else {
+                navigation.navigate("OtherUserLog", { userId: userId });
+              }
             }}
           >
             {/* 根据传过来的用户Id进行查找，跳到对应的id用户界面 */}
@@ -191,7 +199,7 @@ const LogDetailPage = ({ route }) => {
 
       {/* 中间的滚动视图 */}
       <ScrollView style={{ flex: 1 }}>
-        {travelLog && <ImageSlider imageUrl={travelLog.imagesUrl} />}
+        {travelLog && <ImageSlider imageUrls={travelLog.imagesUrl} />}
         {travelLog && <Text style={styles.titleText}>{travelLog.title}</Text>}
         <View style={{ justifyContent: "center", alignItems: "center" }}>
           <View style={styles.labelBox}>

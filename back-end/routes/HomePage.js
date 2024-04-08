@@ -52,40 +52,56 @@ router.get("/topics", async (req, res) => {
 router.get("/travelLogs", async (req, res) => {
   try {
     const { selectedTopic, searchContent } = req.query;
-    // console.log(selectedTopic);
-    const selectedFields = {
-      _id: 1,
-      title: 1,
-      imagesUrl: { $slice: 1 }, // 只获取第一张图片
-      hits: 1,
-      userId: 1,
-    }; // 选择要获取的字段，1表示包含该字段，0表示不包含该字段
-    const travelLogs = await TravelLog.find(
+    // 瀑布流数据加载 每次加载count张
+    const count = parseInt(req.query.count);
+    const travelLogs = await TravelLog.aggregate([
       {
-        $and: [
-          { state: "已通过" }, // 查询状态为“已通过”的游记信息
-          //   { state: "待审核" }, // 之后改回
-          { topic: { $regex: selectedTopic, $options: "i" } },
-        ],
+        $lookup: {
+          from: "users", // 用户集合名称
+          localField: "userId", // TravelLog集合中的关联字段
+          foreignField: "_id", // User集合中的关联字段
+          as: "user", // 存储联结后的用户信息
+        },
       },
-      selectedFields
-    ).populate("userId", "username userAvatar"); //获取游记文档时返回关联作者的昵称和头像
-    const filteredTravelLogs = travelLogs
-      .filter((item) => {
-        const titleMatch = item.title.includes(searchContent);
-        const authorMatch = item.userId.username.includes(searchContent);
-        return titleMatch || authorMatch;
-      })
+      {
+        $match: {
+          $and: [
+            { state: "已通过" }, // 查询状态为“已通过”的游记信息
+            { topic: { $regex: selectedTopic, $options: "i" } },
+            {
+              $or: [
+                { title: { $regex: searchContent, $options: "i" } },
+                { "user.username": { $regex: searchContent, $options: "i" } },
+              ],
+            },
+          ],
+        },
+      },
+      {
+        // 从文档中选择并返回指定的字段
+        $project: {
+          _id: 1,
+          title: 1,
+          content: 1,
+          imagesUrl: 1,
+          hits: 1,
+          userId: 1,
+          "user.username": 1,
+          "user.userAvatar": 1,
+        },
+      },
+      { $sample: { size: count } },
+    ]);
+    const result = travelLogs
       .sort((a, b) => b.hits - a.hits) // 按点击量降序排序
       .map((item) => {
         let imageUrl = item.imagesUrl[0]; // 只展示第一张图片
         if (!imageUrl.startsWith("http")) {
-          imageUrl = `${config.baseURL}/image/${imageUrl}`;
+          imageUrl = `${config.baseURL}/${config.logUploadPath}/${imageUrl}`;
         }
-
-        let userAvatar = item.userId.userAvatar;
+        let userAvatar = item.user[0].userAvatar;
         if (!userAvatar.startsWith("http")) {
-          userAvatar = `${config.baseURL}/userAvatar/${userAvatar}`;
+          userAvatar = `${config.baseURL}/${config.userAvatarPath}/${userAvatar}`;
         }
         // 将 MongoDB 文档对象转换为普通 JavaScript 对象
         const newItem = {
@@ -93,8 +109,8 @@ router.get("/travelLogs", async (req, res) => {
           title: item.title,
           imageUrl: imageUrl,
           hits: item.hits,
-          userId: item.userId._id,
-          username: item.userId.username,
+          userId: item.userId,
+          username: item.user[0].username,
           userAvatar: userAvatar,
         };
         return newItem;
@@ -102,8 +118,8 @@ router.get("/travelLogs", async (req, res) => {
     // console.log("==================");
     // console.log(travelLogs);
     // console.log("==================");
-    // console.log(filteredTravelLogs);
-    res.json(filteredTravelLogs);
+    // console.log(result);
+    res.json(result);
   } catch (error) {
     console.error(error);
     res.status(500).json(createErrorResponse("游记列表获取失败")); // 如果出现错误，返回500错误

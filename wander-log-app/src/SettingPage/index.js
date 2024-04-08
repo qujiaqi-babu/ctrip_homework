@@ -19,10 +19,11 @@ import {
   ListItem,
   Dialog,
 } from "@rneui/themed";
-
 import { useNavigation } from "@react-navigation/native";
+import { api, getItemFromAS, removeValueFromAS } from "../../util";
 
 const SettingPage = () => {
+  // const handleLoginOut = route.params;
   const navigation = useNavigation();
   const data = {
     // avatar_url: "https://randomuser.me/api/portraits/men/36.jpg",
@@ -36,15 +37,6 @@ const SettingPage = () => {
     school: "",
     backgroundImage: "",
     hobby: "",
-  };
-  const removeValue = async (key) => {
-    try {
-      await AsyncStorage.removeItem(key);
-    } catch (e) {
-      // remove error
-    }
-
-    console.log("Done.");
   };
   return (
     <View style={sideMenuStyles.container}>
@@ -193,9 +185,13 @@ const SettingPage = () => {
                       },
                       {
                         text: "确定",
-                        onPress: () => {
-                          removeValue("userInfo");
-                          removeValue("token");
+                        onPress: async () => {
+                          // handleLoginOut();
+                          await removeValueFromAS("userInfo");
+                          await removeValueFromAS("token");
+                          api.interceptors.request.eject(
+                            "AddAuthorizationToken"
+                          );
                           navigation.popToTop();
                           navigation.navigate("Login");
                         },

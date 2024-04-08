@@ -1,5 +1,9 @@
 {
     "baseURL": "http://10.0.2.2:8080",
     "localhost": "http://localhost:8080",
-    "secretKey":"King"
+    "secretKey":"King",
+    "note":"以下路径前后均不能增加斜杠",
+    "userAvatarPath":"image/userAvatar",
+    "userBackgroundPath":"image/userBackground",
+    "logUploadPath":"image/logUpload"
 }

@@ -22,7 +22,6 @@ function generateToken(payload) {
 // 处理用户登录请求
 router.post("/login", async (req, res) => {
   const { username, password } = req.body;
-
   try {
     const user = await User.findOne({ username, password: md5(password) });
     if (user) {
@@ -33,11 +32,11 @@ router.post("/login", async (req, res) => {
       };
       let userAvatar = user.userAvatar; //用户头像
       if (userAvatar != null && !userAvatar.startsWith("http")) {
-        userAvatar = `${config.baseURL}/image/${userAvatar}`;
+        userAvatar = `${config.baseURL}/${config.userAvatarPath}/${userAvatar}`;
       }
       let background_image = user.backgroundImage; // 背景图
       if (background_image != null && !background_image.startsWith("http")) {
-        background_image = `${config.baseURL}/image/${background_image}`;
+        background_image = `${config.baseURL}/${config.userBackgroundPath}/${background_image}`;
       }
       const token = generateToken(payload);
       res.status(200).json({
@@ -46,6 +45,7 @@ router.post("/login", async (req, res) => {
         data: {
           token: token,
           userInfo: {
+            userId: user._id,
             username: user.username,
             customId: user.customId,
             profile: user.profile,

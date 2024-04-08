@@ -23,7 +23,6 @@ import {
   ListItem,
   Badge,
 } from "@rneui/themed";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import Drawer from "react-native-drawer";
 import { useNavigation } from "@react-navigation/native";
 import * as ImagePicker from "expo-image-picker";
@@ -31,9 +30,15 @@ import { TouchableWithoutFeedback } from "@ui-kitten/components/devsupport";
 import * as FileSystem from "expo-file-system";
 import { get } from "react-native/Libraries/TurboModule/TurboModuleRegistry";
 import { useFocusEffect } from "@react-navigation/native";
+import {
+  api,
+  storeDataToAS,
+  removeValueFromAS,
+  getItemFromAS,
+} from "../../util";
 
 const Toast = Overlay.Toast;
-
+const formaDate = new FormData();
 //侧边菜单栏
 const ContentView = ({ onCloseDrawer }) => {
   const navigation = useNavigation();
@@ -47,7 +52,11 @@ const ContentView = ({ onCloseDrawer }) => {
           // backgroundColor: "#EAEDED",
         }}
       >
-        <TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => {
+            navigation.navigate("AddUser");
+          }}
+        >
           <ListItem style={{ backgroundColor: "#E5E7E9" }}>
             <ListItem.Content style={sideMenuStyles.menuItem}>
               <Icon name="person-add-alt"></Icon>
@@ -167,18 +176,19 @@ const EmyptyItem = ({ name, color, label }) => {
 };
 //渲染组件
 const RenderItem = ({ value }) => {
+  // console.log(value);
   const navigation = useNavigation();
   return (
     <TouchableOpacity
       onPress={() => {
-        navigation.navigate("LogPublic");
+        navigation.navigate("LogDetail", { item: value });
       }}
     >
       <Card containerStyle={{ borderRadius: 10, padding: 0 }}>
         <Card.Image
           style={{ padding: 0 }}
           source={{
-            uri: value,
+            uri: value.imageUrl,
           }}
         />
         <View
@@ -189,7 +199,7 @@ const RenderItem = ({ value }) => {
             marginTop: 5,
           }}
         >
-          <Text>上海一日游</Text>
+          <Text>{value.title}</Text>
           <Text>
             <Badge
               badgeStyle={{}}
@@ -210,9 +220,12 @@ const RenderItem = ({ value }) => {
 const MyLogPage = () => {
   const navigation = useNavigation();
   const [visible, setVisible] = useState(false);
+  const [select, setSelect] = useState(true);
   const [isVisible, setIsVisible] = useState(false);
   const [userInfo, setUserInfo] = useState({});
   const [imageUrl, setImageUrl] = useState();
+  const [userAvatarUrl, setUserAvatarUrl] = useState();
+  const [myLogDatas, setMyLogDatas] = useState([]);
   const [imageData, setImageData] = useState();
   const [modalVisible, setModalVisible] = useState(false); // 上传照片模态框
   const list = [
@@ -239,12 +252,43 @@ const MyLogPage = () => {
     "https://source.unsplash.com/random?sig=8",
     "https://source.unsplash.com/random?sig=9",
   ];
+  const fetchMyLogDatas = async () => {
+    try {
+      // const params = {
+      //   selectedTopic: selectedTopic,
+      //   searchContent: searchContent,
+      // };
+      await api.interceptors.request.use(
+        async (config) => {
+          config.interceptors = "AddAuthorizationToken";
+          const token = await getItemFromAS("token");
+          // console.log(token);
+          if (token) {
+            config.headers.Authorization = `${token}`;
+          }
+          return config;
+        },
+        (error) => {
+          return Promise.reject(error);
+        }
+      );
+      const response = await api.get("/myLog/getMyLogs");
+      // console.log(response.data.data);
+      if (response.data.data) {
+        setMyLogDatas(response.data.data);
+      }
+    } catch (error) {
+      // 数据加载失败
+      console.log("获取失败", error.response.data.message);
+    }
+  };
   const fetchUserData = async () => {
     try {
-      const jsonValue = await AsyncStorage.getItem("userInfo");
-      let user = JSON.parse(jsonValue);
+      let user = await getItemFromAS("userInfo");
+      user = JSON.parse(user);
       setUserInfo(user);
       setImageUrl(user.backgroundImage);
+      setUserAvatarUrl(user.userAvatar);
     } catch (e) {
       // error reading value
       console.log(e);
@@ -254,6 +298,7 @@ const MyLogPage = () => {
     React.useCallback(() => {
       // 在页面获取焦点时执行的操作
       fetchUserData();
+      fetchMyLogDatas();
       // console.log("Screen focused");
       return () => {
         // 在页面失去焦点时执行的清理操作（可选）
@@ -288,8 +333,44 @@ const MyLogPage = () => {
     }
     return true;
   };
+  //用户上传头像或者背景图片
+  const uploadImage = async (image, server_url, fieldName, setFunc) => {
+    const url = image.assets[0].uri;
+    const suffix = url.substring(url.lastIndexOf(".") + 1);
+    try {
+      // 读取图片的内容
+      const data = await FileSystem.readAsStringAsync(url, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+      // 提交页面数据
+      formaDate.append("images", [data, suffix]);
+    } catch (error) {
+      console.log("Error reading image file:", error);
+    }
+    // console.log(formaDate);
+    //将背景图上传到服务器
+    await api
+      .post(
+        server_url, // 虚拟机不能使用localhost
+        {
+          images: formaDate,
+        }
+      )
+      .then((res) => {
+        console.log("提交成功:", res.data.data.url);
+        // 返回服务器中的url
+        let newUrl = res.data.data.url;
+        setFunc(newUrl);
+        let newUserInfo = { ...userInfo, [fieldName]: newUrl };
+        storeDataToAS("userInfo", JSON.stringify(newUserInfo));
+      })
+      .catch((err) => {
+        console.log("提交失败:", err.response.data.message);
+      });
+  };
+
   // 相册图片上传
-  const handleUploadImage = async () => {
+  const handleUploadImage = async (uploadUrl, setFieldName, setFunc) => {
     const hasPermission = await verifyPermission();
     if (!hasPermission) {
       return;
@@ -300,25 +381,15 @@ const MyLogPage = () => {
       allowsEditing: true,
       quality: 0.5,
     });
-    const url = image.assets[0].uri;
-    const suffix = url.substring(url.lastIndexOf(".") + 1);
-    try {
-      // 读取图片的内容
-      const data = await FileSystem.readAsStringAsync(url, {
-        encoding: FileSystem.EncodingType.Base64,
-      });
-      // 传给后端图片数据和后缀名
-      setImageData([data, suffix]);
-    } catch (error) {
-      console.log("Error reading image file:", error);
+    if (image) {
+      await uploadImage(image, uploadUrl, setFieldName, setFunc);
     }
-
-    setImageUrl(url);
+    // 获取imageData
     setModalVisible(false); // 拍照上传后关闭模态框
   };
 
   // 拍照上传
-  const handleTakeImage = async () => {
+  const handleTakeImage = async (uploadUrl, setFieldName, setFunc) => {
     const hasPermission = await verifyPermission();
     if (!hasPermission) {
       return;
@@ -328,19 +399,9 @@ const MyLogPage = () => {
       allowsEditing: true,
       quality: 0.5,
     });
-    const url = image.assets[0].uri;
-    const suffix = url.substring(url.lastIndexOf(".") + 1);
-    try {
-      // 读取图片的内容
-      const data = await FileSystem.readAsStringAsync(url, {
-        encoding: FileSystem.EncodingType.Base64,
-      });
-      setImageData([data, suffix]);
-    } catch (error) {
-      console.log("Error reading image file:", error);
+    if (image) {
+      await uploadImage(image, uploadUrl, setFieldName, setFunc);
     }
-
-    setImageUrl(url);
     // 获取imageData
     setModalVisible(false); // 拍照上传后关闭模态框
   };
@@ -376,7 +437,21 @@ const MyLogPage = () => {
               }}
             >
               <TouchableOpacity
-                onPress={handleTakeImage}
+                onPress={() => {
+                  if (select) {
+                    handleTakeImage(
+                      "/userInfo/updateBackgroundImage",
+                      "backgroundImage",
+                      setImageUrl
+                    );
+                  } else {
+                    handleTakeImage(
+                      "/userInfo/updateUserAvatar",
+                      "userAvatar",
+                      setUserAvatarUrl
+                    );
+                  }
+                }}
                 style={{
                   flex: 1,
                   justifyContent: "center",
@@ -394,7 +469,21 @@ const MyLogPage = () => {
                 }}
               ></View>
               <TouchableOpacity
-                onPress={handleUploadImage}
+                onPress={() => {
+                  if (select) {
+                    handleUploadImage(
+                      "/userInfo/updateBackgroundImage",
+                      "backgroundImage",
+                      setImageUrl
+                    );
+                  } else {
+                    handleUploadImage(
+                      "/userInfo/updateUserAvatar",
+                      "userAvatar",
+                      setUserAvatarUrl
+                    );
+                  }
+                }}
                 style={{
                   flex: 1,
                   justifyContent: "center",
@@ -454,7 +543,10 @@ const MyLogPage = () => {
                 <View style={{ flexDirection: "row" }}>
                   <TouchableOpacity
                     style={styles.button}
-                    onPress={() => setModalVisible(true)}
+                    onPress={() => {
+                      setSelect(true);
+                      setModalVisible(true);
+                    }}
                   >
                     {/* <Icon name="image" color="#FFF" /> */}
                     <Icon
@@ -492,12 +584,17 @@ const MyLogPage = () => {
                       justifyContent: "center",
                     }}
                   >
-                    <TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={() => {
+                        setSelect(false);
+                        setModalVisible(true);
+                      }}
+                    >
                       <Avatar
                         size={96}
                         rounded
                         source={{
-                          uri: userInfo && userInfo.userAvatar,
+                          uri: userAvatarUrl,
                         }}
                       />
                     </TouchableOpacity>
@@ -510,16 +607,35 @@ const MyLogPage = () => {
                       justifyContent: "center",
                     }}
                   >
-                    <Text
-                      style={{
-                        fontWeight: "bold",
-                        color: "#FFF",
-                        fontSize: 20,
-                        fontFamily: "serif",
-                      }}
-                    >
-                      {userInfo ? userInfo.username : "游客请登录"}
-                    </Text>
+                    {userInfo ? (
+                      <Text
+                        style={{
+                          fontWeight: "bold",
+                          color: "#FFF",
+                          fontSize: 20,
+                          fontFamily: "serif",
+                        }}
+                      >
+                        {userInfo.username}
+                      </Text>
+                    ) : (
+                      <TouchableOpacity
+                        onPress={() => {
+                          navigation.navigate("Login");
+                        }}
+                      >
+                        <Text
+                          style={{
+                            fontWeight: "bold",
+                            color: "#FFF",
+                            fontSize: 20,
+                            fontFamily: "serif",
+                          }}
+                        >
+                          游客请登录
+                        </Text>
+                      </TouchableOpacity>
+                    )}
                     <Text
                       style={{
                         color: "#FFF",
@@ -642,10 +758,10 @@ const MyLogPage = () => {
               </Tab>
               <TabView value={index} onChange={setIndex} animationType="spring">
                 <TabView.Item style={{ width: "100%" }}>
-                  {data ? (
+                  {myLogDatas ? (
                     <FlatList
                       showsVerticalScrollIndicator={false}
-                      data={data}
+                      data={myLogDatas}
                       numColumns={2}
                       renderItem={({ item, index }) => (
                         <View style={{ width: "50%" }} key={index}>

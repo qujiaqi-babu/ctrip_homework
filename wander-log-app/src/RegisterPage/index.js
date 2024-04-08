@@ -6,13 +6,17 @@ import {
   Overlay,
   TextInput,
 } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 // import CheckBox from "@react-native-community/checkbox";
 import { Button, Icon, Text, Image } from "@rneui/themed";
 // import { CheckBox } from "@rneui/base";
 import { useNavigation } from "@react-navigation/native";
 
-import { api } from "../../util";
+import {
+  api,
+  storeDataToAS,
+  removeValueFromAS,
+  getItemFromAS,
+} from "../../util";
 
 const Toast = Overlay.Toast;
 
@@ -23,15 +27,6 @@ const Login = () => {
   const [errorMessage, setErrorMessage] = useState("");
   const [checked, setChecked] = useState(false);
 
-  const storeData = async (key, value) => {
-    try {
-      await AsyncStorage.setItem(key, value);
-    } catch (e) {
-      // saving error
-      console.log(e);
-    }
-    console.log("存储用户信息成功");
-  };
   const handleInputUsername = (text) => {
     setUsername(text);
   };
@@ -52,6 +47,7 @@ const Login = () => {
     return false;
   };
   const handleLogin = async () => {
+    // console.log("处理登录");
     if (handleCheck()) {
       await api
         .post(
@@ -61,17 +57,34 @@ const Login = () => {
             password: password,
           }
         )
-        .then((res) => {
+        .then(async (res) => {
           // console.log("提交成功:", res.data.message);
           console.log(res.data.data.token);
           console.log(res.data.data.userInfo);
-          storeData("token", res.data.data.token);
-          storeData("userInfo", JSON.stringify(res.data.data.userInfo));
+          await storeDataToAS("token", res.data.data.token);
+          await storeDataToAS(
+            "userInfo",
+            JSON.stringify(res.data.data.userInfo)
+          );
+          api.interceptors.request.use(
+            (config) => {
+              config.interceptors = "AddAuthorizationToken";
+              const token = res.data.data.token;
+              if (token) {
+                config.headers.Authorization = `${token}`;
+              }
+              return config;
+            },
+            (error) => {
+              return Promise.reject(error);
+            }
+          );
           navigation.navigate("Home");
         })
         .catch((err) => {
           // console.log(username);
           // console.log(password);
+          console.log(err);
           console.log("提交失败:", err.response.data.message);
           setErrorMessage(err.response.data.message);
         });

@@ -19,22 +19,9 @@ import {
   Dialog,
 } from "@rneui/themed";
 
-import { useNavigation } from "@react-navigation/native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { api } from "../../util";
 // 在发送请求之前，添加 token 到请求头
-api.interceptors.request.use(
-  async (config) => {
-    const token = await AsyncStorage.getItem("token");
-    if (token) {
-      config.headers.Authorization = `${token}`;
-    }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
+
 const UserInforPage = () => {
   // {
   //   avatar_url: "https://randomuser.me/api/portraits/men/36.jpg",
@@ -215,7 +202,13 @@ const UserInforPage = () => {
                     背景图
                   </ListItem.Title>
                   <View style={sideMenuStyles.valueItem}>
-                    <ListItem.Title>{data.backgroundImage}</ListItem.Title>
+                    <ListItem.Title>
+                      <Avatar
+                        source={{
+                          uri: data && data.backgroundImage,
+                        }}
+                      />
+                    </ListItem.Title>
                     <Icon name="chevron-right"></Icon>
                   </View>
                 </ListItem.Content>

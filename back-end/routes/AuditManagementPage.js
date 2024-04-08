@@ -93,9 +93,17 @@ const convertDateToString = (date) => {
 // 获取游记列表信息
 router.get("/travelLogs", async (req, res) => {
   try {
-    const { searchContent, state } = req.query;
+    let state = req.query.state;
+    const searchContent = req.query.searchContent;
+    if (state === "全部") {
+      state = "";
+    }
 
     const travelLogs = await TravelLog.aggregate([
+      {
+        // 排除isDelete为true的数据
+        $match: { isDelete: { $ne: true } }, // 不等于true
+      },
       {
         // 游记状态筛选并查找标题或内容与搜索内容匹配的游记
         $match: {
@@ -140,6 +148,7 @@ router.get("/travelLogs", async (req, res) => {
           imagesUrl: 1,
           state: 1,
           editTime: 1,
+          instruction: 1,
         },
       },
     ]);
@@ -156,6 +165,7 @@ router.get("/travelLogs", async (req, res) => {
         imagesUrl: imagesUrl,
         state: item.state,
         editTime: convertDateToString(item.editTime),
+        instruction: item.instruction,
       };
       return newItem;
     });

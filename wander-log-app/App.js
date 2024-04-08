@@ -22,6 +22,7 @@ import MyLogScreen from "./src/MyLogPage";
 import UserInfoScreen from "./src/UserInfoPage";
 import OtherUserScreen from "./src/otherUserPage";
 import SettingScreen from "./src/SettingPage";
+import AddUserScreen from "./src/AddUserPage";
 
 import { MaterialIcons, Ionicons } from "@expo/vector-icons";
 
@@ -130,20 +131,29 @@ function HomeStackScreen() {
           headerTitle: "",
         }}
       />
-      <Stack.Screen
+      {/* <Stack.Screen
         name="MyLogPage"
         component={MyLogScreen}
         options={{
-          headerShown: true,
+          headerShown: false,
           headerTitle: "UserLogPage",
         }}
-      />
+      /> */}
       <Stack.Screen
         name="OtherUserLog"
         component={OtherUserScreen}
         options={{
           headerShown: false,
           headerTitle: "otherUserLogPage",
+        }}
+      />
+      <Stack.Screen
+        name="AddUser"
+        component={AddUserScreen}
+        options={{
+          headerShown: true,
+          headerTitleAlign: "center",
+          headerTitle: "发现好友",
         }}
       />
     </Stack.Navigator>

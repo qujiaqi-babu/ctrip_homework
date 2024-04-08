@@ -1,52 +1,12 @@
 const express = require("express");
 const { User, TravelLog, Manager } = require("../models");
 const router = express.Router();
-const fs = require("fs").promises;
-const path = require("path");
+const config = require("../config.json");
+const { saveImage } = require("../utils/fileManager");
 const crypto = require("crypto");
 const { authenticateToken } = require("./auth");
 const calaMD5 = (data) => {
   return crypto.createHash("md5").update(data).digest("hex");
-};
-
-// 检查目录是否存在
-const directoryExists = async (directoryPath) => {
-  try {
-    await fs.access(directoryPath);
-    return true;
-  } catch (error) {
-    return false;
-  }
-};
-
-// 检查文件是否存在
-const fileExists = async (filePath) => {
-  try {
-    await fs.access(filePath);
-    return true;
-  } catch (error) {
-    return false;
-  }
-};
-
-const saveImage = async (base64Image, fileName) => {
-  try {
-    const outputDirectory = path.resolve(__dirname, "../image");
-    if (!(await directoryExists(outputDirectory))) {
-      await fs.mkdir(outputDirectory);
-    }
-    const fileOutputPath = path.resolve(outputDirectory, fileName);
-    if (await fileExists(fileOutputPath)) {
-      console.log(`File ${fileOutputPath} already exists.`);
-      return;
-    }
-    console.log(`Saving image to ${fileOutputPath}`);
-    // 将 Base64 编码的字符串解码为 Buffer 对象
-    const imageBuffer = Buffer.from(base64Image, "base64");
-    await fs.writeFile(fileOutputPath, imageBuffer, "binary");
-  } catch (error) {
-    console.error("Error saving image:", error);
-  }
 };
 
 const createSuccessResponse = (message) => {
@@ -91,7 +51,7 @@ router.post("/upload", authenticateToken, async (req, res) => {
     }); // 摘要运算得到加密文件名
     console.log(imagesUrl);
     imagesUrl.forEach((fileName, index) =>
-      saveImage(imageData[index][0], fileName)
+      saveImage(imageData[index][0], config.logUploadPath, fileName)
     );
 
     const travelLog = new TravelLog({

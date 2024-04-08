@@ -37,12 +37,12 @@ router.get("/getMyLogs", authenticateToken, async (req, res) => {
       .map((item) => {
         let imageUrl = item.imagesUrl[0]; // 只展示第一张图片
         if (!imageUrl.startsWith("http")) {
-          imageUrl = `${config.baseURL}/image/${imageUrl}`;
+          imageUrl = `${config.baseURL}/${config.logUploadPath}/${imageUrl}`;
         }
 
         let userAvatar = item.userId.userAvatar;
         if (!userAvatar.startsWith("http")) {
-          userAvatar = `${config.baseURL}/userAvatar/${userAvatar}`;
+          userAvatar = `${config.baseURL}/${config.userAvatarPath}/${userAvatar}`;
         }
         // 将 MongoDB 文档对象转换为普通 JavaScript 对象
         const newItem = {
@@ -100,12 +100,12 @@ router.get("/getLogsByUserId/:id", async (req, res) => {
       .map((item) => {
         let imageUrl = item.imagesUrl[0]; // 只展示第一张图片
         if (!imageUrl.startsWith("http")) {
-          imageUrl = `${config.baseURL}/image/${imageUrl}`;
+          imageUrl = `${config.baseURL}/${config.logUploadPath}/${imageUrl}`;
         }
 
         let userAvatar = item.userId.userAvatar;
         if (!userAvatar.startsWith("http")) {
-          userAvatar = `${config.baseURL}/userAvatar/${userAvatar}`;
+          userAvatar = `${config.baseURL}/${config.userAvatarPath}/${userAvatar}`;
         }
         // 将 MongoDB 文档对象转换为普通 JavaScript 对象
         const newItem = {

@@ -1,6 +1,6 @@
 import "rn-overlay";
 import { Overlay, ScrollView } from "react-native";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   StyleSheet,
   Text,
@@ -21,6 +21,7 @@ import StarRating from "./component/starRating";
 import { useNavigation } from "@react-navigation/native";
 import * as ImagePicker from "expo-image-picker";
 import * as FileSystem from "expo-file-system";
+import * as Location from "expo-location";
 import { TouchableWithoutFeedback } from "@ui-kitten/components/devsupport";
 import { api } from "../../util";
 const config = require("../../config.json");
@@ -48,6 +49,7 @@ const LogPublicPage = () => {
 
   const [selectedMonth, setSelectedMonth] = useState(null);
   const [selectedRange, setSelectedRange] = useState(null);
+  const [userLocation, setUserLocation] = useState();
   const ranges = ["0—500", "500—1000", "1000—2000", "2000以上"];
   const [rating, setRating] = useState(0);
 
@@ -227,7 +229,25 @@ const LogPublicPage = () => {
   const handleClickStar = (index) => {
     setRating(index + 1); // 评级分数1~5
   };
+  useEffect(() => {
+    const getLocation = async () => {
+      try {
+        let { status } = await Location.requestForegroundPermissionsAsync();
 
+        if (status !== "granted") {
+          setLocationError("Location permission denied");
+          return;
+        }
+
+        let location = await Location.getCurrentPositionAsync({});
+        setUserLocation(location);
+      } catch (error) {
+        console.error("Error requesting location permission:", error);
+      }
+    };
+
+    getLocation();
+  }, []);
   // 提交页面数据
   const handleSubmitData = async () => {
     if (imageUrl.length === 0 || !title || !content) {
@@ -236,7 +256,7 @@ const LogPublicPage = () => {
     }
 
     formaDate.append("images", imageData);
-    console.log(formaDate);
+    // console.log(formaDate);
 
     await api
       .post(
@@ -578,7 +598,11 @@ const LogPublicPage = () => {
                 source={require("../LogPublicPage/public/place.png")}
                 style={styles.placeIcon}
               />
-              <Text style={styles.placeText}>添加地点</Text>
+              {userLocation ? (
+                <Text style={styles.placeText}>添加地点</Text>
+              ) : (
+                <Text>{JSON.stringify(userLocation)}</Text>
+              )}
             </View>
             <MaterialIcons
               name="keyboard-arrow-right"

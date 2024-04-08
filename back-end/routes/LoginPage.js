@@ -32,11 +32,11 @@ router.post("/login", async (req, res) => {
       };
       let userAvatar = user.userAvatar; //用户头像
       if (userAvatar != null && !userAvatar.startsWith("http")) {
-        userAvatar = `${config.baseURL}/image/${userAvatar}`;
+        userAvatar = `${config.baseURL}/${config.userAvatarPath}/${userAvatar}`;
       }
       let background_image = user.backgroundImage; // 背景图
       if (background_image != null && !background_image.startsWith("http")) {
-        background_image = `${config.baseURL}/image/${background_image}`;
+        background_image = `${config.baseURL}/${config.userBackgroundPath}/${background_image}`;
       }
       const token = generateToken(payload);
       res.status(200).json({

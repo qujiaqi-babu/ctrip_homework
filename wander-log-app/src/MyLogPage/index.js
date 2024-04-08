@@ -52,7 +52,11 @@ const ContentView = ({ onCloseDrawer }) => {
           // backgroundColor: "#EAEDED",
         }}
       >
-        <TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => {
+            navigation.navigate("AddUser");
+          }}
+        >
           <ListItem style={{ backgroundColor: "#E5E7E9" }}>
             <ListItem.Content style={sideMenuStyles.menuItem}>
               <Icon name="person-add-alt"></Icon>
@@ -258,7 +262,7 @@ const MyLogPage = () => {
         async (config) => {
           config.interceptors = "AddAuthorizationToken";
           const token = await getItemFromAS("token");
-          console.log(token);
+          // console.log(token);
           if (token) {
             config.headers.Authorization = `${token}`;
           }
@@ -343,7 +347,7 @@ const MyLogPage = () => {
     } catch (error) {
       console.log("Error reading image file:", error);
     }
-    console.log(formaDate);
+    // console.log(formaDate);
     //将背景图上传到服务器
     await api
       .post(

@@ -144,7 +144,7 @@ const OtherUserPage = ({ route }) => {
   useFocusEffect(
     React.useCallback(() => {
       // 在页面获取焦点时执行的操作
-      console.log("获取用户信息");
+      // console.log("获取用户信息");
       fetchUserData();
       fetchLogDatas();
 

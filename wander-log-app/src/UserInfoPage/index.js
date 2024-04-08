@@ -205,7 +205,7 @@ const UserInforPage = () => {
                     <ListItem.Title>
                       <Avatar
                         source={{
-                          uri: data.backgroundImage,
+                          uri: data && data.backgroundImage,
                         }}
                       />
                     </ListItem.Title>

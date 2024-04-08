@@ -28,7 +28,7 @@ const UserSchema = new Schema({
   },
   backgroundImage: {
     type: String,
-    default: "d2dc43736e4768139926d995db225f5f.jpeg",
+    default: "e9b95a7e21de57284deef0dd3f818b07.jpeg",
   }, // 用户头像的 URL
 });
 UserSchema.plugin(AutoIncrement, { inc_field: "customId" });

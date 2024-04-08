@@ -20,6 +20,7 @@ const LogDetailPage = ({ route }) => {
   const logId = item._id;
   const userId = item.userId;
   const userAvatar = item.userAvatar;
+  // console.log(userAvatar);
   const userName = item.username;
 
   const navigation = useNavigation();
@@ -154,7 +155,8 @@ const LogDetailPage = ({ route }) => {
               let user = await getItemFromAS("userInfo");
               user = JSON.parse(user);
               if (user.userId && user.userId == userId) {
-                navigation.navigate("MyLogPage");
+                // navigation.goBack();
+                navigation.navigate("MyLog");
               } else {
                 navigation.navigate("OtherUserLog", { userId: userId });
               }

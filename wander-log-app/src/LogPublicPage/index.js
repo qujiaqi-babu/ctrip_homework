@@ -265,7 +265,6 @@ const LogPublicPage = () => {
           percost: selectedRange,
           rate: rating,
           destination: destinationText,
-          userId: "6610f91f6f39390aa7506803",
         }
       )
       .then((res) => {

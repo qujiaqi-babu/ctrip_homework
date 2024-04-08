@@ -20,6 +20,7 @@ import RegisterScreen from "./src/RegisterPage";
 import LogPublicScreen from "./src/LogPublicPage";
 import MyLogScreen from "./src/MyLogPage";
 import UserInfoScreen from "./src/UserInfoPage";
+import OtherUserScreen from "./src/otherUserPage";
 import SettingScreen from "./src/SettingPage";
 
 import { MaterialIcons, Ionicons } from "@expo/vector-icons";
@@ -135,6 +136,14 @@ function HomeStackScreen() {
         options={{
           headerShown: true,
           headerTitle: "UserLogPage",
+        }}
+      />
+      <Stack.Screen
+        name="OtherUserLog"
+        component={OtherUserScreen}
+        options={{
+          headerShown: false,
+          headerTitle: "otherUserLogPage",
         }}
       />
     </Stack.Navigator>

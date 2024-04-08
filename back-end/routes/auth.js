@@ -4,7 +4,7 @@ const config = require("../config.json");
 const secretKey = config.secretKey;
 const authenticateToken = (req, res, next) => {
   const token = req.header("Authorization");
-
+  // console.log(token);
   if (!token) {
     return res.status(401).json({ status: "error", message: "请先进行登录" });
   }
@@ -17,6 +17,7 @@ const authenticateToken = (req, res, next) => {
     }
 
     req.user = user;
+    console.log(req.user);
     next();
   });
 };

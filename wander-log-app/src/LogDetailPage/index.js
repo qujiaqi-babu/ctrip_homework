@@ -199,7 +199,7 @@ const LogDetailPage = ({ route }) => {
 
       {/* 中间的滚动视图 */}
       <ScrollView style={{ flex: 1 }}>
-        {travelLog && <ImageSlider imageUrl={travelLog.imagesUrl} />}
+        {travelLog && <ImageSlider imageUrls={travelLog.imagesUrl} />}
         {travelLog && <Text style={styles.titleText}>{travelLog.title}</Text>}
         <View style={{ justifyContent: "center", alignItems: "center" }}>
           <View style={styles.labelBox}>

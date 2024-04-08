@@ -13,14 +13,7 @@ const config = require("../../../config.json");
 
 const screenWidth = Dimensions.get("window").width;
 
-const ImageSlider = ({ imageUrl }) => {
-  // 加载图片路径
-  const imageUrls = [];
-  imageUrl.forEach((url) => {
-    const imageUri = `${config.baseURL}/image/${url}`;
-    imageUrls.push(imageUri);
-  });
-
+const ImageSlider = ({ imageUrls }) => {
   const [maxRatio, setMaxRatio] = useState(0);
   const [containerHeight, setContainerHeight] = useState(0);
 

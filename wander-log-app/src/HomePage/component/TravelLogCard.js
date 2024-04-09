@@ -37,11 +37,8 @@ const TravelLogCard = ({ item, columnIndex, numColumns }) => {
 
   // 检查当前用户是否点赞过该游记
   const checkLike = async () => {
-    const userInfo = await getItemFromAS("userInfo");
-    // 将存储的 JSON 字符串转换为 JavaScript 对象
-    const userId = JSON.parse(userInfo).userId;
     // console.log(userId, item._id);
-    const response = await api.get(`/home/checkLike/${item._id}/${userId}`);
+    const response = await api.get(`/home/checkLike/${item._id}`);
     setLiked(response.data.liked);
   };
 
@@ -62,11 +59,9 @@ const TravelLogCard = ({ item, columnIndex, numColumns }) => {
 
   // 当前用户点赞或取消点赞该游记，数据库同步更新
   const handleLike = async () => {
-    const userInfo = await getItemFromAS("userInfo");
     setLikes(liked ? likes - 1 : likes + 1);
     const response = await api.post("/home/like", {
       travelLogId: item._id,
-      userId: JSON.parse(userInfo).userId,
     });
     setLiked(response.data.liked);
   };

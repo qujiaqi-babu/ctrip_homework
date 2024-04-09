@@ -1,7 +1,7 @@
 const express = require("express");
 const config = require("../config.json");
 const router = express.Router();
-const { User, TravelLog, Manager } = require("../models"); //引入模型
+const { User, TravelLog, Manager, Focus } = require("../models"); //引入模型
 const crypto = require("crypto");
 const { saveImage } = require("../utils/fileManager");
 
@@ -50,21 +50,28 @@ router.get("/info", authenticateToken, async (req, res) => {
 });
 router.get("/findUsers", authenticateToken, async (req, res) => {
   // 获取token中的用户id
+  const { searchContent } = req.query;
+  console.log("searchContent:", searchContent);
+  // 用户数据加载 每次加载count张
+  const count = parseInt(req.query.count);
   const userId = req.user.id;
-  console.log(userId);
-  const selectedFields = {
-    _id: 1,
-    username: 1,
-    userAvatar: 1, // 只获取第一张图片
-    profile: 1,
-  };
+  // console.log(userId);
   try {
     const users = await User.find({
       _id: { $ne: userId },
+      $or: [
+        { username: { $regex: searchContent, $options: "i" } }, // 使用正则表达式进行模糊查询用户名，忽略大小写
+        {
+          customId:
+            searchContent === "" || isNaN(searchContent)
+              ? -1
+              : parseInt(searchContent),
+        }, // 使用正则表达式进行模糊查询customId，忽略大小写
+      ],
     })
       .select("_id username userAvatar profile")
-      .limit(50);
-    // console.log(users);
+      .limit(count);
+    console.log(users);
     if (users) {
       const newUsers = users.map((user) => {
         let avatar = user.userAvatar; //用户头像
@@ -150,7 +157,7 @@ router.post("/updateBackgroundImage", authenticateToken, async (req, res) => {
     const imagesUrl = md5 + "." + ext;
     // 摘要运算得到加密文件名
     console.log(imagesUrl);
-    saveImage(imageData[0], config.userBackgroundPath, imagesUrl);
+    await saveImage(imageData[0], config.userBackgroundPath, imagesUrl);
     //更新用户的背景图片
     console.log(userId);
     const result = await User.updateOne(
@@ -222,6 +229,85 @@ router.post("/updateUserAvatar", authenticateToken, async (req, res) => {
   } catch (err) {
     console.error("Error querying database:", err);
     res.status(500).json({ status: "error", message: "出错了，请联系管理员" });
+  }
+});
+// 判断当前用户是否关注过该用户
+router.get("/checkFocus/:beFollowedId", authenticateToken, async (req, res) => {
+  const beFollowedId = req.params.beFollowedId;
+  const followerId = req.user.id;
+  try {
+    // 查询点赞记录
+    const focus = await Focus.findOne({ followerId, beFollowedId });
+    // console.log(travelLogId, userId);
+    if (focus) {
+      // 如果存在点赞记录，则返回用户已经点赞
+      // console.log("find");
+      res.json({ focused: true });
+    } else {
+      // 如果不存在点赞记录，则返回用户未点赞
+      // console.log("not find");
+      res.json({ focused: false });
+    }
+  } catch (error) {
+    console.error("Error checking like:", error);
+    res.status(500).send("Internal server error");
+  }
+});
+
+// 用户关注/取消关注特定游记
+router.post("/focus", authenticateToken, async (req, res) => {
+  const { beFollowedId } = req.body;
+  const followerId = req.user.id;
+  try {
+    // 检查是否已经关注
+    const focus = await Focus.findOne({ followerId, beFollowedId });
+    if (focus) {
+      // 如果已经关注，则移除该条记录
+      await Focus.deleteOne({ _id: focus._id });
+      // 查找用户并更新关注数
+      const user = await User.findByIdAndUpdate(
+        followerId,
+        { $inc: { follow: -1 } } // 使用 $inc 操作符将点赞数-1
+      );
+      if (!user) {
+        res.status(404).send("TravelLog not found");
+      } else {
+        //查找用户并更新粉丝数
+        const befollowedUser = await User.findByIdAndUpdate(
+          beFollowedId,
+          { $inc: { fans: -1 } } // 使用 $inc 操作符将点赞数-1
+        );
+        if (!befollowedUser) {
+          console.log("账号已注销！！");
+        }
+        res.json({ focused: false });
+      }
+    } else {
+      // 如果没有点赞，则点赞
+      const newFocus = new Focus({ followerId, beFollowedId });
+      await newFocus.save();
+      // 查找游记并更新点赞数
+      const user = await User.findByIdAndUpdate(
+        followerId,
+        { $inc: { follow: 1 } } // 使用 $inc 操作符将关注数+1
+      );
+      if (!user) {
+        res.status(404).send("TravelLog not found");
+      } else {
+        //查找用户并更新粉丝数
+        const befollowedUser = await User.findByIdAndUpdate(
+          beFollowedId,
+          { $inc: { fans: 1 } } // 使用 $inc 操作符将粉丝数-1
+        );
+        if (!befollowedUser) {
+          console.log("账号已注销！！");
+        }
+        res.json({ focused: true });
+      }
+    }
+  } catch (error) {
+    console.error("Error like:", error);
+    res.status(500).send("Internal server error");
   }
 });
 

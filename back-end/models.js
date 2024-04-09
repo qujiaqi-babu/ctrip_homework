@@ -30,6 +30,14 @@ const UserSchema = new Schema({
     type: String,
     default: "e9b95a7e21de57284deef0dd3f818b07.jpeg",
   }, // 用户头像的 URL
+  follow: {
+    type: Number,
+    default: 0,
+  },
+  fans: {
+    type: Number,
+    default: 0,
+  },
 });
 UserSchema.plugin(AutoIncrement, { inc_field: "customId" });
 // 游记模型

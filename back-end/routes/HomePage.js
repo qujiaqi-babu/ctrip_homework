@@ -1,6 +1,7 @@
 const express = require("express");
 const { User, TravelLog, Manager, Like } = require("../models");
 const config = require("../config.json");
+const { authenticateToken } = require("./auth");
 const router = express.Router();
 
 const createSuccessResponse = (message) => {
@@ -128,9 +129,9 @@ router.get("/travelLogs", async (req, res) => {
 });
 
 // 判断当前用户是否点赞过该游记
-router.get("/checkLike/:travelLogId/:userId", async (req, res) => {
+router.get("/checkLike/:travelLogId", authenticateToken, async (req, res) => {
   const travelLogId = req.params.travelLogId;
-  const userId = req.params.userId;
+  const userId = req.user.id;
   try {
     // 查询点赞记录
     const like = await Like.findOne({ userId, travelLogId });
@@ -151,8 +152,9 @@ router.get("/checkLike/:travelLogId/:userId", async (req, res) => {
 });
 
 // 用户点赞/取消点赞特定游记
-router.post("/like", async (req, res) => {
-  const { travelLogId, userId } = req.body;
+router.post("/like", authenticateToken, async (req, res) => {
+  const { travelLogId } = req.body;
+  const userId = req.user.id;
   try {
     // 检查是否已经点赞
     const like = await Like.findOne({ userId, travelLogId });

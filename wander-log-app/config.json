@@ -13,5 +13,6 @@
         "北京",
         "深圳"
     ],
-    "countEachLoad":10
+    "countEachLoad":10,
+    "findUserCountEachLoad":50
 }

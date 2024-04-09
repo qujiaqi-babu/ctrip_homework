@@ -9,6 +9,7 @@ import {
   Image,
   Button,
   Alert,
+  Animated,
   TextInput,
 } from "react-native";
 import {
@@ -24,11 +25,43 @@ import { useNavigation } from "@react-navigation/native";
 import { Feather, MaterialIcons } from "@expo/vector-icons";
 import { api, getItemFromAS, removeValueFromAS } from "../../util";
 import { color } from "@rneui/base";
-
+const config = require("../../config.json");
 const RenderItem = ({ value }) => {
   const navigation = useNavigation();
-  const [searchContent, setSearchContent] = useState("");
+  const [focused, setFocused] = useState(false); // 当前用户是否点赞过该游记
+  const [focusScaleValue] = useState(new Animated.Value(1));
   // console.log(value);
+  const checkFocus = async () => {
+    // console.log(userId, item._id);
+    const response = await api.get(`/userInfo/checkFocus/${value.userId}`);
+    setFocused(response.data.focused);
+  };
+  // 当前用户点赞或取消点赞该游记，数据库同步更新
+  const handleFocus = async () => {
+    const response = await api.post("/userInfo/focus", {
+      beFollowedId: value.userId,
+    });
+    setFocused(response.data.focused);
+  };
+  // 点赞功能的点击效果
+  const handleIconPress = () => {
+    handleFocus();
+    Animated.sequence([
+      Animated.timing(focusScaleValue, {
+        toValue: 1.2,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+      Animated.timing(focusScaleValue, {
+        toValue: 1,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  };
+  useEffect(() => {
+    checkFocus();
+  }, []);
   return (
     <TouchableOpacity
       onPress={() => {
@@ -83,22 +116,20 @@ const RenderItem = ({ value }) => {
             alignItems: "center",
           }}
         >
-          <TouchableOpacity
-            style={{
-              borderColor: "red",
-              borderRadius: 30,
-              borderWidth: 1,
-              paddingLeft: 20,
-              paddingRight: 20,
-              paddingBottom: 5,
-              paddingTop: 5,
-            }}
-          >
-            <Text style={{ color: "red" }}>关注</Text>
+          <TouchableOpacity onPress={handleIconPress}>
+            <Text
+              style={
+                focused
+                  ? sideMenuStyles.focusedButton
+                  : sideMenuStyles.focusButton
+              }
+            >
+              {focused ? "已关注" : "关注"}
+            </Text>
           </TouchableOpacity>
-          <TouchableOpacity>
+          {/* <TouchableOpacity>
             <Icon name="close"></Icon>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
       </View>
     </TouchableOpacity>
@@ -109,11 +140,18 @@ const AddUserScreen = () => {
   // const handleLoginOut = route.params;
   const navigation = useNavigation();
   const [data, setData] = useState([]);
+  const countEachLoad = config.findUserCountEachLoad;
   const [searchInput, setSearchInput] = useState("");
+  const [searchContent, setSearchContent] = useState("");
 
   const fetchUsers = async () => {
     try {
-      const response = await api.get("/userInfo/findUsers");
+      const params = {
+        searchContent: searchContent,
+        count: countEachLoad,
+        // offset: loadedCount,
+      };
+      const response = await api.get("/userInfo/findUsers", { params });
       // console.log(response.data.data);
       setData(response.data.data);
     } catch (e) {
@@ -122,12 +160,13 @@ const AddUserScreen = () => {
     }
   };
   useEffect(() => {
+    setData([]);
     fetchUsers();
-  }, []);
+  }, [searchContent]);
   const handleSearchPress = () => {
     // setLoadedCount(0);
-    setData([]);
-    setSearchContent(searchInput);
+    console.log(searchInput.trim());
+    setSearchContent(searchInput.trim());
   };
   const handleInputChange = (input) => {
     setSearchInput(input);
@@ -147,7 +186,7 @@ const AddUserScreen = () => {
           />
           <TextInput
             style={sideMenuStyles.searchInput}
-            // placeholder="Enter search keyword"
+            placeholder="输入游客号或者用户名查询"
             onChangeText={handleInputChange}
             value={searchInput}
           />
@@ -157,7 +196,7 @@ const AddUserScreen = () => {
                 name="cancel"
                 size={24}
                 color="#989797"
-                style={styles.icon}
+                style={sideMenuStyles.icon}
               />
             </TouchableOpacity>
           )}
@@ -252,5 +291,25 @@ const sideMenuStyles = StyleSheet.create({
     backgroundColor: "#FFF",
     padding: 5,
     marginTop: 10,
+  },
+  focusButton: {
+    borderColor: "red",
+    borderRadius: 30,
+    borderWidth: 1,
+    paddingLeft: 20,
+    paddingRight: 20,
+    paddingBottom: 5,
+    paddingTop: 5,
+    color: "red",
+  },
+  focusedButton: {
+    borderColor: "black",
+    borderRadius: 30,
+    borderWidth: 1,
+    paddingLeft: 20,
+    paddingRight: 20,
+    paddingBottom: 5,
+    paddingTop: 5,
+    color: "black",
   },
 });

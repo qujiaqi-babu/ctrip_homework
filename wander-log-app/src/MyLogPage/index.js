@@ -38,7 +38,7 @@ import {
 } from "../../util";
 
 const Toast = Overlay.Toast;
-const formaDate = new FormData();
+
 //侧边菜单栏
 const ContentView = ({ onCloseDrawer }) => {
   const navigation = useNavigation();
@@ -335,6 +335,7 @@ const MyLogPage = () => {
   };
   //用户上传头像或者背景图片
   const uploadImage = async (image, server_url, fieldName, setFunc) => {
+    const formaDate = new FormData();
     const url = image.assets[0].uri;
     const suffix = url.substring(url.lastIndexOf(".") + 1);
     try {
@@ -362,6 +363,7 @@ const MyLogPage = () => {
         let newUrl = res.data.data.url;
         setFunc(newUrl);
         let newUserInfo = { ...userInfo, [fieldName]: newUrl };
+        console.log(newUserInfo);
         storeDataToAS("userInfo", JSON.stringify(newUserInfo));
       })
       .catch((err) => {
@@ -384,7 +386,7 @@ const MyLogPage = () => {
     if (image) {
       await uploadImage(image, uploadUrl, setFieldName, setFunc);
     }
-    // 获取imageData
+    // 清空imageData
     setModalVisible(false); // 拍照上传后关闭模态框
   };
 

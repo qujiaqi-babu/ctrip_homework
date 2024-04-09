@@ -6,34 +6,12 @@ import cookie from "react-cookies";
 
 const { Title } = Typography;
 
-// // 表单布局
-// const layout = {
-//   labelCol: {
-//     span: 8,
-//   },
-//   wrapperCol: {
-//     span: 16,
-//   },
-// };
-// const tailLayout = {
-//   wrapperCol: {
-//     offset: 8,
-//     span: 16,
-//   },
-// };
-
-// const {
-//   token: { colorBgContainer, borderRadiusLG },
-// } = theme.useToken();
 
 const LoginPage = ({ handleLogin }) => {
-  // const [form] = Form.useForm();
   const handleSubmit = async (values) => {
     await api
       .post("/auditManagement/login", values)
       .then((response) => {
-        // console.log(response);
-        // setIsLoggedIn(true);
         message.success(response.data.message); // 登录成功提示
         // 登录成功后使用cookie存储用户Id，并设置过期时间
         let expireDate = new Date(new Date().getTime() + 24 * 60 * 60 * 1000); // 24小时后过期
@@ -41,16 +19,14 @@ const LoginPage = ({ handleLogin }) => {
           expires: expireDate,
           path: "/",
         });
-        // setIsLoggedIn(true);
         handleLogin(response.data.user);
-        // form.resetFields();
-        // setErrorMessage("");
       })
       .catch((error) => {
-        message.error(error.response.data); // 捕获并设置错误消息
-        // setErrorMessage(error.response.data);
+        console.log(error);
+        message.error(error.response.data.message); // 捕获并设置错误消息
       });
   };
+
   return (
     <div className="login-background">
       <div className="login-box">

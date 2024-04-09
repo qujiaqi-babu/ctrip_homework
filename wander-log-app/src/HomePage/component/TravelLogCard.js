@@ -39,12 +39,14 @@ const TravelLogCard = ({ item, columnIndex, numColumns }) => {
   // 检查当前用户是否点赞过该游记
   const checkLike = async () => {
     // console.log(userId, item._id);
-    try {
-      const response = await api.get(`/home/checkLike/${item._id}`);
-      setLiked(response.data.liked);
-    } catch (e) {
-      console.log(e);
-    }
+    await api
+      .get(`/home/checkLike/${item._id}`)
+      .then((response) => {
+        setLiked(response.data.liked);
+      })
+      .catch((error) => {
+        // console.log(error);
+      });
   };
 
   useEffect(() => {
@@ -59,22 +61,31 @@ const TravelLogCard = ({ item, columnIndex, numColumns }) => {
   }, []);
 
   const handlePress = () => {
-    navigation.navigate("LogDetail", { item: item });
+    navigation.navigate("LogDetail", {
+      item: item,
+      setCardLikes: setLikes,
+      setCardLiked: setLiked,
+    });
   };
 
   // 当前用户点赞或取消点赞该游记，数据库同步更新
   const handleLike = async () => {
-    setLikes(liked ? likes - 1 : likes + 1);
-    const response = await api.post("/home/like", {
-      travelLogId: item._id,
-    });
-    setLiked(response.data.liked);
+    await api
+      .post("/home/like", {
+        travelLogId: item._id,
+      })
+      .then((response) => {
+        setLiked(response.data.liked);
+        setLikes(response.data.liked ? likes + 1 : likes - 1);
+      })
+      .catch((error) => {
+        // console.log(error);
+      });
   };
 
   // 点赞功能的点击效果
-  const handleIconPress = (type) => {
+  const handleLikeIconPress = (type) => {
     handleLike();
-    // setLiked(!liked);
     Animated.sequence([
       Animated.timing(likeScaleValue, {
         toValue: 1.2,
@@ -124,7 +135,7 @@ const TravelLogCard = ({ item, columnIndex, numColumns }) => {
                   color="black"
                   size={styles.userAvatar.width}
                 /> */}
-                <TouchableOpacity onPress={() => handleIconPress("like")}>
+                <TouchableOpacity onPress={() => handleLikeIconPress("like")}>
                   <Animated.View
                     style={[{ transform: [{ scale: likeScaleValue }] }]}
                   >

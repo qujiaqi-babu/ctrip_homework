@@ -18,7 +18,7 @@ import LoginForm from "./views/LoginPage";
 
 import PermissionList from "./views/PermissionList";
 import TravelLogList from "./views/TravelLogList";
-import StateEdit from "./views/StateEdit";
+import UserList from "./views/UserList";
 import { api } from "./util";
 import "./App.css";
 
@@ -29,7 +29,11 @@ const App = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false); // 当前用户是否已登录
   const [user, setUser] = useState(null);
   const userId = cookie.load("userId");
-  const roleToName = { admin: "管理员", audit: "审核人员" };
+  const roleToName = {
+    superAdmin: "超级管理员",
+    admin: "管理员",
+    audit: "审核人员",
+  };
 
   useEffect(() => {
     // 检查用户是否已登录
@@ -48,7 +52,6 @@ const App = () => {
         cookie.save("role", response.data.role, {
           path: "/",
         });
-
       } catch (error) {
         setIsLoggedIn(false);
         console.log(error);
@@ -60,15 +63,6 @@ const App = () => {
   const handleLogin = (userData) => {
     setUser(userData);
     setIsLoggedIn(true);
-  };
-
-  const handleLogout = async () => {
-    const confirmed = window.confirm("确定要退出登录吗？");
-    if (confirmed) {
-      await api.get("/auditManagement/logout");
-      setIsLoggedIn(false);
-      cookie.remove("userId");
-    }
   };
 
   const {
@@ -86,7 +80,10 @@ const App = () => {
             collapsed={collapsed}
             style={{ background: colorBgContainer }}
           >
-            <MyMenu isLoggedIn={isLoggedIn} handleLogout={handleLogout} />
+            <MyMenu
+              isLoggedIn={isLoggedIn}
+              setIsLoggedIn={setIsLoggedIn}
+            />
           </Sider>
           <Layout>
             <Header
@@ -142,14 +139,14 @@ const App = () => {
                   element={<TravelLogList loginUser={user} />}
                 />
                 <Route
-                  path="/travelLog/:id/edit"
-                  element={<StateEdit loginUser={user} />}
-                />
-                <Route
                   path="/permissionList"
                   element={
                     isLoggedIn ? <PermissionList /> : <Navigate to="/login" />
                   }
+                />
+                <Route
+                  path="/userList"
+                  element={isLoggedIn ? <UserList /> : <Navigate to="/login" />}
                 />
               </Routes>
             </Content>

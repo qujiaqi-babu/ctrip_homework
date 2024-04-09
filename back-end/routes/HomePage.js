@@ -1,5 +1,5 @@
 const express = require("express");
-const { User, TravelLog, Manager, Like } = require("../models");
+const { User, TravelLog, Manager, Like, Collect } = require("../models");
 const config = require("../config.json");
 const { authenticateToken } = require("./auth");
 const router = express.Router();
@@ -69,6 +69,7 @@ router.get("/travelLogs", async (req, res) => {
         $match: {
           $and: [
             { state: "已通过" }, // 查询状态为“已通过”的游记信息
+            { isDelete: false }, // 游记信息未被逻辑删除
             { topic: { $regex: selectedTopic, $options: "i" } },
             {
               $or: [
@@ -188,6 +189,74 @@ router.post("/like", authenticateToken, async (req, res) => {
     }
   } catch (error) {
     console.error("Error like:", error);
+    res.status(500).send("Internal server error");
+  }
+});
+
+// 判断当前用户是否收藏过该游记
+router.get(
+  "/checkCollect/:travelLogId",
+  authenticateToken,
+  async (req, res) => {
+    const travelLogId = req.params.travelLogId;
+    const userId = req.user.id;
+    try {
+      // 查询收藏记录
+      const collect = await Collect.findOne({ userId, travelLogId });
+      // console.log(travelLogId, userId);
+      if (collect) {
+        // 如果存在收藏记录，则返回用户已经收藏
+        // console.log("find");
+        res.json({ collected: true });
+      } else {
+        // 如果不存在收藏记录，则返回用户未收藏
+        // console.log("not find");
+        res.json({ collected: false });
+      }
+    } catch (error) {
+      console.error("Error checking collect:", error);
+      res.status(500).send("Internal server error");
+    }
+  }
+);
+
+// 用户收藏/取消收藏特定游记
+router.post("/collect", authenticateToken, async (req, res) => {
+  const { travelLogId } = req.body;
+  const userId = req.user.id;
+  try {
+    // 检查是否已经收藏
+    const collect = await Collect.findOne({ userId, travelLogId });
+    if (collect) {
+      // 如果已经收藏，则取消收藏，即移除该条记录
+      await Collect.deleteOne({ _id: collect._id });
+      // 查找游记并更新收藏数
+      const travelLog = await TravelLog.findByIdAndUpdate(
+        travelLogId,
+        { $inc: { collects: -1 } } // 使用 $inc 操作符将点赞数-1
+      );
+      if (!travelLog) {
+        res.status(404).send("TravelLog not found");
+      } else {
+        res.json({ collected: false });
+      }
+    } else {
+      // 如果没有收藏，则收藏
+      const newCollect = new Collect({ userId, travelLogId });
+      await newCollect.save();
+      // 查找游记并更新收藏数
+      const travelLog = await TravelLog.findByIdAndUpdate(
+        travelLogId,
+        { $inc: { collects: 1 } } // 使用 $inc 操作符将点赞数+1
+      );
+      if (!travelLog) {
+        res.status(404).send("TravelLog not found");
+      } else {
+        res.json({ collected: true });
+      }
+    }
+  } catch (error) {
+    console.error("Error collect:", error);
     res.status(500).send("Internal server error");
   }
 });

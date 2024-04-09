@@ -1,22 +1,31 @@
 const express = require("express");
-const { User, TravelLog, Manager } = require("../models");
+const { TravelLog, Manager } = require("../models");
 const config = require("../config.json");
 const router = express.Router();
+const bcrypt = require("bcryptjs");
 
-// 管理员注册
-router.post("/register", async (req, res) => {
-  const { username, password } = req.body;
+// 添加用户信息
+router.post("/addUser", async (req, res) => {
+  const { username, password, role } = req.body;
+  // 检查用户名是否已存在
+  const userExists = await Manager.findOne({ username });
+  if (userExists) {
+    return res.status(400).json({ message: "用户名已存在，请重新输入" });
+  }
   try {
+    // 使用 bcryptjs 对密码进行哈希处理
+    const hashedPassword = await bcrypt.hash(password, 10); // 使用 10 轮的哈希加密
     const user = new Manager({
       username,
-      password,
+      password: hashedPassword,
+      role,
     });
     await user.save();
-    console.log("管理员添加成功");
-    res.json({ message: "管理员添加成功" });
+    console.log("用户添加成功");
+    res.json({ message: "用户添加成功" });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "管理员添加失败" });
+    res.status(500).json({ message: "用户添加失败" });
   }
 });
 
@@ -24,25 +33,26 @@ router.post("/register", async (req, res) => {
 router.post("/login", async (req, res) => {
   try {
     const { username, password } = req.body;
+
     // 检查用户是否存在
     const user = await Manager.findOne({ username });
     if (!user) {
       return res.status(400).json({ message: "用户名不正确，请重新输入" });
     }
     // 验证密码是否正确
-    // const valid = await bcrypt.compare(password, manager.password);
-    // if (!valid) {
-    //   return res.status(400).send("密码不正确，请重新输入");
-    // }
-    if (password !== user.password) {
-      return res.status(400).json({ message: "密码不正确，请重新输入" });
+    const valid = await bcrypt.compare(password, user.password);
+    if (!valid) {
+      return res.status(400).json({message: "密码不正确，请重新输入"});
     }
+    // if (password !== user.password) {
+    //   return res.status(400).json({ message: "密码不正确，请重新输入" });
+    // }
     // 设置 session
     req.session.user = user;
     res.json({ message: "登录成功！", userId: user._id, user: user });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: "管理员登录失败" });
+    res.status(500).json({ message: "登录失败" });
   }
 });
 
@@ -50,6 +60,39 @@ router.post("/login", async (req, res) => {
 router.get("/logout", (req, res) => {
   req.session.destroy();
   res.json({ message: "管理员登出成功" });
+});
+
+// 删除用户
+router.delete("/deleteUser/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = await Manager.findByIdAndDelete(id);
+    if (!user) {
+      return res.status(404).json({ message: "用户不存在" });
+    }
+    await Manager.deleteOne({ user });
+    res.json({ message: "用户删除成功" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "服务器错误" });
+  }
+});
+
+// 编辑用户信息
+router.put("/editUser/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const role = req.body;
+
+    const updateUser = await Manager.findByIdAndUpdate(id, role, { new: true });
+    if (!updateUser) {
+      return res.status(404).json({ message: "用户不存在" });
+    }
+    res.json({ message: "用户信息更新成功", user: updateUser });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "用户角色更新失败" });
+  }
 });
 
 // 获取当前用户信息
@@ -235,6 +278,74 @@ router.delete("/travelLogDelete/:id", async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "游记逻辑删除失败" });
+  }
+});
+
+// 获取审核管理系统用户数据
+router.get("/adminUser", async (req, res) => {
+  try {
+    const searchContent = req.query.searchContent;
+    const role = req.query.role;
+
+    // 定义匹配阶段的初始值
+    let matchStage = {};
+
+    if(role === "superAdmin") {
+      matchStage = { username: { $regex: searchContent, $options: "i" } };
+    } else {
+      matchStage = {
+        username: { $regex: searchContent, $options: "i" },
+        role: "audit",
+      }
+    }
+
+    const managers = await Manager.aggregate([
+      {
+        // 游记状态筛选并查找标题或内容与搜索内容匹配的游记
+        $match: {
+          $and: [
+            matchStage,
+            { role: { $ne: "superAdmin" } },
+          ],
+        },
+      },
+      {
+        // 从文档中选择并返回指定的字段
+        $project: {
+          _id: 1,
+          username: 1,
+          password: 1,
+          userAvatar: 1,
+          role: {
+            $switch: {
+              branches: [
+                { case: { $eq: ["$role", "admin"] }, then: "管理员" },
+                { case: { $eq: ["$role", "audit"] }, then: "审核人员" },
+              ],
+              default: "$role",
+            },
+          },
+        },
+      },
+    ]);
+
+    // 将 MongoDB 文档对象转换为普通 JavaScript 对象
+    const result = managers.map((item) => {
+      const newItem = {
+        _id: item._id,
+        username: item.username,
+        password: item.password,
+        userAvatar: item.userAvatar,
+        role: item.role,
+      };
+      return newItem;
+    });
+
+    // console.log(result);
+    res.json(result);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "用户列表获取失败" }); // 如果出现错误，返回500错误
   }
 });
 

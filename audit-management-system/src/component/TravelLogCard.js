@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   Carousel,
   Button,
@@ -7,14 +7,38 @@ import {
   Typography,
   Drawer,
   Space,
-  Form,
   Input,
   message,
+  Row,
+  Col,
 } from "antd";
 import { CloseOutlined } from "@ant-design/icons";
 import cookie from "react-cookies";
 import { api } from "../util";
 const { TextArea } = Input;
+
+const buttonData = [
+  {
+    text: "转发抄袭，盗图",
+    backgroundColor: "#E8F8F5",
+    borderColor: "#A2D9CE",
+  },
+  {
+    text: "虚假宣传，欺诈",
+    backgroundColor: "#FEF5E7",
+    borderColor: "#F9E79F",
+  },
+  {
+    text: "侮辱敏感性字眼",
+    backgroundColor: "#F9EBEA",
+    borderColor: "#F5B7B1",
+  },
+  {
+    text: "暴力色情",
+    backgroundColor: "#FFEEE7",
+    borderColor: "#F5B7B1",
+  },
+];
 
 const TravelLogCard = ({ logs, index, setTravelLogs, onDelete }) => {
   const [newState, setNewState] = useState(null);
@@ -70,6 +94,7 @@ const TravelLogCard = ({ logs, index, setTravelLogs, onDelete }) => {
       .catch((error) => {
         console.error("拒绝理由提交失败:", error);
       });
+    setInstruction("");
     onClose();
   };
 
@@ -86,6 +111,11 @@ const TravelLogCard = ({ logs, index, setTravelLogs, onDelete }) => {
         console.error("删除失败:", error);
         message.error("删除失败");
       });
+  };
+
+  // 拒绝理由标签选择
+  const handleButtonClick = (text) => {
+    setInstruction(instruction + text + "；");
   };
 
   const imageShow = (imagesUrl) => {
@@ -123,7 +153,7 @@ const TravelLogCard = ({ logs, index, setTravelLogs, onDelete }) => {
         // style={{ width: '100%' }}
         styles={{ body: { padding: 20, overflow: "hidden" } }}
       >
-        {userRole === "admin" && (
+        {userRole !== "audit" && (
           <Flex justify="flex-end">
             <CloseOutlined
               style={{ fontSize: "20px", color: "gray" }}
@@ -237,18 +267,31 @@ const TravelLogCard = ({ logs, index, setTravelLogs, onDelete }) => {
           </Space>
         }
       >
-        <Form>
-          <Form.Item
-            name="instruction"
+        <div style={{ marginBottom: 15 }}>
+          <TextArea
+            rows={3}
+            value={instruction}
             rules={[{ required: true, message: "此项不能为空" }]}
-          >
-            <TextArea
-              rows={4}
-              value={instruction}
-              onChange={(e) => setInstruction(e.target.value)}
-            />
-          </Form.Item>
-        </Form>
+            onChange={(e) => setInstruction(e.target.value)}
+          />
+        </div>
+        <Row gutter={[12, 12]}>
+          {buttonData.map((button, index) => (
+            <Col span={6} key={index}>
+              <Button
+                type="text"
+                style={{
+                  backgroundColor: button.backgroundColor,
+                  borderColor: button.borderColor,
+                  transition: "background-color 0.3s, border-color 0.3s",
+                }}
+                onClick={() => handleButtonClick(button.text)}
+              >
+                {button.text}
+              </Button>
+            </Col>
+          ))}
+        </Row>
       </Drawer>
     </div>
   );

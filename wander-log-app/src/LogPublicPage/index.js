@@ -277,6 +277,7 @@ const LogPublicPage = () => {
 
     getLocation();
   }, []);
+  
   // 提交页面数据
   const handleSubmitData = async () => {
     if (imageUrl.length === 0 || !title || !content) {

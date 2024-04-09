@@ -79,9 +79,9 @@ const UserList = () => {
   ];
 
   // 抽屉表单
-  const showDrawer = () => {
-    setOpen(true);
-  };
+  // const showDrawer = () => {
+  //   setOpen(true);
+  // };
   const onClose = () => {
     setOpen(false);
   };
@@ -125,7 +125,7 @@ const UserList = () => {
       window.location.reload();
     } catch (error) {
       console.error("Error adding data:", error);
-      message.error("用户添加失败");
+      message.error(error.response.data.message);
     }
   };
 
@@ -209,7 +209,7 @@ const UserList = () => {
               <Col span={12}>
                 <Form.Item
                   name="username"
-                  label="UserName"
+                  label="用户名"
                   rules={[
                     {
                       required: true,
@@ -223,7 +223,7 @@ const UserList = () => {
               <Col span={12}>
                 <Form.Item
                   label="Password"
-                  name="password"
+                  name="密码"
                   rules={[
                     {
                       required: true,
@@ -239,7 +239,7 @@ const UserList = () => {
               <Col span={12}>
                 <Form.Item
                   name="role"
-                  label="Role"
+                  label="角色"
                   rules={[
                     {
                       required: true,
@@ -248,7 +248,9 @@ const UserList = () => {
                   ]}
                 >
                   <Select placeholder="Please select an role">
-                    {role === "superAdmin" && <Option value="admin">管理员</Option>}
+                    {role === "superAdmin" && (
+                      <Option value="admin">管理员</Option>
+                    )}
                     <Option value="audit">审核人员</Option>
                   </Select>
                 </Form.Item>

@@ -7,6 +7,11 @@ const bcrypt = require("bcryptjs");
 // 添加用户信息
 router.post("/addUser", async (req, res) => {
   const { username, password, role } = req.body;
+  // 检查用户名是否已存在
+  const userExists = await Manager.findOne({ username });
+  if (userExists) {
+    return res.status(400).json({ message: "用户名已存在，请重新输入" });
+  }
   try {
     // 使用 bcryptjs 对密码进行哈希处理
     const hashedPassword = await bcrypt.hash(password, 10); // 使用 10 轮的哈希加密

@@ -32,6 +32,7 @@ import { get } from "react-native/Libraries/TurboModule/TurboModuleRegistry";
 import { useFocusEffect } from "@react-navigation/native";
 import {
   api,
+  setAuthHeader,
   storeDataToAS,
   removeValueFromAS,
   getItemFromAS,
@@ -54,6 +55,7 @@ const ContentView = ({ onCloseDrawer }) => {
       >
         <TouchableOpacity
           onPress={() => {
+            onCloseDrawer();
             navigation.navigate("AddUser");
           }}
         >
@@ -179,41 +181,65 @@ const RenderItem = ({ value }) => {
   // console.log(value);
   const navigation = useNavigation();
   return (
-    <TouchableOpacity
-      onPress={() => {
-        navigation.navigate("LogDetail", { item: value });
-      }}
-    >
-      <Card containerStyle={{ borderRadius: 10, padding: 0 }}>
-        <Card.Image
-          style={{ padding: 0 }}
-          source={{
-            uri: value.imageUrl,
-          }}
-        />
-        <View
+    <Card containerStyle={{ borderRadius: 10, padding: 0 }}>
+      <Card.Image
+        style={{ padding: 0 }}
+        source={{
+          uri: value.imageUrl,
+        }}
+        onPress={() => {
+          if (value.state) {
+            if (value.state == "已通过") {
+              navigation.navigate("LogDetail", { item: value });
+            } else if (value.state == "未发布" || value.state == "待审核") {
+              navigation.navigate("LogPublic", { item: value });
+            }
+          }
+        }}
+      />
+      <View
+        style={{
+          flexDirection: "row",
+          justifyContent: "space-evenly",
+          alignItems: "center",
+          marginBottom: 10,
+          marginTop: 5,
+        }}
+      >
+        <Text
           style={{
-            flexDirection: "row",
-            justifyContent: "space-evenly",
-            marginBottom: 10,
-            marginTop: 5,
+            width: "60%",
+            justifyContent: "center",
+            alignItems: "center",
+            textAlign: "center",
           }}
         >
-          <Text>{value.title}</Text>
-          <Text>
-            <Badge
-              badgeStyle={{}}
-              containerStyle={{}}
-              status="primary"
-              textProps={{}}
-              textStyle={{ color: "#EFE" }}
-              value="审核中"
-              options={{}}
-            />
-          </Text>
-        </View>
-      </Card>
-    </TouchableOpacity>
+          {value.title}
+        </Text>
+        <Text
+          style={{
+            width: "40%",
+            justifyContent: "center",
+            alignItems: "center",
+            textAlign: "center",
+          }}
+        >
+          <Badge
+            badgeStyle={{}}
+            containerStyle={{}}
+            status={
+              (value.state == "已通过" && "success") ||
+              (value.state == "待审核" && "primary") ||
+              (value.state == "未通过" && "error") ||
+              (value.state == "未发布" && "warning")
+            }
+            textProps={{}}
+            textStyle={{ color: "#EFE" }}
+            value={value.state}
+          />
+        </Text>
+      </View>
+    </Card>
   );
 };
 
@@ -221,68 +247,87 @@ const MyLogPage = () => {
   const navigation = useNavigation();
   const [visible, setVisible] = useState(false);
   const [select, setSelect] = useState(true);
-  const [isVisible, setIsVisible] = useState(false);
   const [userInfo, setUserInfo] = useState({});
   const [imageUrl, setImageUrl] = useState();
   const [userAvatarUrl, setUserAvatarUrl] = useState();
   const [myLogDatas, setMyLogDatas] = useState([]);
-  const [imageData, setImageData] = useState();
+  const [loading, setLoading] = useState(false);
   const [modalVisible, setModalVisible] = useState(false); // 上传照片模态框
-  const list = [
-    { title: "List Item 1" },
-    { title: "List Item 2" },
-    {
-      title: "Cancel",
-      containerStyle: { backgroundColor: "red" },
-      titleStyle: { color: "white" },
-      onPress: () => setIsVisible(false),
-    },
-  ];
-  // const [isRender, setIsRender] = useState(false);
-  const BASE_URI = "https://source.unsplash.com/random?sig=";
-  const data = [
-    "https://source.unsplash.com/random?sig=0",
-    "https://source.unsplash.com/random?sig=1",
-    "https://source.unsplash.com/random?sig=2",
-    "https://source.unsplash.com/random?sig=3",
-    "https://source.unsplash.com/random?sig=4",
-    "https://source.unsplash.com/random?sig=5",
-    "https://source.unsplash.com/random?sig=6",
-    "https://source.unsplash.com/random?sig=7",
-    "https://source.unsplash.com/random?sig=8",
-    "https://source.unsplash.com/random?sig=9",
-  ];
-  const fetchMyLogDatas = async () => {
+  const [likeLogDatas, setLikeLogDatas] = useState([]);
+  const [collectLogDatas, setCollectDatas] = useState([]);
+
+  const fetchUserLogData = async () => {
+    try {
+      setLoading(true);
+      await setAuthHeader();
+      const response = await api.get("/userInfo/info");
+      // console.log(response.data.data);
+      setUserInfo(response.data.data);
+      await storeDataToAS("userInfo", JSON.stringify(response.data.data));
+      await fetchMyLogDatas("我的笔记", "/myLog/getMyLogs", setMyLogDatas);
+      setLoading(false);
+    } catch (e) {
+      console.log(e.response.data.message);
+    }
+  };
+
+  const fetchMyLogDatas = async (type, server_url, setFunc) => {
+    console.log(type);
     try {
       // const params = {
       //   selectedTopic: selectedTopic,
       //   searchContent: searchContent,
       // };
-      await api.interceptors.request.use(
-        async (config) => {
-          config.interceptors = "AddAuthorizationToken";
-          const token = await getItemFromAS("token");
-          // console.log(token);
-          if (token) {
-            config.headers.Authorization = `${token}`;
-          }
-          return config;
-        },
-        (error) => {
-          return Promise.reject(error);
-        }
-      );
-      const response = await api.get("/myLog/getMyLogs");
+      const response = await api.get(server_url);
       // console.log(response.data.data);
       if (response.data.data) {
-        setMyLogDatas(response.data.data);
+        setFunc(response.data.data);
       }
     } catch (error) {
       // 数据加载失败
       console.log("获取失败", error.response.data.message);
     }
   };
-  const fetchUserData = async () => {
+  const fetchLikeLogData = async () => {
+    try {
+      setLoading(true);
+      await setAuthHeader();
+      const response = await api.get("/userInfo/info");
+      // console.log(response.data.data);
+      setUserInfo(response.data.data);
+      await storeDataToAS("userInfo", JSON.stringify(response.data.data));
+      await fetchMyLogDatas(
+        "我的点赞",
+        "/myLog/getMyLikeLogs",
+        setLikeLogDatas
+      );
+      setLoading(false);
+    } catch (e) {
+      console.log(e.response.data.message);
+    }
+  };
+  const fetchCollectLogData = async () => {
+    try {
+      setLoading(true);
+      const response = await api.get("/userInfo/info");
+      // console.log(response.data.data);
+      setUserInfo(response.data.data);
+      await storeDataToAS("userInfo", JSON.stringify(response.data.data));
+      await fetchMyLogDatas(
+        "我的收藏",
+        "/myLog/getMyCollectLogs",
+        setCollectDatas
+      );
+      setLoading(false);
+    } catch (e) {
+      console.log(e.response.data.message);
+    }
+  };
+  //切换tap
+  const changeTapIndex = (e) => {
+    setIndex(e);
+  };
+  const getUserDataFromAS = async () => {
     try {
       let user = await getItemFromAS("userInfo");
       user = JSON.parse(user);
@@ -294,11 +339,17 @@ const MyLogPage = () => {
       console.log(e);
     }
   };
+  useEffect(() => {
+    console.log("获取用户数据");
+    setIndex(0);
+    fetchUserLogData();
+    fetchLikeLogData();
+  }, []);
   useFocusEffect(
     React.useCallback(() => {
       // 在页面获取焦点时执行的操作
-      fetchUserData();
-      fetchMyLogDatas();
+      getUserDataFromAS();
+      // fetchMyLogDatas();
       // console.log("Screen focused");
       return () => {
         // 在页面失去焦点时执行的清理操作（可选）
@@ -363,7 +414,7 @@ const MyLogPage = () => {
         let newUrl = res.data.data.url;
         setFunc(newUrl);
         let newUserInfo = { ...userInfo, [fieldName]: newUrl };
-        console.log(newUserInfo);
+        // console.log(newUserInfo);
         storeDataToAS("userInfo", JSON.stringify(newUserInfo));
       })
       .catch((err) => {
@@ -513,24 +564,6 @@ const MyLogPage = () => {
         })}
       >
         <View style={styles.container}>
-          {/* <SafeAreaProvider>
-            <BottomSheet
-              // modalProps={{ presentationStyle: "fullScreen" }}
-              // containerStyle={{ backgroundColor: "red" }}
-              isVisible={isVisible}
-            >
-              <ListItem
-                onPress={() => {
-                  setIsVisible(false);
-                }}
-                style={{ backgroundColor: "green" }}
-              >
-                <ListItem.Content>
-                  <ListItem.Title>关闭</ListItem.Title>
-                </ListItem.Content>
-              </ListItem>
-            </BottomSheet>
-          </SafeAreaProvider> */}
           <View style={styles.user_container}>
             <ImageBackground
               source={imageUrl ? { uri: imageUrl } : {}}
@@ -672,13 +705,17 @@ const MyLogPage = () => {
                 >
                   <View style={{ ...styles.box_center, flex: 1 }}>
                     <TouchableOpacity>
-                      <Text style={styles.text_center}>0</Text>
+                      <Text style={styles.text_center}>
+                        {userInfo ? userInfo.follow : 0}
+                      </Text>
                       <Text style={styles.text_center}>关注</Text>
                     </TouchableOpacity>
                   </View>
                   <View style={{ ...styles.box_center, flex: 1 }}>
                     <TouchableOpacity>
-                      <Text style={styles.text_center}>0</Text>
+                      <Text style={styles.text_center}>
+                        {userInfo ? userInfo.fans : 0}
+                      </Text>
                       <Text style={styles.text_center}>粉丝</Text>
                     </TouchableOpacity>
                   </View>
@@ -758,10 +795,16 @@ const MyLogPage = () => {
                 <Tab.Item>收藏</Tab.Item>
                 <Tab.Item>赞过</Tab.Item>
               </Tab>
-              <TabView value={index} onChange={setIndex} animationType="spring">
+              <TabView
+                value={index}
+                onChange={(e) => changeTapIndex(e)}
+                animationType="spring"
+              >
                 <TabView.Item style={{ width: "100%" }}>
                   {myLogDatas ? (
                     <FlatList
+                      refreshing={loading}
+                      onRefresh={fetchUserLogData}
                       showsVerticalScrollIndicator={false}
                       data={myLogDatas}
                       numColumns={2}
@@ -780,18 +823,48 @@ const MyLogPage = () => {
                   )}
                 </TabView.Item>
                 <TabView.Item style={{ width: "100%" }}>
-                  <EmyptyItem
-                    name="collections"
-                    color="lightgray"
-                    label="收藏了等于学了"
-                  />
+                  {collectLogDatas ? (
+                    <FlatList
+                      refreshing={loading}
+                      onRefresh={fetchUserLogData}
+                      showsVerticalScrollIndicator={false}
+                      data={collectLogDatas}
+                      numColumns={2}
+                      renderItem={({ item, index }) => (
+                        <View style={{ width: "50%" }} key={index}>
+                          <RenderItem value={item} />
+                        </View>
+                      )}
+                    ></FlatList>
+                  ) : (
+                    <EmyptyItem
+                      name="collections"
+                      color="lightgray"
+                      label="收藏了等于学了"
+                    />
+                  )}
                 </TabView.Item>
                 <TabView.Item style={{ width: "100%" }}>
-                  <EmyptyItem
-                    name="favorite-border"
-                    color="lavenderblush"
-                    label="爱过~"
-                  />
+                  {likeLogDatas ? (
+                    <FlatList
+                      refreshing={loading}
+                      onRefresh={fetchLikeLogData}
+                      showsVerticalScrollIndicator={false}
+                      data={likeLogDatas}
+                      numColumns={2}
+                      renderItem={({ item, index }) => (
+                        <View style={{ width: "50%" }} key={index}>
+                          <RenderItem value={item} />
+                        </View>
+                      )}
+                    ></FlatList>
+                  ) : (
+                    <EmyptyItem
+                      name="favorite-border"
+                      color="lavenderblush"
+                      label="爱过~"
+                    />
+                  )}
                 </TabView.Item>
               </TabView>
             </View>

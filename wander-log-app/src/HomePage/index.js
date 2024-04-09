@@ -12,7 +12,7 @@ import {
 import WaterfallFlow from "react-native-waterfall-flow";
 import TravelLogCard from "./component/TravelLogCard";
 import { Feather, MaterialIcons } from "@expo/vector-icons";
-import { api } from "../../util";
+import { api, setAuthHeader } from "../../util";
 const config = require("../../config.json");
 
 const Toast = Overlay.Toast;
@@ -64,6 +64,7 @@ const HomePage = ({ navigation }) => {
 
   useEffect(() => {
     // 等待容器加载数据
+    setAuthHeader();
     setRequestStatus(RequestStatus.PENDING);
     fetchTravelLog("append");
   }, [searchContent, selectedTopic]);

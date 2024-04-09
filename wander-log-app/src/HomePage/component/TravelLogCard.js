@@ -13,6 +13,7 @@ import { useNavigation } from "@react-navigation/native";
 import { AntDesign, Ionicons } from "@expo/vector-icons";
 import {
   api,
+  setAuthHeader,
   storeDataToAS,
   removeValueFromAS,
   getItemFromAS,
@@ -38,8 +39,12 @@ const TravelLogCard = ({ item, columnIndex, numColumns }) => {
   // 检查当前用户是否点赞过该游记
   const checkLike = async () => {
     // console.log(userId, item._id);
-    const response = await api.get(`/home/checkLike/${item._id}`);
-    setLiked(response.data.liked);
+    try {
+      const response = await api.get(`/home/checkLike/${item._id}`);
+      setLiked(response.data.liked);
+    } catch (e) {
+      console.log(e);
+    }
   };
 
   useEffect(() => {

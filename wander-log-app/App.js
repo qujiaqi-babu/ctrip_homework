@@ -1,4 +1,5 @@
 import * as React from "react";
+import { useEffect } from "react";
 import {
   StyleSheet,
   Dimensions,
@@ -8,11 +9,7 @@ import {
 } from "react-native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import {
-  NavigationContainer,
-  useNavigation,
-  useRoute,
-} from "@react-navigation/native";
+import { NavigationContainer, useNavigation } from "@react-navigation/native";
 import HomeScreen from "./src/HomePage";
 import LogDetailScreen from "./src/LogDetailPage";
 import LoginScreen from "./src/LoginPage";
@@ -23,6 +20,7 @@ import UserInfoScreen from "./src/UserInfoPage";
 import OtherUserScreen from "./src/otherUserPage";
 import SettingScreen from "./src/SettingPage";
 import AddUserScreen from "./src/AddUserPage";
+import { api, storeDataToAS, removeValueFromAS, getItemFromAS } from "./util";
 
 import { MaterialIcons, Ionicons } from "@expo/vector-icons";
 
@@ -162,6 +160,24 @@ function HomeStackScreen() {
 
 // 主应用组件
 function App() {
+  // 页面首次加载时获取用户身份验证Token
+  useEffect(() => {
+    api.interceptors.request.use(
+      async (config) => {
+        config.interceptors = "AddAuthorizationToken";
+        const token = await getItemFromAS("token");
+        // console.log(token);
+        if (token) {
+          config.headers.Authorization = `${token}`;
+        }
+        return config;
+      },
+      (error) => {
+        console.log(error);
+        return Promise.reject(error);
+      }
+    );
+  }, []);
   return (
     <NavigationContainer>
       <HomeStackScreen />

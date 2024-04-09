@@ -16,7 +16,7 @@ import ImageSlider from "./component/imageSlider";
 import { api, getItemFromAS } from "../../util";
 
 const LogDetailPage = ({ route }) => {
-  const { item } = route.params; // 主页传来的值
+  const { item, setCardLikes, setCardLiked } = route.params; // 主页传来的值
   const logId = item._id;
   const userId = item.userId;
   const userAvatar = item.userAvatar;
@@ -62,26 +62,48 @@ const LogDetailPage = ({ route }) => {
     return `${year}-${month}-${day}`;
   };
 
+  // 检查当前用户是否点赞过该游记
+  const checkLike = async () => {
+    // console.log(userId, item._id);
+    await api
+      .get(`/home/checkLike/${item._id}`)
+      .then((response) => {
+        setLiked(response.data.liked);
+      })
+      .catch((error) => {
+        // console.log(error);
+      });
+  };
+
+  // 检查当前用户是否收藏过该游记
+  const checkCollect = async () => {
+    // console.log(userId, item._id);
+    await api
+      .get(`/home/checkCollect/${item._id}`)
+      .then((response) => {
+        setCollected(response.data.collected);
+      })
+      .catch((error) => {
+        // console.log(error);
+      });
+  };
+
   useEffect(() => {
     // console.log("fetching log detail...");
+    checkLike(); // 当前用户是否点赞过该游记
+    checkCollect(); // 当前用户是否收藏过该游记
     const fetchLogDetail = async () => {
       try {
         const response = await api.get(`/logDetail/findLog/${logId}`);
         const data = await response.data;
         setTravelLog({
-          ...travelLog,
-          imagesUrl: data.imagesUrl,
-          title: data.title,
-          destination: data.destination,
-          month: data.travelMonth,
+          ...data,
           perCost: mapPerCost(data.percost),
           recomRate: mapRate(data.rate),
-          content: data.content,
-          topic: data.topic,
           editTime: formatDate(data.editTime),
-          favorites: data.favorites,
-          hits: data.hits,
         });
+        setCollects(data.collects);
+        setLikes(data.likes);
       } catch (error) {
         console.error(error);
       }
@@ -102,11 +124,40 @@ const LogDetailPage = ({ route }) => {
     setModalVisible(false);
   };
 
-  // 点赞功能的点击效果
+  // 当前用户点赞或取消点赞该游记，数据库同步更新
+  const handleLike = async () => {
+    await api
+      .post("/home/like", {
+        travelLogId: item._id,
+      })
+      .then((response) => {
+        setLiked(response.data.liked);
+        setLikes(response.data.liked ? likes + 1 : likes - 1);
+      })
+      .catch((error) => {
+        // console.log(error);
+      });
+  };
+
+  // 当前用户收藏或取消收藏该游记，数据库同步更新
+  const handleCollect = async () => {
+    await api
+      .post("/home/collect", {
+        travelLogId: item._id,
+      })
+      .then((response) => {
+        setCollected(response.data.collected);
+        setCollects(response.data.collected ? collects + 1 : collects - 1);
+      })
+      .catch((error) => {
+        // console.log(error);
+      });
+  };
+
+  // 点赞or收藏按钮的点击效果
   const handleIconPress = (type) => {
     if (type === "like") {
-      setLiked(!liked);
-      setLikes(liked ? likes - 1 : likes + 1);
+      handleLike();
       Animated.sequence([
         Animated.timing(likeScaleValue, {
           toValue: 1.2,
@@ -120,8 +171,7 @@ const LogDetailPage = ({ route }) => {
         }),
       ]).start();
     } else if (type === "collect") {
-      setCollected(!collected);
-      setCollects(collected ? collects - 1 : collects + 1);
+      handleCollect();
       Animated.sequence([
         Animated.timing(collectScaleValue, {
           toValue: 1.2,
@@ -142,7 +192,13 @@ const LogDetailPage = ({ route }) => {
       {/* 顶部导航栏 */}
       <View style={styles.topScreen}>
         <View style={styles.leftTopScreen}>
-          <TouchableOpacity onPress={() => navigation.goBack()}>
+          <TouchableOpacity
+            onPress={() => {
+              setCardLikes(likes); // 同步游记卡片的点赞量
+              setCardLiked(liked); // 同步游记卡片的点赞状态
+              navigation.goBack();
+            }}
+          >
             <MaterialIcons
               name="arrow-back-ios"
               size={30}

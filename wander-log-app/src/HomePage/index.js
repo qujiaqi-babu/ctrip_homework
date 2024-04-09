@@ -12,8 +12,14 @@ import {
 import WaterfallFlow from "react-native-waterfall-flow";
 import TravelLogCard from "./component/TravelLogCard";
 import { Feather, MaterialIcons } from "@expo/vector-icons";
-import { api } from "../../util";
+import { useFocusEffect } from "@react-navigation/native";
 const config = require("../../config.json");
+import {
+  api,
+  storeDataToAS,
+  removeValueFromAS,
+  getItemFromAS,
+} from "../../util";
 
 const Toast = Overlay.Toast;
 
@@ -65,13 +71,12 @@ const HomePage = ({ navigation }) => {
   useEffect(() => {
     // 等待容器加载数据
     setRequestStatus(RequestStatus.PENDING);
-    fetchTravelLog("append");
+    fetchTravelLog("fresh");
   }, [searchContent, selectedTopic]);
 
   // 当滚动到顶部时刷新游记列表
   const handleFresh = async () => {
     setRequestStatus(RequestStatus.PENDING);
-    setTravelLogs([]);
     await fetchTravelLog("fresh");
   };
 
@@ -103,20 +108,17 @@ const HomePage = ({ navigation }) => {
 
   const handleInputDelete = () => {
     setSearchInput("");
+    setSearchContent("");
   };
 
   const handleSearchPress = () => {
     // setLoadedCount(0);
-    setTravelLogs([]);
     setSearchContent(searchInput);
   };
 
   const handleTopicPress = (index) => {
     // setLoadedCount(0);
-    setTravelLogs([]);
     setSelectedTopic(topics[index]);
-    setSearchContent("");
-    setSearchInput("");
   };
 
   return (

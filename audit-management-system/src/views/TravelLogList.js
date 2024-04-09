@@ -137,6 +137,7 @@ const TravelLogList = () => {
             onSearch={onSearch}
             enterButton
             allowClear
+            size="large"
             // maxLength={50}
           />
         </div>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   Carousel,
   Button,
@@ -123,7 +123,7 @@ const TravelLogCard = ({ logs, index, setTravelLogs, onDelete }) => {
         // style={{ width: '100%' }}
         styles={{ body: { padding: 20, overflow: "hidden" } }}
       >
-        {userRole === "admin" && (
+        {userRole !== "audit" && (
           <Flex justify="flex-end">
             <CloseOutlined
               style={{ fontSize: "20px", color: "gray" }}

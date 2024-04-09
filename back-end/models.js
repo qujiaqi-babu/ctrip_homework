@@ -87,13 +87,35 @@ const ManagerSchema = new Schema({
 
 // 点赞模型
 const LikeSchema = new Schema({
-  userId: { type: Schema.Types.ObjectId, ref: "User" }, // 用户 ID
-  travelLogId: { type: Schema.Types.ObjectId, ref: "TravelLog" }, // 游记 ID
+  userId: { type: Schema.Types.ObjectId, ref: "User" }, // 点赞者 ID
+  travelLogId: { type: Schema.Types.ObjectId, ref: "TravelLog" }, // 被点赞游记 ID
+});
+
+// 收藏模型
+const CollectSchema = new Schema({
+  userId: { type: Schema.Types.ObjectId, ref: "User" }, // 收藏者 ID
+  travelLogId: { type: Schema.Types.ObjectId, ref: "TravelLog" }, // 被收藏游记 ID
+});
+
+// 关注模型
+const FocusSchema = new Schema({
+  followerId: { type: Schema.Types.ObjectId, ref: "User" }, // 粉丝 ID
+  beFollowedId: { type: Schema.Types.ObjectId, ref: "User" }, // 被关注者 ID
+});
+
+// 评论模型
+const CommentSchema = new Schema({
+  userId: { type: Schema.Types.ObjectId, ref: "User" }, // 评论者 ID
+  travelLogId: { type: Schema.Types.ObjectId, ref: "TravelLog" }, // 被评论游记 ID
+  comment: { type: String }, // 发布的评论
 });
 
 const User = mongoose.model("User", UserSchema);
 const TravelLog = mongoose.model("TravelLog", TravelLogSchema);
 const Manager = mongoose.model("Manager", ManagerSchema);
 const Like = mongoose.model("Like", LikeSchema);
+const Collect = mongoose.model("Collect", CollectSchema);
+const Focus = mongoose.model("Focus", FocusSchema);
+const Comment = mongoose.model("Comment", CommentSchema);
 
-module.exports = { User, TravelLog, Manager, Like };
+module.exports = { User, TravelLog, Manager, Like, Collect, Focus, Comment };

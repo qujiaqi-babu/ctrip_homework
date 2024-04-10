@@ -153,16 +153,17 @@ const App = () => {
       };
       const response = await api.get("/home/myFriends", { params });
       console.log(response.data.data);
-      // setData(response.data.data);
-    } catch (e) {
-      console.log(e);
-      console.log(e.response.message);
+      setData(response.data.data);
+    } catch (error) {
+      console.log(error);
     }
   };
+
   useEffect(() => {
-    setData([]);
+    // setData([]);
     fetchUsers();
   }, [searchContent]);
+
   const handleSearchPress = () => {
     // setLoadedCount(0);
     console.log(searchInput.trim());

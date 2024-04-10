@@ -68,7 +68,7 @@ const LogPublicPage = ({ route }) => {
     longitudeDelta: 0.0421,
   });
   const ranges = ["0—500", "500—1000", "1000—2000", "2000以上"];
-  const [rating, setRating] = useState(0);
+  const [rating, setRating] = useState(1);
 
   const formaDate = new FormData();
   // 数据回显

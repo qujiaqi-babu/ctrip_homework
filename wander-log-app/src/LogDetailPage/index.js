@@ -96,6 +96,7 @@ const LogDetailPage = ({ route }) => {
       try {
         const response = await api.get(`/logDetail/findLog/${logId}`);
         const data = await response.data;
+        console.log(data);
         setTravelLog({
           ...data,
           perCost: mapPerCost(data.percost),
@@ -274,7 +275,7 @@ const LogDetailPage = ({ route }) => {
             <View style={styles.label}>
               <Text style={styles.labelText}>出行月份</Text>
               {travelLog && (
-                <Text style={styles.labelData}>{travelLog.month}</Text>
+                <Text style={styles.labelData}>{travelLog.travelMonth}</Text>
               )}
             </View>
             <View style={styles.label}>

@@ -20,6 +20,7 @@ import UserInfoScreen from "./src/UserInfoPage";
 import OtherUserScreen from "./src/otherUserPage";
 import SettingScreen from "./src/SettingPage";
 import AddUserScreen from "./src/AddUserPage";
+import ShareToUserScreen from "./src/ShareToUserPage";
 import {
   api,
   setAuthHeader,
@@ -158,6 +159,15 @@ function HomeStackScreen() {
           headerShown: true,
           headerTitleAlign: "center",
           headerTitle: "发现好友",
+        }}
+      />
+      <Stack.Screen
+        name="ShareToUser"
+        component={ShareToUserScreen}
+        options={{
+          headerShown: true,
+          headerTitleAlign: "center",
+          headerTitle: "分享给好友",
         }}
       />
     </Stack.Navigator>

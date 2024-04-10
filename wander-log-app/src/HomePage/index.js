@@ -169,7 +169,7 @@ const HomePage = ({ navigation }) => {
           <Feather name="search" color="gray" size={20} style={styles.icon} />
           <TextInput
             style={styles.searchInput}
-            // placeholder="Enter search keyword"
+            placeholder="输入游记标题或作者昵称查询"
             onChangeText={handleInputChange}
             value={searchInput}
           />

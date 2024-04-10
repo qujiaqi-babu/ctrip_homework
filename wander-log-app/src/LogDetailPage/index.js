@@ -243,7 +243,11 @@ const LogDetailPage = ({ route }) => {
               {isSubscribed ? "已关注" : "关注"}
             </Text>
           </TouchableOpacity>
-          <TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => {
+              navigation.navigate("ShareToUser");
+            }}
+          >
             <MaterialIcons
               name="ios-share"
               size={30}

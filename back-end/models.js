@@ -118,6 +118,13 @@ const CommentSchema = new Schema({
   comment: { type: String }, // 发布的评论
 });
 
+// 分享模型
+const ShareSchema = new Schema({
+  fromUserId: { type: Schema.Types.ObjectId, ref: "User" }, // 分享者 ID
+  travelLogId: { type: Schema.Types.ObjectId, ref: "TravelLog" }, // 被分享游记 ID
+  toUserId: { type: Schema.Types.ObjectId, ref: "User" }, // 被分享者 ID
+});
+
 const User = mongoose.model("User", UserSchema);
 const TravelLog = mongoose.model("TravelLog", TravelLogSchema);
 const Manager = mongoose.model("Manager", ManagerSchema);
@@ -125,5 +132,15 @@ const Like = mongoose.model("Like", LikeSchema);
 const Collect = mongoose.model("Collect", CollectSchema);
 const Focus = mongoose.model("Focus", FocusSchema);
 const Comment = mongoose.model("Comment", CommentSchema);
+const Share = mongoose.model("Share", ShareSchema);
 
-module.exports = { User, TravelLog, Manager, Like, Collect, Focus, Comment };
+module.exports = {
+  User,
+  TravelLog,
+  Manager,
+  Like,
+  Collect,
+  Focus,
+  Comment,
+  Share,
+};

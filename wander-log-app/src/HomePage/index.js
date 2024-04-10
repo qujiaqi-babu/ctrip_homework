@@ -57,8 +57,7 @@ const HomePage = ({ navigation }) => {
       return response.data.liked;
     } catch (error) {
       // 错误处理
-      console.error(error);
-      throw error;
+      return false;
     }
   };
 

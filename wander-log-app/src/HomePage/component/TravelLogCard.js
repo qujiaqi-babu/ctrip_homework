@@ -30,7 +30,7 @@ const TravelLogCard = ({ item, columnIndex, numColumns }) => {
   // const [imageHeight, setImageHeight] = useState(200);
 
   const [likes, setLikes] = useState(item.likes); // 游记点赞量
-  const [liked, setLiked] = useState(item.liked); // 当前用户是否点赞过该游记
+  const [liked, setLiked] = useState(item.liked ? item.liked : false); // 当前用户是否点赞过该游记
   const [likeScaleValue] = useState(new Animated.Value(1));
 
   // 获取导航对象

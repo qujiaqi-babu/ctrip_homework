@@ -574,7 +574,14 @@ const MyLogPage = () => {
               source={imageUrl ? { uri: imageUrl } : {}}
               resizeMode="cover"
               style={styles.background_image}
-            >
+            />
+            <View
+              style={{
+                ...StyleSheet.absoluteFillObject,
+                backgroundColor: "rgba(130, 130, 130, 0.5)",
+              }}
+            />
+            <View style={styles.contentBox}>
               <View style={styles.head_container}>
                 {/* <Text>导航头</Text> */}
                 <TouchableOpacity onPress={showSideMenu}>
@@ -681,6 +688,7 @@ const MyLogPage = () => {
                         color: "#FFF",
                         fontSize: 15,
                         fontFamily: "serif",
+                        marginTop: 5,
                       }}
                     >
                       游客号:{userInfo ? userInfo.customId : ""}
@@ -786,7 +794,8 @@ const MyLogPage = () => {
                   {/* <View style={{ ...styles.box_center, flex: 1 }}></View> */}
                 </View>
               </View>
-            </ImageBackground>
+            </View>
+            {/* </ImageBackground> */}
           </View>
           <View style={styles.content_container}>
             <View style={styles.log_container}>
@@ -972,6 +981,12 @@ const styles = StyleSheet.create({
     width: "100%",
     height: "100%",
     backgroundColor: "#828282",
+  },
+  contentBox: {
+    position: "absolute",
+    top: 30,
+    width: "100%",
+    height: "90%",
   },
   user_container: {
     flex: 8,

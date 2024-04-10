@@ -6,7 +6,6 @@ import cookie from "react-cookies";
 
 const { Title } = Typography;
 
-
 const LoginPage = ({ handleLogin }) => {
   const handleSubmit = async (values) => {
     await api
@@ -38,7 +37,7 @@ const LoginPage = ({ handleLogin }) => {
             color: "rgb(94, 98, 115)",
           }}
         >
-          游记审核管理系统
+          蓝鸟审核管理系统
         </Title>
         <Form
           name="normal_login"
@@ -61,6 +60,7 @@ const LoginPage = ({ handleLogin }) => {
               prefix={<UserOutlined className="site-form-item-icon" />}
               placeholder="Username"
               style={{ fontSize: "18px" }}
+              // autoComplete="on"
             />
           </Form.Item>
           <Form.Item

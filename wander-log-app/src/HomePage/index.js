@@ -70,7 +70,6 @@ const HomePage = ({ navigation }) => {
 
   useEffect(() => {
     // 等待容器加载数据
-    setAuthHeader();
     setRequestStatus(RequestStatus.PENDING);
     fetchTravelLog("fresh");
   }, [searchContent, selectedTopic]);

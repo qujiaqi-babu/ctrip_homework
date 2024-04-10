@@ -194,8 +194,8 @@ const LogDetailPage = ({ route }) => {
         <View style={styles.leftTopScreen}>
           <TouchableOpacity
             onPress={() => {
-              setCardLikes(likes); // 同步游记卡片的点赞量
-              setCardLiked(liked); // 同步游记卡片的点赞状态
+              setCardLikes && setCardLikes(likes); // 同步游记卡片的点赞量
+              setCardLiked && setCardLiked(liked); // 同步游记卡片的点赞状态
               navigation.goBack();
             }}
           >

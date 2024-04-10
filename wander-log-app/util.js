@@ -5,7 +5,25 @@ import axios from "axios";
 const api = axios.create({
   baseURL: config.baseURL,
 });
-
+/**
+ * 拦截器：当发送请求时需要向请求头当中加入token
+ */
+const setAuthHeader = async () => {
+  await api.interceptors.request.use(
+    async (config) => {
+      config.interceptors = "AddAuthorizationToken";
+      const token = await getItemFromAS("token");
+      // console.log(token);
+      if (token) {
+        config.headers.Authorization = `${token}`;
+      }
+      return config;
+    },
+    (error) => {
+      return Promise.reject(error);
+    }
+  );
+};
 /**
  * 本地异步存储数据
  * key:String
@@ -47,4 +65,4 @@ const getItemFromAS = async (key) => {
     console.log("本地异步存储值获取失败：", key);
   }
 };
-export { api, storeDataToAS, removeValueFromAS, getItemFromAS };
+export { api, storeDataToAS, removeValueFromAS, getItemFromAS, setAuthHeader };

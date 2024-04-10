@@ -29,7 +29,13 @@ const config = require("../../config.json");
 
 const Toast = Overlay.Toast;
 
-const LogPublicPage = () => {
+const LogPublicPage = ({ route }) => {
+  let logId = null;
+  if (route.params) {
+    const { item } = route.params;
+    logId = item._id;
+  }
+
   const navigation = useNavigation();
   const [title, setTitle] = useState("");
   const maxTitleLength = 20;
@@ -65,7 +71,7 @@ const LogPublicPage = () => {
   const [rating, setRating] = useState(0);
 
   const formaDate = new FormData();
-
+  // 数据回显
   // 分中英文计算字符长度
   const calculateLength = (str) => {
     let length = 0;
@@ -251,33 +257,107 @@ const LogPublicPage = () => {
   const handleClickStar = (index) => {
     setRating(index + 1); // 评级分数1~5
   };
+  const fetchLogDetail = async () => {
+    try {
+      const response = await api.get(`/logDetail/findLog/${logId}`);
+      const data = await response.data;
+      // console.log(data.imageUrl);
+      setImageUrl(data.imagesUrl);
+      setContent(data.content);
+      setRating(data.rate);
+      setTitle(data.title);
+      setSelectedMonth(data.travelMonth);
+      setSelectedRange(data.perCost);
+      setLabelText(data.topic);
+      // setTravelLog({
+      //   ...travelLog,
+      //   imagesUrl: data.imagesUrl,
+      //   title: data.title,
+      //   destination: data.destination,
+      //   month: data.travelMonth,
+      //   perCost: mapPerCost(data.percost),
+      //   recomRate: mapRate(data.rate),
+      //   content: data.content,
+      //   topic: data.topic,
+      //   editTime: formatDate(data.editTime),
+      //   favorites: data.favorites,
+      //   hits: data.hits,
+      // });
+    } catch (error) {
+      console.error(error);
+    }
+  };
   useEffect(() => {
-    const getLocation = async () => {
-      try {
-        let { status } = await Location.requestForegroundPermissionsAsync();
-        console.log(status);
-        if (status !== "granted") {
-          setLocationError("Location permission denied");
-          return;
-        }
+    if (logId) {
+      console.log(logId);
 
-        let location = await Location.getCurrentPositionAsync({
-          accuracy: Location.Accuracy.Highest,
-          maximumAge: 10000,
-        });
-        // let geocode = await Location.reverseGeocodeAsync(location.coords);
-        // let city = geocode[0].city;
-        // setUserLocation(city);
-        setUserLocation(location);
-        console.log(location);
-      } catch (error) {
-        console.error("Error requesting location permission:", error);
-      }
-    };
+      fetchLogDetail();
+    }
+    //获取当前位置
+    // const getLocation = async () => {
+    //   try {
+    //     let { status } = await Location.requestForegroundPermissionsAsync();
+    //     console.log(status);
+    //     if (status !== "granted") {
+    //       setLocationError("Location permission denied");
+    //       return;
+    //     }
 
-    getLocation();
+    //     let location = await Location.getCurrentPositionAsync({
+    //       accuracy: Location.Accuracy.Highest,
+    //       maximumAge: 10000,
+    //     });
+    //     // let geocode = await Location.reverseGeocodeAsync(location.coords);
+    //     // let city = geocode[0].city;
+    //     // setUserLocation(city);
+    //     setUserLocation(location);
+    //     console.log(location);
+    //   } catch (error) {
+    //     console.error("Error requesting location permission:", error);
+    //   }
+    // };
+
+    // getLocation();
   }, []);
-  
+
+  const handleAddToDraft = async () => {
+    if (imageUrl.length === 0 || !title || !content) {
+      Toast.show("请至少上传一张图片，填写标题和内容~", { duration: 2000 });
+      return;
+    }
+
+    formaDate.append("images", imageData);
+    // console.log(formaDate);
+    const httpUrls = imageUrl
+      .filter((url) => url.startsWith("http"))
+      .map((url) => url.match(/\/([^/]+\.[a-zA-Z0-9]+)$/)[1]);
+    console.log(httpUrls);
+    await api
+      .post(
+        "/logPublic/upload", // 虚拟机不能使用localhost
+        {
+          travelId: logId,
+          images: formaDate,
+          httpUrls: httpUrls,
+          title: title,
+          content: content,
+          topic: labelText,
+          travelMonth: selectedMonth,
+          percost: selectedRange,
+          rate: rating,
+          destination: destinationText,
+          state: "未发布",
+        }
+      )
+      .then((res) => {
+        console.log("提交成功:", res.data.message);
+        // 提交成功后跳转到我的游记页面，并刷新
+        navigation.navigate("MyLog");
+      })
+      .catch((err) => {
+        console.log("提交失败:", err);
+      });
+  };
   // 提交页面数据
   const handleSubmitData = async () => {
     if (imageUrl.length === 0 || !title || !content) {
@@ -287,12 +367,17 @@ const LogPublicPage = () => {
 
     formaDate.append("images", imageData);
     // console.log(formaDate);
-
+    const httpUrls = imageUrl
+      .filter((url) => url.startsWith("http"))
+      .map((url) => url.match(/\/([^/]+\.[a-zA-Z0-9]+)$/)[1]);
+    console.log(httpUrls);
     await api
       .post(
         "/logPublic/upload", // 虚拟机不能使用localhost
         {
+          travelId: logId,
           images: formaDate,
+          httpUrls: httpUrls,
           title: title,
           content: content,
           topic: labelText,
@@ -300,6 +385,7 @@ const LogPublicPage = () => {
           percost: selectedRange,
           rate: rating,
           destination: destinationText,
+          state: "待审核",
         }
       )
       .then((res) => {
@@ -704,7 +790,7 @@ const LogPublicPage = () => {
         </View>
         {/* 底部操作栏 */}
         <View style={styles.six}>
-          <TouchableOpacity>
+          <TouchableOpacity onPress={handleAddToDraft}>
             <View style={styles.draftBack}>
               <Image
                 source={require("../LogPublicPage/public/draft.png")}

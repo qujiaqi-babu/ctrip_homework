@@ -37,6 +37,8 @@ router.get("/info", authenticateToken, async (req, res) => {
           profile: user.profile,
           gender: user.gender,
           backgroundImage: background_image, // 用户头像的 URL
+          follow: user.follow,
+          fans: user.fans,
         },
       });
     } else {

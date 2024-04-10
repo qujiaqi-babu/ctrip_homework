@@ -57,7 +57,7 @@ const ContentView = ({ onCloseDrawer }) => {
         <TouchableOpacity
           onPress={() => {
             onCloseDrawer();
-            navigation.navigate("AddUser");
+            navigation.navigate("AddUser", { type: 0 });
           }}
         >
           <ListItem style={{ backgroundColor: "#E5E7E9" }}>
@@ -194,6 +194,8 @@ const RenderItem = ({ value }) => {
               navigation.navigate("LogDetail", { item: value });
             } else if (value.state == "未发布" || value.state == "待审核") {
               navigation.navigate("LogPublic", { item: value });
+            } else if (value.state == "未通过") {
+              navigation.navigate("LogPublic", { item: value });
             }
           }
         }}
@@ -266,6 +268,7 @@ const MyLogPage = () => {
       setUserInfo(response.data.data);
       await storeDataToAS("userInfo", JSON.stringify(response.data.data));
       await fetchMyLogDatas("我的笔记", "/myLog/getMyLogs", setMyLogDatas);
+      await fetchCollectLogData();
       setLoading(false);
     } catch (e) {
       console.log(e.response.data.message);
@@ -345,6 +348,7 @@ const MyLogPage = () => {
     setIndex(0);
     fetchUserLogData();
     fetchLikeLogData();
+    fetchCollectLogData();
   }, []);
   useFocusEffect(
     React.useCallback(() => {
@@ -570,7 +574,14 @@ const MyLogPage = () => {
               source={imageUrl ? { uri: imageUrl } : {}}
               resizeMode="cover"
               style={styles.background_image}
-            >
+            />
+            <View
+              style={{
+                ...StyleSheet.absoluteFillObject,
+                backgroundColor: "rgba(130, 130, 130, 0.5)",
+              }}
+            />
+            <View style={styles.contentBox}>
               <View style={styles.head_container}>
                 {/* <Text>导航头</Text> */}
                 <TouchableOpacity onPress={showSideMenu}>
@@ -677,6 +688,7 @@ const MyLogPage = () => {
                         color: "#FFF",
                         fontSize: 15,
                         fontFamily: "serif",
+                        marginTop: 5,
                       }}
                     >
                       游客号:{userInfo ? userInfo.customId : ""}
@@ -705,7 +717,11 @@ const MyLogPage = () => {
                   }}
                 >
                   <View style={{ ...styles.box_center, flex: 1 }}>
-                    <TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={() => {
+                        navigation.navigate("AddUser", { type: 1 });
+                      }}
+                    >
                       <Text style={styles.text_center}>
                         {userInfo ? userInfo.follow : 0}
                       </Text>
@@ -713,7 +729,11 @@ const MyLogPage = () => {
                     </TouchableOpacity>
                   </View>
                   <View style={{ ...styles.box_center, flex: 1 }}>
-                    <TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={() => {
+                        navigation.navigate("AddUser", { type: 2 });
+                      }}
+                    >
                       <Text style={styles.text_center}>
                         {userInfo ? userInfo.fans : 0}
                       </Text>
@@ -774,7 +794,8 @@ const MyLogPage = () => {
                   {/* <View style={{ ...styles.box_center, flex: 1 }}></View> */}
                 </View>
               </View>
-            </ImageBackground>
+            </View>
+            {/* </ImageBackground> */}
           </View>
           <View style={styles.content_container}>
             <View style={styles.log_container}>
@@ -961,6 +982,12 @@ const styles = StyleSheet.create({
     width: "100%",
     height: "100%",
     backgroundColor: "#828282",
+  },
+  contentBox: {
+    position: "absolute",
+    top: 30,
+    width: "100%",
+    height: "90%",
   },
   user_container: {
     flex: 8,

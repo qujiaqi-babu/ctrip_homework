@@ -4,6 +4,8 @@ const router = express.Router();
 const { User, TravelLog, Manager, Focus } = require("../models"); //引入模型
 const crypto = require("crypto");
 const { saveImage } = require("../utils/fileManager");
+const mongoose = require("mongoose");
+const ObjectId = mongoose.Types.ObjectId;
 
 const calaMD5 = (data) => {
   return crypto.createHash("md5").update(data).digest("hex");
@@ -31,6 +33,7 @@ router.get("/info", authenticateToken, async (req, res) => {
         status: "success",
         message: "Login successful",
         data: {
+          userId: user._id,
           userAvatar: userAvatar,
           username: user.username,
           customId: user.customId,
@@ -50,6 +53,7 @@ router.get("/info", authenticateToken, async (req, res) => {
     res.status(500).json({ status: "error", message: "出错了，请联系管理员" });
   }
 });
+//推荐好友给用户
 router.get("/findUsers", authenticateToken, async (req, res) => {
   // 获取token中的用户id
   const { searchContent } = req.query;
@@ -94,6 +98,183 @@ router.get("/findUsers", authenticateToken, async (req, res) => {
       res.status(200).json({
         status: "success",
         message: "Login successful",
+        data: newUsers,
+      });
+    } else {
+      res.status(401).json({ status: "error", message: "请先登录" });
+      console.log("用户不存在");
+    }
+  } catch (err) {
+    console.error("Error querying database:", err);
+    res.status(500).json({ status: "error", message: "出错了，请联系管理员" });
+  }
+});
+//获取用户关注的所有用户
+router.get("/findFollowUsers", authenticateToken, async (req, res) => {
+  // 获取token中的用户id
+  const { searchContent } = req.query;
+  // console.log("searchContent:", searchContent);
+  // 用户数据加载 每次加载count张
+  const count = parseInt(req.query.count);
+  const userId = req.user.id;
+  console.log(userId);
+  try {
+    const users = await Focus.aggregate([
+      // 第一阶段：根据当前用户的 ID 查找其关注的用户 ID
+      {
+        $match: {
+          $and: [
+            { followerId: new ObjectId(userId) }, // 需要转换数据类型
+            { beFollowedId: { $ne: new ObjectId(userId) } },
+          ],
+        },
+      },
+      // 第二阶段：联合查询获取关注的用户信息
+      {
+        $lookup: {
+          from: "users", // 用户集合名称
+          localField: "beFollowedId", // Focus 集合中的被关注者 ID 字段
+          foreignField: "_id", // User 集合中的用户 ID 字段
+          as: "user", // 存储联合后的用户信息数组
+        },
+      },
+      // 第三阶段：根据搜索内容筛选游客号或用户名，为空则显示全部好友
+      {
+        $match: {
+          $or: [
+            { "user.username": { $regex: searchContent, $options: "i" } }, // 使用正则表达式进行模糊查询用户名，忽略大小写
+            {
+              "user.customId":
+                searchContent === "" || isNaN(searchContent)
+                  ? -1
+                  : parseInt(searchContent),
+            }, // 使用正则表达式进行模糊查询customId，忽略大小写
+          ],
+        },
+      },
+      // 第四阶段：筛选出需要的用户信息字段
+      {
+        $project: {
+          "user._id": 1,
+          "user.username": 1,
+          "user.userAvatar": 1,
+          "user.profile": 1,
+        },
+      },
+      // 第五阶段：每次只取count条数据
+      { $limit: count },
+    ]);
+    // console.log(users);
+
+    if (users) {
+      const newUsers = users.map((item) => {
+        // console.log(item.user[0]);
+        let avatar = item.user[0].userAvatar; //用户头像
+        if (avatar != null && !avatar.startsWith("http")) {
+          avatar = `${config.baseURL}/${config.userAvatarPath}/${avatar}`;
+        }
+        // console.log(avatar);
+        const newItem = {
+          userId: item.user[0]._id,
+          username: item.user[0].username,
+          userAvatar: avatar,
+          profile: item.user[0].profile,
+        };
+        return newItem;
+      });
+
+      console.log("success", newUsers);
+      res.status(200).json({
+        status: "success",
+        data: newUsers,
+      });
+    } else {
+      res.status(401).json({ status: "error", message: "请先登录" });
+      console.log("用户不存在");
+    }
+  } catch (err) {
+    console.error("Error querying database:", err);
+    res.status(500).json({ status: "error", message: "出错了，请联系管理员" });
+  }
+});
+
+//获取用户的粉丝
+router.get("/findFollowedUsers", authenticateToken, async (req, res) => {
+  // 获取token中的用户id
+  const { searchContent } = req.query;
+  // console.log("searchContent:", searchContent);
+  // 用户数据加载 每次加载count张
+  const count = parseInt(req.query.count);
+  const userId = req.user.id;
+  console.log(userId);
+  try {
+    const users = await Focus.aggregate([
+      // 第一阶段：根据当前用户的 ID 查找其关注的用户 ID
+      {
+        $match: {
+          $and: [
+            { beFollowedId: new ObjectId(userId) }, // 需要转换数据类型
+            { followerId: { $ne: new ObjectId(userId) } },
+          ],
+        },
+      },
+      // 第二阶段：联合查询获取关注的用户信息
+      {
+        $lookup: {
+          from: "users", // 用户集合名称
+          localField: "followerId", // Focus 集合中的被关注者 ID 字段
+          foreignField: "_id", // User 集合中的用户 ID 字段
+          as: "user", // 存储联合后的用户信息数组
+        },
+      },
+      // 第三阶段：根据搜索内容筛选游客号或用户名，为空则显示全部好友
+      {
+        $match: {
+          $or: [
+            { "user.username": { $regex: searchContent, $options: "i" } }, // 使用正则表达式进行模糊查询用户名，忽略大小写
+            {
+              "user.customId":
+                searchContent === "" || isNaN(searchContent)
+                  ? -1
+                  : parseInt(searchContent),
+            }, // 使用正则表达式进行模糊查询customId，忽略大小写
+          ],
+        },
+      },
+      // 第四阶段：筛选出需要的用户信息字段
+      {
+        $project: {
+          "user._id": 1,
+          "user.username": 1,
+          "user.userAvatar": 1,
+          "user.profile": 1,
+        },
+      },
+      // 第五阶段：每次只取count条数据
+      { $limit: count },
+    ]);
+    // console.log(users);
+
+    if (users) {
+      const newUsers = users.map((item) => {
+        // console.log(item.user[0]);
+        let avatar = item.user[0].userAvatar; //用户头像
+        if (avatar != null && !avatar.startsWith("http")) {
+          avatar = `${config.baseURL}/${config.userAvatarPath}/${avatar}`;
+        }
+        // console.log(avatar);
+        const newItem = {
+          userId: item.user[0]._id,
+          username: item.user[0].username,
+          userAvatar: avatar,
+          profile: item.user[0].profile,
+        };
+        return newItem;
+      });
+
+      console.log("success", newUsers);
+      res.status(200).json({
+        status: "success",
         data: newUsers,
       });
     } else {

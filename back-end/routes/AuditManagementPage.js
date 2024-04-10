@@ -42,7 +42,7 @@ router.post("/login", async (req, res) => {
     // 验证密码是否正确
     const valid = await bcrypt.compare(password, user.password);
     if (!valid) {
-      return res.status(400).json({message: "密码不正确，请重新输入"});
+      return res.status(400).json({ message: "密码不正确，请重新输入" });
     }
     // if (password !== user.password) {
     //   return res.status(400).json({ message: "密码不正确，请重新输入" });
@@ -148,6 +148,10 @@ router.get("/travelLogs", async (req, res) => {
         $match: { isDelete: { $ne: true } }, // 不等于true
       },
       {
+        // 排除状态为"未发布"的数据
+        $match: { state: { $ne: "未发布" } }, // 不等于"未发布"
+      },
+      {
         // 游记状态筛选并查找标题或内容与搜索内容匹配的游记
         $match: {
           $and: [
@@ -195,11 +199,10 @@ router.get("/travelLogs", async (req, res) => {
         },
       },
     ]);
-
     // 将 MongoDB 文档对象转换为普通 JavaScript 对象
     const result = travelLogs.map((item) => {
       const imagesUrl = item.imagesUrl.map(
-        (imageUrl) => `${config.localhost}/image/${imageUrl}`
+        (imageUrl) => `${config.localhost}/${config.logUploadPath}/${imageUrl}`
       );
       const newItem = {
         _id: item._id,
@@ -290,23 +293,20 @@ router.get("/adminUser", async (req, res) => {
     // 定义匹配阶段的初始值
     let matchStage = {};
 
-    if(role === "superAdmin") {
+    if (role === "superAdmin") {
       matchStage = { username: { $regex: searchContent, $options: "i" } };
     } else {
       matchStage = {
         username: { $regex: searchContent, $options: "i" },
         role: "audit",
-      }
+      };
     }
 
     const managers = await Manager.aggregate([
       {
         // 游记状态筛选并查找标题或内容与搜索内容匹配的游记
         $match: {
-          $and: [
-            matchStage,
-            { role: { $ne: "superAdmin" } },
-          ],
+          $and: [matchStage, { role: { $ne: "superAdmin" } }],
         },
       },
       {

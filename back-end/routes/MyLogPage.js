@@ -1,7 +1,9 @@
 const express = require("express");
 const config = require("../config.json");
-const { User, TravelLog, Manager, Like } = require("../models");
+const { User, TravelLog, Manager, Like, Collect } = require("../models");
 const router = express.Router();
+const mongoose = require("mongoose");
+const ObjectId = mongoose.Types.ObjectId;
 
 //验证用户登录状态
 const { authenticateToken } = require("./auth");
@@ -87,9 +89,9 @@ router.get("/getMyLikeLogs", authenticateToken, async (req, res) => {
         $match: {
           $and: [
             { "travelLog.state": "已通过" }, // 查询状态为“已通过”的游记信息
-            // {
-            //   userId: userId,
-            // },
+            {
+              userId: new ObjectId(userId),
+            },
           ],
         },
       },
@@ -107,11 +109,11 @@ router.get("/getMyLikeLogs", authenticateToken, async (req, res) => {
       },
       // { $sample: { size: count } },
     ]);
-    console.log(travelLogs);
+    // console.log(travelLogs);
     const result = travelLogs
       .sort((a, b) => b.travelLog[0].likes - a.travelLog[0].likes) // 按点击量降序排序
       .map((t) => {
-        console.log(t);
+        // console.log(t);
         let item = t.travelLog[0];
 
         let imageUrl = item.imagesUrl[0]; // 只展示第一张图片
@@ -148,11 +150,10 @@ router.get("/getMyLikeLogs", authenticateToken, async (req, res) => {
   }
 });
 //获取用户收藏的笔记
-//获取我点赞的笔记
 router.get("/getMyCollectLogs", authenticateToken, async (req, res) => {
   try {
     const userId = req.user.id;
-    const travelLogs = await Like.aggregate([
+    const travelLogs = await Collect.aggregate([
       {
         $lookup: {
           from: "travellogs", // travelLogs集合名称
@@ -165,9 +166,9 @@ router.get("/getMyCollectLogs", authenticateToken, async (req, res) => {
         $match: {
           $and: [
             { "travelLog.state": "已通过" }, // 查询状态为“已通过”的游记信息
-            // {
-            //   userId: userId,
-            // },
+            {
+              userId: new ObjectId(userId),
+            },
           ],
         },
       },
@@ -185,11 +186,11 @@ router.get("/getMyCollectLogs", authenticateToken, async (req, res) => {
       },
       // { $sample: { size: count } },
     ]);
-    console.log(travelLogs);
+    // console.log(travelLogs);
     const result = travelLogs
       .sort((a, b) => b.travelLog[0].likes - a.travelLog[0].likes) // 按点击量降序排序
       .map((t) => {
-        console.log(t);
+        // console.log(t);
         let item = t.travelLog[0];
 
         let imageUrl = item.imagesUrl[0]; // 只展示第一张图片

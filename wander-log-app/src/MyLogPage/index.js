@@ -4,6 +4,7 @@ import {
   StyleSheet,
   Text,
   ScrollView,
+  RefreshControl,
   TouchableOpacity,
   FlatList,
   Image,
@@ -801,7 +802,7 @@ const MyLogPage = () => {
                 animationType="spring"
               >
                 <TabView.Item style={{ width: "100%" }}>
-                  {myLogDatas ? (
+                  {myLogDatas && myLogDatas.length > 0 ? (
                     <FlatList
                       refreshing={loading}
                       onRefresh={fetchUserLogData}
@@ -815,15 +816,25 @@ const MyLogPage = () => {
                       )}
                     ></FlatList>
                   ) : (
-                    <EmyptyItem
-                      name="note-edit-outline"
-                      color="lightgray"
-                      label="笔记"
-                    ></EmyptyItem>
+                    <ScrollView
+                      style={styles.emyptyItemContainer}
+                      refreshControl={
+                        <RefreshControl
+                          refreshing={loading}
+                          onRefresh={fetchUserLogData}
+                        />
+                      }
+                    >
+                      <EmyptyItem
+                        name="note-edit-outline"
+                        color="lightgray"
+                        label="笔记"
+                      ></EmyptyItem>
+                    </ScrollView>
                   )}
                 </TabView.Item>
                 <TabView.Item style={{ width: "100%" }}>
-                  {collectLogDatas ? (
+                  {collectLogDatas && collectLogDatas.length > 0 ? (
                     <FlatList
                       refreshing={loading}
                       onRefresh={fetchUserLogData}
@@ -837,15 +848,26 @@ const MyLogPage = () => {
                       )}
                     ></FlatList>
                   ) : (
-                    <EmyptyItem
-                      name="collections"
-                      color="lightgray"
-                      label="收藏了等于学了"
-                    />
+                    <ScrollView
+                      style={styles.emyptyItemContainer}
+                      refreshControl={
+                        <RefreshControl
+                          refreshing={loading}
+                          onRefresh={fetchUserLogData}
+                        />
+                      }
+                    >
+                      <EmyptyItem
+                        freshFunc={fetchUserLogData}
+                        name="collections"
+                        color="lightgray"
+                        label="收藏了等于学了"
+                      />
+                    </ScrollView>
                   )}
                 </TabView.Item>
                 <TabView.Item style={{ width: "100%" }}>
-                  {likeLogDatas ? (
+                  {likeLogDatas && likeLogDatas.length > 0 ? (
                     <FlatList
                       refreshing={loading}
                       onRefresh={fetchLikeLogData}
@@ -859,11 +881,21 @@ const MyLogPage = () => {
                       )}
                     ></FlatList>
                   ) : (
-                    <EmyptyItem
-                      name="favorite-border"
-                      color="lavenderblush"
-                      label="爱过~"
-                    />
+                    <ScrollView
+                      style={styles.emyptyItemContainer}
+                      refreshControl={
+                        <RefreshControl
+                          refreshing={loading}
+                          onRefresh={fetchUserLogData}
+                        />
+                      }
+                    >
+                      <EmyptyItem
+                        name="favorite-border"
+                        color="lavenderblush"
+                        label="爱过~"
+                      />
+                    </ScrollView>
                   )}
                 </TabView.Item>
               </TabView>
@@ -957,6 +989,9 @@ const styles = StyleSheet.create({
     textAlign: "center",
     fontFamily: "serif",
     color: "#FFF",
+  },
+  emyptyItemContainer: {
+    marginTop: 30,
   },
 });
 const drawerStyles = {

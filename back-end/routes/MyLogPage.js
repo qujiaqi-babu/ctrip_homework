@@ -147,6 +147,84 @@ router.get("/getMyLikeLogs", authenticateToken, async (req, res) => {
     }); // 如果出现错误，返回500错误
   }
 });
+//获取用户收藏的笔记
+//获取我点赞的笔记
+router.get("/getMyCollectLogs", authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const travelLogs = await Like.aggregate([
+      {
+        $lookup: {
+          from: "travellogs", // travelLogs集合名称
+          localField: "travelLogId", // Like集合中的关联字段
+          foreignField: "_id", // travelLogs集合中的关联字段
+          as: "travelLog", // 存储联结后的用户信息
+        },
+      },
+      {
+        $match: {
+          $and: [
+            { "travelLog.state": "已通过" }, // 查询状态为“已通过”的游记信息
+            // {
+            //   userId: userId,
+            // },
+          ],
+        },
+      },
+      {
+        // 从文档中选择并返回指定的字段
+        $project: {
+          userId: 1,
+          "travelLog._id": 1,
+          "travelLog.title": 1,
+          "travelLog.imagesUrl": 1,
+          "travelLog.likes": 1,
+          "travelLog.userId": 1,
+          "travelLog.state": 1,
+        },
+      },
+      // { $sample: { size: count } },
+    ]);
+    console.log(travelLogs);
+    const result = travelLogs
+      .sort((a, b) => b.travelLog[0].likes - a.travelLog[0].likes) // 按点击量降序排序
+      .map((t) => {
+        console.log(t);
+        let item = t.travelLog[0];
+
+        let imageUrl = item.imagesUrl[0]; // 只展示第一张图片
+        if (!imageUrl.startsWith("http")) {
+          imageUrl = `${config.baseURL}/${config.logUploadPath}/${imageUrl}`;
+        }
+        // let userAvatar = item.user[0].userAvatar;
+        // 将 MongoDB 文档对象转换为普通 JavaScript 对象
+        const newItem = {
+          _id: item._id,
+          title: item.title,
+          imageUrl: imageUrl,
+          likes: item.likes,
+          userId: item.userId,
+          state: item.state,
+          // username: item.user[0].username,
+          // userAvatar: userAvatar,
+        };
+        return newItem;
+      });
+    // console.log("==================");
+    // console.log(travelLogs);
+    // console.log("==================");
+    // console.log(result);
+    res
+      .status(200)
+      .json({ status: "success", message: "get successful", data: result });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      status: "failed",
+      message: "获取点赞游记列表失败，请联系管理员",
+    }); // 如果出现错误，返回500错误
+  }
+});
 
 //根据用户id获得他已经通过审核的游记
 router.get("/getLogsByUserId/:id", async (req, res) => {

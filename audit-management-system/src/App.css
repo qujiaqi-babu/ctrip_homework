@@ -41,6 +41,7 @@
 
 .login-box {
   width: 350px;
+  height: 320px;
   display: flex;
   margin-right: 20px;
   flex-direction: column;

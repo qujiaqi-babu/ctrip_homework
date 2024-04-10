@@ -123,6 +123,8 @@ const ShareSchema = new Schema({
   fromUserId: { type: Schema.Types.ObjectId, ref: "User" }, // 分享者 ID
   travelLogId: { type: Schema.Types.ObjectId, ref: "TravelLog" }, // 被分享游记 ID
   toUserId: { type: Schema.Types.ObjectId, ref: "User" }, // 被分享者 ID
+  sharedTime: { type: Date, default: Date.now }, // 分享时间
+  isWatched: { type: Boolean, default: false }, // 被分享者已查看
 });
 
 const User = mongoose.model("User", UserSchema);

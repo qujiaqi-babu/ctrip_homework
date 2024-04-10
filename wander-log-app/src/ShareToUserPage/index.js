@@ -1,171 +1,123 @@
 import React, { useState, useEffect } from "react";
+import { useNavigation } from "@react-navigation/native";
 import {
   View,
   StyleSheet,
   Text,
-  ScrollView,
-  TouchableOpacity,
   FlatList,
-  Image,
-  Button,
-  Alert,
+  TouchableOpacity,
   Animated,
   TextInput,
 } from "react-native";
-import {
-  Icon,
-  Avatar,
-  Tab,
-  Card,
-  Divider,
-  ListItem,
-  Dialog,
-} from "@rneui/themed";
-import { useNavigation } from "@react-navigation/native";
+import { Avatar, Dialog } from "@rneui/themed";
 import { Feather, MaterialIcons } from "@expo/vector-icons";
-import { api, getItemFromAS, removeValueFromAS } from "../../util";
-import { color } from "@rneui/base";
-const config = require("../../config.json");
-const RenderItem = ({ value }) => {
+import { api } from "../../util";
+
+const RenderItem = ({ value, handleFriendPress }) => {
   const navigation = useNavigation();
-  const [focused, setFocused] = useState(false); // 当前用户是否点赞过该游记
-  const [focusScaleValue] = useState(new Animated.Value(1));
-  // console.log(value);
-  const checkFocus = async () => {
-    // console.log(userId, item._id);
-    const response = await api.get(`/userInfo/checkFocus/${value.userId}`);
-    setFocused(response.data.focused);
-  };
-  // 当前用户点赞或取消点赞该游记，数据库同步更新
-  const handleFocus = async () => {
-    const response = await api.post("/userInfo/focus", {
-      beFollowedId: value.userId,
-    });
-    setFocused(response.data.focused);
-  };
-  // 点赞功能的点击效果
+  const [selected, setSelected] = useState(value.selected); // 当前用户是否勾选了该好友
+  const [selectScaleValue] = useState(new Animated.Value(1));
+
+  // console.log(value.username, value.selected, selected);
+
+  // 当组件的传入值发生变化，更新其选中状态（重要！！！）
+  useEffect(() => {
+    setSelected(value.selected);
+  }, [value]);
+
+  // 勾选按钮的点击效果
   const handleIconPress = () => {
-    handleFocus();
+    handleFriendPress(value.userId);
+    setSelected(!selected);
     Animated.sequence([
-      Animated.timing(focusScaleValue, {
+      Animated.timing(selectScaleValue, {
         toValue: 1.2,
         duration: 100,
         useNativeDriver: true,
       }),
-      Animated.timing(focusScaleValue, {
+      Animated.timing(selectScaleValue, {
         toValue: 1,
         duration: 100,
         useNativeDriver: true,
       }),
     ]).start();
   };
-  useEffect(() => {
-    checkFocus();
-  }, []);
+
   return (
-    <TouchableOpacity
-      onPress={() => {
-        navigation.navigate("OtherUserLog", { userId: value.userId });
-      }}
-    >
-      <View
-        style={{
-          flexDirection: "row",
-          justifyContent: "center",
-          alignItems: "center",
-        }}
-      >
-        <View style={{ flex: 1 }}>
-          <Avatar
-            size={64}
-            rounded
-            source={{
-              uri: value.userAvatar
-                ? value.userAvatar
-                : "https://randomuser.me/api/portraits/men/36.jpg",
-            }}
+    <View style={styles.rowContainer}>
+      <TouchableOpacity onPress={handleIconPress} style={styles.checkIcon}>
+        <Animated.View style={[{ transform: [{ scale: selectScaleValue }] }]}>
+          <Feather
+            name={selected ? "check-circle" : "circle"}
+            size={24}
+            color={selected ? "#3498DB" : "black"}
           />
-        </View>
-        <View style={{ flex: 3, flexDirection: "column", marginLeft: 10 }}>
-          <Text style={{ fontSize: 20 }}>{value.username}</Text>
-          <View
+        </Animated.View>
+      </TouchableOpacity>
+      <TouchableOpacity
+        onPress={() => {
+          navigation.navigate("OtherUserLog", { userId: value.userId });
+        }}
+        style={styles.rowCard}
+      >
+        <Avatar
+          size={64}
+          rounded
+          source={{
+            uri: value.userAvatar
+              ? value.userAvatar
+              : "https://randomuser.me/api/portraits/men/36.jpg",
+          }}
+        />
+        <View style={styles.columnContainer}>
+          <Text style={{ fontSize: 20, paddingBottom: 5 }}>
+            {value.username}
+          </Text>
+          <Text
             style={{
-              padding: 5,
-              alignItems: "flex-start",
-              justifyContent: "center",
+              fontSize: 15,
+              paddingBottom: 5,
             }}
           >
-            <Text
-              style={{
-                borderRadius: 10,
-                backgroundColor: "#ddd",
-                padding: 5,
-                paddingLeft: 10,
-                paddingRight: 10,
-              }}
-            >
-              {value.profile ? value.profile : 为世界的美好而战}
-            </Text>
-          </View>
+            {value.profile ? value.profile : "为世界的美好而战"}
+          </Text>
         </View>
-        <View
-          style={{
-            flex: 2,
-            flexDirection: "row",
-            justifyContent: "space-around",
-            alignItems: "center",
-          }}
-        >
-          <TouchableOpacity onPress={handleIconPress}>
-            <Text
-              style={
-                focused
-                  ? sideMenuStyles.focusedButton
-                  : sideMenuStyles.focusButton
-              }
-            >
-              {focused ? "已关注" : "关注"}
-            </Text>
-          </TouchableOpacity>
-          {/* <TouchableOpacity>
-            <Icon name="close"></Icon>
-          </TouchableOpacity> */}
-        </View>
-      </View>
-    </TouchableOpacity>
+      </TouchableOpacity>
+    </View>
   );
 };
 
-const App = () => {
-  // const handleLoginOut = route.params;
-  const navigation = useNavigation();
-  const [data, setData] = useState([]);
-  const countEachLoad = config.findUserCountEachLoad;
+const FriendList = () => {
+  const [friends, setFriends] = useState([]);
+  const [selectedFriends, setSelectedFriends] = useState([]);
   const [searchInput, setSearchInput] = useState("");
   const [searchContent, setSearchContent] = useState("");
 
-  const fetchUsers = async () => {
+  const fetchFriends = async () => {
     try {
       const params = {
         searchContent: searchContent,
-        count: countEachLoad,
-        // offset: loadedCount,
       };
       const response = await api.get("/home/myFriends", { params });
-      console.log(response.data.data);
-      setData(response.data.data);
+      // const myFriends = response.data;
+      const myFriends = response.data.map((item) => ({
+        ...item,
+        selected: selectedFriends
+          ? selectedFriends.includes(item.userId)
+          : false,
+      }));
+      // console.log(myFriends);
+      setFriends(myFriends);
     } catch (error) {
       console.log(error);
     }
   };
 
   useEffect(() => {
-    // setData([]);
-    fetchUsers();
+    fetchFriends();
   }, [searchContent]);
 
   const handleSearchPress = () => {
-    // setLoadedCount(0);
     console.log(searchInput.trim());
     setSearchContent(searchInput.trim());
   };
@@ -175,18 +127,44 @@ const App = () => {
   const handleInputDelete = () => {
     setSearchInput("");
   };
+
+  // 勾选/取消勾选该好友
+  const handleFriendPress = (friendId) => {
+    // 更新好友列表选中状态
+    const updatedFriends = friends.map((friend) =>
+      friend.userId === friendId
+        ? { ...friend, selected: !friend.selected }
+        : friend
+    );
+    setFriends(updatedFriends);
+    // 更新被选中的好友列表
+    if (selectedFriends.includes(friendId)) {
+      setSelectedFriends(
+        selectedFriends.filter((userId) => userId !== friendId)
+      );
+    } else {
+      setSelectedFriends([...selectedFriends, friendId]);
+    }
+    // console.log(selectedFriends);
+  };
+
+  // 当前用户分享该游记，数据库同步更新
+  const handleSharePress = async () => {
+    console.log("分享给选定的好友:", selectedFriends);
+    // const response = await api.post("/home/share", {
+    //   beFollowedId: value.userId,
+    // });
+    // setFocused(response.data.focused);
+  };
+
   return (
-    <View style={sideMenuStyles.container}>
-      <View style={sideMenuStyles.searchBoxContainer}>
-        <View style={sideMenuStyles.searchBox}>
-          <Feather
-            name="search"
-            color="gray"
-            size={20}
-            style={sideMenuStyles.icon}
-          />
+    <View style={styles.container}>
+      {/* 搜索框 */}
+      <View style={styles.searchBoxContainer}>
+        <View style={styles.searchBox}>
+          <Feather name="search" color="gray" size={20} style={styles.icon} />
           <TextInput
-            style={sideMenuStyles.searchInput}
+            style={styles.searchInput}
             placeholder="输入游客号或者用户名查询"
             onChangeText={handleInputChange}
             value={searchInput}
@@ -197,52 +175,50 @@ const App = () => {
                 name="cancel"
                 size={24}
                 color="#989797"
-                style={sideMenuStyles.icon}
+                style={styles.icon}
               />
             </TouchableOpacity>
           )}
         </View>
         <TouchableOpacity onPress={handleSearchPress}>
-          <Text style={sideMenuStyles.searchButton}>搜索</Text>
+          <Text style={styles.searchButton}>搜索</Text>
         </TouchableOpacity>
       </View>
-      {data ? (
+
+      {/* 好友列表 */}
+      {friends ? (
         <FlatList
           showsVerticalScrollIndicator={false}
-          data={data}
+          data={friends}
           numColumns={1}
           renderItem={({ item, index }) => (
-            <View
-              style={{ width: "100%", padding: 5, marginBottom: 10 }}
-              key={index}
-            >
-              <RenderItem value={item} />
-            </View>
+            <RenderItem value={item} handleFriendPress={handleFriendPress} />
           )}
         ></FlatList>
       ) : (
         <Dialog.Loading />
       )}
+      {selectedFriends.length > 0 && (
+        <TouchableOpacity onPress={handleSharePress} style={styles.shareButton}>
+          <Text style={styles.shareText}>分享</Text>
+        </TouchableOpacity>
+      )}
     </View>
   );
 };
-export default App;
-const sideMenuStyles = StyleSheet.create({
+
+const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#FFF",
+    backgroundColor: "#fff",
     padding: 10,
   },
+
+  // 搜索框
   searchBoxContainer: {
     flexDirection: "row",
     alignItems: "center",
-    marginHorizontal: 10,
-    backgroundColor: "#eee",
-    borderRadius: 10,
-    paddingLeft: 10,
-    paddingRight: 10,
-    marginBottom: 20,
-    marginTop: 10,
+    margin: 10,
   },
   searchBox: {
     flex: 9,
@@ -267,50 +243,42 @@ const sideMenuStyles = StyleSheet.create({
     marginLeft: 10,
     color: "gray",
   },
-  menuItem: {
-    // width: "50%",
-    // paddingRight: 10,
-    justifyContent: "space-between",
-    flexDirection: "row",
 
-    // backgroundColor: "red",
-  },
-  valueItem: {
-    // backgroundColor: "red",
-    textAlign: "center",
+  // 好友列表
+  rowContainer: {
     flexDirection: "row",
     alignItems: "center",
-    maxWidth: "80%",
-    // overflow: "hidden",
+    borderRadius: 10,
+    paddingVertical: 8,
+    borderBottomColor: "#ccc",
+    borderBottomWidth: 1,
   },
-  field: {
-    color: "#555",
+  checkIcon: {
+    marginHorizontal: 10,
   },
-  box_container: {
-    borderRadius: 20,
-    // borderWidth: 1,
-    backgroundColor: "#FFF",
-    padding: 5,
+  rowCard: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  columnContainer: {
+    flexDirection: "column",
+    justifyContent: "center",
+    marginLeft: 10,
+  },
+
+  // 分享按钮
+  shareButton: {
+    backgroundColor: "#3498DB",
+    borderRadius: 30,
+    padding: 10,
     marginTop: 10,
   },
-  focusButton: {
-    borderColor: "red",
-    borderRadius: 30,
-    borderWidth: 1,
-    paddingLeft: 20,
-    paddingRight: 20,
-    paddingBottom: 5,
-    paddingTop: 5,
-    color: "red",
-  },
-  focusedButton: {
-    borderColor: "black",
-    borderRadius: 30,
-    borderWidth: 1,
-    paddingLeft: 20,
-    paddingRight: 20,
-    paddingBottom: 5,
-    paddingTop: 5,
-    color: "black",
+  shareText: {
+    fontSize: 18,
+    color: "white",
+    textAlign: "center",
   },
 });
+
+export default FriendList;

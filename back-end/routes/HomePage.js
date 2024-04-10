@@ -242,13 +242,11 @@ router.post("/collect", authenticateToken, async (req, res) => {
   }
 });
 
-//获取当前登录用户的好友列表/查找特定好友
+// 获取当前登录用户的好友列表/查找特定好友
 router.get("/myFriends", authenticateToken, async (req, res) => {
   // 获取token中的用户id
   const { searchContent } = req.query;
   // console.log("searchContent:", searchContent);
-  // 用户数据加载 每次加载count张
-  const count = parseInt(req.query.count);
   const userId = req.user.id;
   console.log(userId);
   try {
@@ -294,8 +292,6 @@ router.get("/myFriends", authenticateToken, async (req, res) => {
           "user.profile": 1,
         },
       },
-      // 第五阶段：每次只取count条数据
-      { $limit: count },
     ]);
     // console.log(users);
 
@@ -317,10 +313,7 @@ router.get("/myFriends", authenticateToken, async (req, res) => {
       });
 
       console.log("success", newUsers);
-      res.status(200).json({
-        status: "success",
-        data: newUsers,
-      });
+      res.json(newUsers);
     } else {
       res.status(401).json({ status: "error", message: "请先登录" });
       console.log("用户不存在");
@@ -328,6 +321,47 @@ router.get("/myFriends", authenticateToken, async (req, res) => {
   } catch (err) {
     console.error("Error querying database:", err);
     res.status(500).json({ status: "error", message: "出错了，请联系管理员" });
+  }
+});
+
+// 用户向好友列表分享特定游记
+router.post("/share", authenticateToken, async (req, res) => {
+  const { travelLogId } = req.body;
+  const userId = req.user.id;
+  try {
+    // 检查是否已经收藏
+    const collect = await Collect.findOne({ userId, travelLogId });
+    if (collect) {
+      // 如果已经收藏，则取消收藏，即移除该条记录
+      await Collect.deleteOne({ _id: collect._id });
+      // 查找游记并更新收藏数
+      const travelLog = await TravelLog.findByIdAndUpdate(
+        travelLogId,
+        { $inc: { collects: -1 } } // 使用 $inc 操作符将点赞数-1
+      );
+      if (!travelLog) {
+        res.status(404).send("TravelLog not found");
+      } else {
+        res.json({ collected: false });
+      }
+    } else {
+      // 如果没有收藏，则收藏
+      const newCollect = new Collect({ userId, travelLogId });
+      await newCollect.save();
+      // 查找游记并更新收藏数
+      const travelLog = await TravelLog.findByIdAndUpdate(
+        travelLogId,
+        { $inc: { collects: 1 } } // 使用 $inc 操作符将点赞数+1
+      );
+      if (!travelLog) {
+        res.status(404).send("TravelLog not found");
+      } else {
+        res.json({ collected: true });
+      }
+    }
+  } catch (error) {
+    console.error("Error collect:", error);
+    res.status(500).send("Internal server error");
   }
 });
 

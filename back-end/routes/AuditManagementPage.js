@@ -148,6 +148,10 @@ router.get("/travelLogs", async (req, res) => {
         $match: { isDelete: { $ne: true } }, // 不等于true
       },
       {
+        // 排除状态为"未发布"的数据
+        $match: { state: { $ne: "未发布" } }, // 不等于"未发布"
+      },
+      {
         // 游记状态筛选并查找标题或内容与搜索内容匹配的游记
         $match: {
           $and: [

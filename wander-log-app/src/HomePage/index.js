@@ -1,5 +1,6 @@
 import "rn-overlay";
 import React, { useState, useEffect } from "react";
+import { Dialog } from "@rneui/themed";
 import {
   View,
   Text,
@@ -162,81 +163,103 @@ const HomePage = ({ navigation }) => {
   };
 
   return (
-    <View style={styles.container}>
-      {/* 搜索框 */}
-      <View style={styles.searchBoxContainer}>
-        <View style={styles.searchBox}>
-          <Feather name="search" color="gray" size={20} style={styles.icon} />
-          <TextInput
-            style={styles.searchInput}
-            placeholder="输入游记标题或作者昵称查询"
-            onChangeText={handleInputChange}
-            value={searchInput}
-          />
-          {searchInput.length > 0 && (
-            <TouchableOpacity onPress={handleInputDelete}>
-              <MaterialIcons
-                name="cancel"
-                size={24}
-                color="#989797"
+    <View style={{ flex: 1 }}>
+      {requestStatus ? (
+        <View style={styles.container}>
+          {/* 搜索框 */}
+          <View style={styles.searchBoxContainer}>
+            <View style={styles.searchBox}>
+              <Feather
+                name="search"
+                color="gray"
+                size={20}
                 style={styles.icon}
               />
+              <TextInput
+                style={styles.searchInput}
+                placeholder="输入游记标题或作者昵称查询"
+                onChangeText={handleInputChange}
+                value={searchInput}
+              />
+              {searchInput.length > 0 && (
+                <TouchableOpacity onPress={handleInputDelete}>
+                  <MaterialIcons
+                    name="cancel"
+                    size={24}
+                    color="#989797"
+                    style={styles.icon}
+                  />
+                </TouchableOpacity>
+              )}
+            </View>
+            <TouchableOpacity onPress={handleSearchPress}>
+              <Text style={styles.searchButton}>搜索</Text>
             </TouchableOpacity>
-          )}
-        </View>
-        <TouchableOpacity onPress={handleSearchPress}>
-          <Text style={styles.searchButton}>搜索</Text>
-        </TouchableOpacity>
-      </View>
+          </View>
 
-      {/* 主题滚动条 */}
-      <View style={styles.topicScrollContainer}>
-        <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
-          {topics.map((topic, index) => (
-            <TouchableOpacity
-              key={index}
-              onPress={() => handleTopicPress(index)}
+          {/* 主题滚动条 */}
+          <View style={styles.topicScrollContainer}>
+            <ScrollView
+              horizontal={true}
+              showsHorizontalScrollIndicator={false}
             >
-              <Text
-                style={[
-                  styles.topic,
-                  topic === selectedTopic && styles.selectedTopic,
-                ]}
-              >
-                {topic ? topic : "推荐"}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-      </View>
+              {topics.map((topic, index) => (
+                <TouchableOpacity
+                  key={index}
+                  onPress={() => handleTopicPress(index)}
+                >
+                  <Text
+                    style={[
+                      styles.topic,
+                      topic === selectedTopic && styles.selectedTopic,
+                    ]}
+                  >
+                    {topic ? topic : "推荐"}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
 
-      {/* 数据加载页 */}
-      {/* {requestStatus === RequestStatus.PENDING && (
+          {/* 数据加载页 */}
+          {/* {requestStatus === RequestStatus.PENDING && (
         <Text style={styles.loading}>游记列表加载中... ^o^</Text>
       )} */}
 
-      {/* 游记卡片瀑布流 */}
-      {(requestStatus === RequestStatus.PENDING ||
-        requestStatus === RequestStatus.SUCCESS) && (
-        <WaterfallFlow
-          style={styles.waterfallFlow}
-          data={travelLogs}
-          onRefresh={handleFresh}
-          refreshing={requestStatus === RequestStatus.PENDING}
-          onEndReached={() => {
-            fetchTravelLog("append");
-          }}
-          onEndReachedThreshold={0.1}
-          numColumns={numColumns}
-          renderItem={({ item, index, columnIndex }) => (
-            <TravelLogCard
-              key={index}
-              item={item}
-              columnIndex={columnIndex}
+          {/* 游记卡片瀑布流 */}
+          {(requestStatus === RequestStatus.PENDING ||
+            requestStatus === RequestStatus.SUCCESS) && (
+            <WaterfallFlow
+              style={styles.waterfallFlow}
+              data={travelLogs}
+              onRefresh={handleFresh}
+              refreshing={requestStatus === RequestStatus.PENDING}
+              onEndReached={() => {
+                fetchTravelLog("append");
+              }}
+              onEndReachedThreshold={0.1}
               numColumns={numColumns}
+              renderItem={({ item, index, columnIndex }) => (
+                <TravelLogCard
+                  key={index}
+                  item={item}
+                  columnIndex={columnIndex}
+                  numColumns={numColumns}
+                />
+              )}
             />
           )}
-        />
+        </View>
+      ) : (
+        <View
+          style={{
+            justifyContent: "center",
+            alignItems: "center",
+            height: "40%",
+          }}
+        >
+          <Dialog.Loading />
+        </View>
       )}
     </View>
   );

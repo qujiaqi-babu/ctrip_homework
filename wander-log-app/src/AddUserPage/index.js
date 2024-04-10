@@ -26,6 +26,7 @@ import { Feather, MaterialIcons } from "@expo/vector-icons";
 import { api, getItemFromAS, removeValueFromAS } from "../../util";
 import { color } from "@rneui/base";
 const config = require("../../config.json");
+
 const RenderItem = ({ value }) => {
   const navigation = useNavigation();
   const [focused, setFocused] = useState(false); // 当前用户是否点赞过该游记
@@ -104,7 +105,7 @@ const RenderItem = ({ value }) => {
                 paddingRight: 10,
               }}
             >
-              {value.profile ? value.profile : 为世界的美好而战}
+              {value.profile ? value.profile : "为世界的美好而战"}
             </Text>
           </View>
         </View>
@@ -136,22 +137,23 @@ const RenderItem = ({ value }) => {
   );
 };
 
-const AddUserScreen = () => {
-  // const handleLoginOut = route.params;
+const AddUserScreen = ({ route }) => {
+  const { type } = route.params;
   const navigation = useNavigation();
   const [data, setData] = useState([]);
   const countEachLoad = config.findUserCountEachLoad;
   const [searchInput, setSearchInput] = useState("");
   const [searchContent, setSearchContent] = useState("");
 
-  const fetchUsers = async () => {
+  const fetchUsers = async (server_url) => {
     try {
       const params = {
         searchContent: searchContent,
         count: countEachLoad,
         // offset: loadedCount,
       };
-      const response = await api.get("/userInfo/findUsers", { params });
+
+      const response = await api.get(server_url, { params });
       // console.log(response.data.data);
       setData(response.data.data);
     } catch (e) {
@@ -161,7 +163,16 @@ const AddUserScreen = () => {
   };
   useEffect(() => {
     setData([]);
-    fetchUsers();
+    if (type == 0) {
+      //发现好友
+      fetchUsers("/userInfo/findUsers");
+    } else if (type == 1) {
+      //关注
+      fetchUsers("/userInfo/findFollowUsers");
+    } else if (type == 2) {
+      //粉丝
+      fetchUsers("/userInfo/findFollowedUsers");
+    }
   }, [searchContent]);
   const handleSearchPress = () => {
     // setLoadedCount(0);

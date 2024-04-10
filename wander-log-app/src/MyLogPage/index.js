@@ -57,7 +57,7 @@ const ContentView = ({ onCloseDrawer }) => {
         <TouchableOpacity
           onPress={() => {
             onCloseDrawer();
-            navigation.navigate("AddUser");
+            navigation.navigate("AddUser", { type: 0 });
           }}
         >
           <ListItem style={{ backgroundColor: "#E5E7E9" }}>
@@ -194,6 +194,8 @@ const RenderItem = ({ value }) => {
               navigation.navigate("LogDetail", { item: value });
             } else if (value.state == "未发布" || value.state == "待审核") {
               navigation.navigate("LogPublic", { item: value });
+            } else if (value.state == "未通过") {
+              navigation.navigate("LogPublic", { item: value });
             }
           }
         }}
@@ -266,6 +268,7 @@ const MyLogPage = () => {
       setUserInfo(response.data.data);
       await storeDataToAS("userInfo", JSON.stringify(response.data.data));
       await fetchMyLogDatas("我的笔记", "/myLog/getMyLogs", setMyLogDatas);
+      await fetchCollectLogData();
       setLoading(false);
     } catch (e) {
       console.log(e.response.data.message);
@@ -345,6 +348,7 @@ const MyLogPage = () => {
     setIndex(0);
     fetchUserLogData();
     fetchLikeLogData();
+    fetchCollectLogData();
   }, []);
   useFocusEffect(
     React.useCallback(() => {
@@ -705,7 +709,11 @@ const MyLogPage = () => {
                   }}
                 >
                   <View style={{ ...styles.box_center, flex: 1 }}>
-                    <TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={() => {
+                        navigation.navigate("AddUser", { type: 1 });
+                      }}
+                    >
                       <Text style={styles.text_center}>
                         {userInfo ? userInfo.follow : 0}
                       </Text>
@@ -713,7 +721,11 @@ const MyLogPage = () => {
                     </TouchableOpacity>
                   </View>
                   <View style={{ ...styles.box_center, flex: 1 }}>
-                    <TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={() => {
+                        navigation.navigate("AddUser", { type: 2 });
+                      }}
+                    >
                       <Text style={styles.text_center}>
                         {userInfo ? userInfo.fans : 0}
                       </Text>

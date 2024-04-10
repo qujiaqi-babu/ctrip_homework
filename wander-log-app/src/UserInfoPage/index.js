@@ -4,6 +4,7 @@ import {
   StyleSheet,
   Text,
   ScrollView,
+  RefreshControl,
   TouchableOpacity,
   FlatList,
   Image,
@@ -18,11 +19,13 @@ import {
   ListItem,
   Dialog,
 } from "@rneui/themed";
-
+import { useNavigation } from "@react-navigation/native";
 import { api } from "../../util";
 // 在发送请求之前，添加 token 到请求头
 
 const UserInforPage = () => {
+  const navgation = useNavigation();
+  const [loading, setLoading] = useState(false);
   // {
   //   avatar_url: "https://randomuser.me/api/portraits/men/36.jpg",
   //   username: "王权",
@@ -53,6 +56,9 @@ const UserInforPage = () => {
     <View style={sideMenuStyles.container}>
       {data ? (
         <ScrollView
+          refreshControl={
+            <RefreshControl refreshing={loading} onRefresh={fetchData} />
+          }
           showsVerticalScrollIndicator={false}
           // showsHorizontalScrollIndicator={false}
           contentContainerStyle={{
@@ -109,7 +115,11 @@ const UserInforPage = () => {
               </ListItem>
               <Divider />
             </TouchableOpacity>
-            <TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => {
+                navgation.navigate("EditPage");
+              }}
+            >
               <ListItem style={{ backgroundColor: "#E5E7E9" }}>
                 <ListItem.Content style={sideMenuStyles.menuItem}>
                   <ListItem.Title style={sideMenuStyles.field}>

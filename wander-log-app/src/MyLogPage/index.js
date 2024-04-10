@@ -838,7 +838,7 @@ const MyLogPage = () => {
                       }
                     >
                       <EmyptyItem
-                        name="note-edit-outline"
+                        name="edit-calendar"
                         color="lightgray"
                         label="笔记"
                       ></EmyptyItem>
@@ -849,7 +849,7 @@ const MyLogPage = () => {
                   {collectLogDatas && collectLogDatas.length > 0 ? (
                     <FlatList
                       refreshing={loading}
-                      onRefresh={fetchUserLogData}
+                      onRefresh={fetchCollectLogData}
                       showsVerticalScrollIndicator={false}
                       data={collectLogDatas}
                       numColumns={2}
@@ -865,12 +865,11 @@ const MyLogPage = () => {
                       refreshControl={
                         <RefreshControl
                           refreshing={loading}
-                          onRefresh={fetchUserLogData}
+                          onRefresh={fetchCollectLogData}
                         />
                       }
                     >
                       <EmyptyItem
-                        freshFunc={fetchUserLogData}
                         name="collections"
                         color="lightgray"
                         label="收藏了等于学了"
@@ -898,7 +897,7 @@ const MyLogPage = () => {
                       refreshControl={
                         <RefreshControl
                           refreshing={loading}
-                          onRefresh={fetchUserLogData}
+                          onRefresh={fetchLikeLogData}
                         />
                       }
                     >

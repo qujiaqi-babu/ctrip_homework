@@ -17,6 +17,7 @@ import RegisterScreen from "./src/RegisterPage";
 import LogPublicScreen from "./src/LogPublicPage";
 import MyLogScreen from "./src/MyLogPage";
 import UserInfoScreen from "./src/UserInfoPage";
+import EditPage from "./src/EditUserInfoPage";
 import OtherUserScreen from "./src/otherUserPage";
 import SettingScreen from "./src/SettingPage";
 import AddUserScreen from "./src/AddUserPage";
@@ -122,6 +123,15 @@ function HomeStackScreen() {
         component={UserInfoScreen}
         options={{
           headerShown: true,
+          headerTitleAlign: "center",
+          headerTitle: "编辑信息",
+        }}
+      />
+      <Stack.Screen
+        name="EditPage"
+        component={EditPage}
+        options={{
+          headerShown: false,
           headerTitleAlign: "center",
           headerTitle: "编辑信息",
         }}

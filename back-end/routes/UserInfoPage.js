@@ -494,4 +494,26 @@ router.post("/focus", authenticateToken, async (req, res) => {
   }
 });
 
+//用户信息更改
+router.put("/update", authenticateToken, async (req, res) => {
+  const userId = req.user.id;
+  const userData = req.body;
+
+  try {
+    // 根据 userId 查找用户
+    const user = await User.findByIdAndUpdate(userId, userData, { new: true });
+
+    if (user) {
+      res
+        .status(200)
+        .json({ status: "success", message: "用户信息已更新", data: user });
+    } else {
+      res.status(404).json({ status: "error", message: "未找到用户" });
+    }
+  } catch (error) {
+    console.error("Error updating user:", error);
+    res.status(500).json({ status: "error", message: "更新用户信息时出错" });
+  }
+});
+
 module.exports = router;

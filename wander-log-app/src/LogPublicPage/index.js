@@ -666,12 +666,6 @@ const LogPublicPage = ({ route }) => {
                     添加地点
                   </Text>
                 </View>
-                <View style={{ width: "100%" }}>
-                  <MapView
-                    style={{ alignSelf: "stretch", height: "100%" }}
-                    region={mapRegion}
-                  />
-                </View>
                 <View style={{ marginTop: 20 }}>
                   {destinationThemes.map((destinationTheme, index) => (
                     <View key={index} style={{ justifyContent: "center" }}>

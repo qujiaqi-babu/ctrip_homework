@@ -20,45 +20,46 @@ import {
 } from "../../../util";
 
 // 屏幕宽度
-const screenWidth = Dimensions.get("window").width;
+// const screenWidth = Dimensions.get("window").width;
 
 // 游记卡片
 const TravelLogCard = ({ item, columnIndex, numColumns }) => {
-  const [isRendered, setIsRendered] = useState(false);
+  // const [isRendered, setIsRendered] = useState(false);
 
   // 图片高度
-  const [imageHeight, setImageHeight] = useState(200);
+  // const [imageHeight, setImageHeight] = useState(200);
 
   const [likes, setLikes] = useState(item.likes); // 游记点赞量
-  const [liked, setLiked] = useState(false); // 当前用户是否点赞过该游记
+  const [liked, setLiked] = useState(item.liked); // 当前用户是否点赞过该游记
   const [likeScaleValue] = useState(new Animated.Value(1));
 
   // 获取导航对象
   const navigation = useNavigation();
 
   // 检查当前用户是否点赞过该游记
-  const checkLike = async () => {
-    // console.log(userId, item._id);
-    await api
-      .get(`/home/checkLike/${item._id}`)
-      .then((response) => {
-        setLiked(response.data.liked);
-      })
-      .catch((error) => {
-        // console.log(error);
-      });
-  };
+  // const checkLike = async () => {
+  //   // console.log(userId, item._id);
+  //   await api
+  //     .get(`/home/checkLike/${item._id}`)
+  //     .then((response) => {
+  //       setLiked(response.data.liked);
+  //     })
+  //     .catch((error) => {
+  //       // console.log(error);
+  //     });
+  // };
 
-  useEffect(() => {
-    checkLike(); // 当前用户是否点赞过该游记
-    Image.getSize(item.imageUrl, (width, height) => {
-      // 计算图片在瀑布流中的高度;
-      const newHeight = Math.floor((screenWidth / numColumns / width) * height);
-      setImageHeight(newHeight);
-    }).then(() => {
-      setIsRendered(true);
-    });
-  }, []);
+  // useEffect(() => {
+  // checkLike(); // 当前用户是否点赞过该游记
+  // Image.getSize(item.imageUrl, (width, height) => {
+  //   // 计算图片在瀑布流中的高度;
+  //   const newHeight = Math.floor((screenWidth / numColumns / width) * height);
+  //   setImageHeight(newHeight);
+  // }).then(() => {
+  //   setIsRendered(true);
+  // });
+  // setIsRendered(true);
+  // }, []);
 
   const handlePress = () => {
     navigation.navigate("LogDetail", {
@@ -102,56 +103,57 @@ const TravelLogCard = ({ item, columnIndex, numColumns }) => {
 
   return (
     <View>
-      {isRendered && (
-        <TouchableWithoutFeedback onPress={handlePress}>
-          <View
-            style={
-              numColumns === 1
-                ? styles.card
-                : {
-                    ...styles.card,
-                    marginLeft: columnIndex === 0 ? 8 : 4,
-                    marginRight: columnIndex === 0 ? 4 : 8,
-                  }
-            }
-          >
-            <Image
-              source={{ uri: item.imageUrl }}
-              style={{ ...styles.image, height: imageHeight }}
-            />
-            <Text style={styles.title}>{item.title}</Text>
+      {/* {isRendered && ( */}
+      <TouchableWithoutFeedback onPress={handlePress}>
+        <View
+          style={
+            numColumns === 1
+              ? styles.card
+              : {
+                  ...styles.card,
+                  marginLeft: columnIndex === 0 ? 8 : 4,
+                  marginRight: columnIndex === 0 ? 4 : 8,
+                }
+          }
+        >
+          <Image
+            source={{ uri: item.imageUrl }}
+            // style={{ ...styles.image, height: imageHeight }}
+            style={{ ...styles.image, height: item.height }}
+          />
+          <Text style={styles.title}>{item.title}</Text>
 
-            <View style={styles.rowContainer}>
-              <View style={{ ...styles.rowContainer, flex: 1 }}>
-                <Image
-                  source={{ uri: item.userAvatar }}
-                  style={styles.userAvatar}
-                />
-                <Text style={styles.userText}>{item.username}</Text>
-              </View>
-              <View style={{ ...styles.rowContainer, width: 60 }}>
-                {/* <AntDesign
+          <View style={styles.rowContainer}>
+            <View style={{ ...styles.rowContainer, flex: 1 }}>
+              <Image
+                source={{ uri: item.userAvatar }}
+                style={styles.userAvatar}
+              />
+              <Text style={styles.userText}>{item.username}</Text>
+            </View>
+            <View style={{ ...styles.rowContainer, width: 60 }}>
+              {/* <AntDesign
                   name="eyeo"
                   color="black"
                   size={styles.userAvatar.width}
                 /> */}
-                <TouchableOpacity onPress={() => handleLikeIconPress("like")}>
-                  <Animated.View
-                    style={[{ transform: [{ scale: likeScaleValue }] }]}
-                  >
-                    <Ionicons
-                      name={liked ? "heart" : "heart-outline"}
-                      size={styles.userAvatar.width}
-                      color={liked ? "red" : "black"}
-                    />
-                  </Animated.View>
-                </TouchableOpacity>
-                <Text style={styles.userText}>{likes}</Text>
-              </View>
+              <TouchableOpacity onPress={() => handleLikeIconPress("like")}>
+                <Animated.View
+                  style={[{ transform: [{ scale: likeScaleValue }] }]}
+                >
+                  <Ionicons
+                    name={liked ? "heart" : "heart-outline"}
+                    size={styles.userAvatar.width}
+                    color={liked ? "red" : "black"}
+                  />
+                </Animated.View>
+              </TouchableOpacity>
+              <Text style={styles.userText}>{likes}</Text>
             </View>
           </View>
-        </TouchableWithoutFeedback>
-      )}
+        </View>
+      </TouchableWithoutFeedback>
+      {/* )} */}
     </View>
   );
 };

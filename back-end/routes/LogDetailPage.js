@@ -16,7 +16,7 @@ router.get("/findLog/:id", async (req, res) => {
     );
     travelLog.imagesUrl = newImagesUrl;
     res.json(travelLog);
-    console.log(travelLog);
+    // console.log(travelLog);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal server error" });

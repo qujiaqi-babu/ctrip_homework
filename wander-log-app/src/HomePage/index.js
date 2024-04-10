@@ -7,6 +7,8 @@ import {
   TextInput,
   ScrollView,
   TouchableOpacity,
+  Image,
+  Dimensions,
   Overlay,
 } from "react-native";
 import WaterfallFlow from "react-native-waterfall-flow";
@@ -21,6 +23,8 @@ import {
   getItemFromAS,
 } from "../../util";
 
+// 屏幕宽度
+const screenWidth = Dimensions.get("window").width;
 const Toast = Overlay.Toast;
 
 const RequestStatus = {
@@ -46,6 +50,18 @@ const HomePage = ({ navigation }) => {
 
   const [requestStatus, setRequestStatus] = useState(RequestStatus.IDLE);
 
+  // 检查当前用户是否点赞过特定游记
+  const checkLike = async (travelLogId) => {
+    try {
+      const response = await api.get(`/home/checkLike/${travelLogId}`);
+      return response.data.liked;
+    } catch (error) {
+      // 错误处理
+      console.error(error);
+      throw error;
+    }
+  };
+
   // 获取游记列表
   const fetchTravelLog = async (type) => {
     try {
@@ -56,9 +72,34 @@ const HomePage = ({ navigation }) => {
         // offset: loadedCount,
       };
       const response = await api.get("/home/travelLogs", { params });
+
+      // 使用 Promise.all() 来等待所有的 Image.getSize() 异步操作完成，然后返回一个新的数组 newTravelLogs。在 map() 函数中，使用 async/await 来等待每个 Image.getSize() 异步操作的完成，然后将结果存入新数组中
+      const newTravelLogs = await Promise.all(
+        response.data.map(async (item) => {
+          // 调用 checkLike 函数
+          const liked = await checkLike(item._id);
+          return new Promise((resolve, reject) => {
+            Image.getSize(
+              item.imageUrl,
+              (width, height) => {
+                // 计算图片在瀑布流中的高度;
+                const newHeight = Math.floor(
+                  (screenWidth / numColumns / width) * height
+                );
+                resolve({ ...item, height: newHeight, liked: liked });
+              },
+              reject
+            );
+          });
+        })
+      );
+      // console.log(newTravelLogs);
       type === "fresh"
-        ? setTravelLogs(response.data) // 刷新游记
-        : setTravelLogs([...travelLogs, ...response.data]); // 增量获取
+        ? setTravelLogs(newTravelLogs) // 刷新游记
+        : setTravelLogs([...travelLogs, ...newTravelLogs]); // 增量获取
+      // type === "fresh"
+      //   ? setTravelLogs(response.data) // 刷新游记
+      //   : setTravelLogs([...travelLogs, ...response.data]); // 增量获取
       // console.log(response.data);
       // 数据加载成功
       setRequestStatus(RequestStatus.SUCCESS);

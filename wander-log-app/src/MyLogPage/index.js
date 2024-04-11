@@ -732,11 +732,19 @@ const MyLogPage = () => {
                     </Text>
                   </TouchableOpacity>
                   <TouchableOpacity
+                    style={{
+                      flexDirection: "row",
+                      justifyContent: "center",
+                      alignItems: "center",
+                    }}
                     onPress={() => {
                       navigation.navigate("MyMessage");
                     }}
                   >
-                    <AntDesign name="message1" size={28} color="#FFF" />
+                    <AntDesign name="mail" size={24} color="#FFF" />
+                    <Text style={[styles.buttonLabel, { marginLeft: 3 }]}>
+                      我的消息
+                    </Text>
                   </TouchableOpacity>
                 </View>
               </View>

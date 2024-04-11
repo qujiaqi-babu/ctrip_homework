@@ -223,6 +223,7 @@ const MyLogPage = () => {
   const [modalVisible, setModalVisible] = useState(false); // 上传照片模态框
   const [likeLogDatas, setLikeLogDatas] = useState([]);
   const [collectLogDatas, setCollectDatas] = useState([]);
+  const [userId, setUserId] = useState(false);
 
   //渲染我的游记组件
   const RenderItemMyLog = ({ value, freshMyLogData }) => {
@@ -393,11 +394,14 @@ const MyLogPage = () => {
       const response = await api.get("/userInfo/info");
       // console.log(response.data.data);
       setUserInfo(response.data.data);
+      setImageUrl(response.data.data.backgroundImage);
+      setUserAvatarUrl(response.data.data.userAvatar);
       await storeDataToAS("userInfo", JSON.stringify(response.data.data));
       await fetchMyLogDatas("我的笔记", "/myLog/getMyLogs", setMyLogDatas);
       await fetchCollectLogData();
       setLoading(false);
     } catch (e) {
+      setLoading(false);
       console.log(e.response.data.message);
     }
   };
@@ -469,26 +473,44 @@ const MyLogPage = () => {
     try {
       let user = await getItemFromAS("userInfo");
       user = JSON.parse(user);
-      setUserInfo(user);
-      setImageUrl(user.backgroundImage);
-      setUserAvatarUrl(user.userAvatar);
+      if (user) {
+        // setUserInfo(user);
+        // setImageUrl(user.backgroundImage);
+        // setUserAvatarUrl(user.userAvatar);
+        setUserId(user.userId);
+      } else {
+        setUserId("");
+        // clearData();
+      }
     } catch (e) {
       // error reading value
       console.log(e);
     }
   };
-
+  const clearData = () => {
+    setUserInfo();
+    setImageUrl("");
+    setUserAvatarUrl("");
+    setMyLogDatas([]);
+    setLikeLogDatas([]);
+    setCollectDatas([]);
+  };
   useEffect(() => {
-    console.log("获取用户数据");
-    setIndex(0);
-    fetchUserLogData();
-    fetchLikeLogData();
-    fetchCollectLogData();
-  }, []);
+    if (userId) {
+      console.log("获取用户数据");
+      setIndex(0);
+      fetchUserLogData();
+      fetchLikeLogData();
+      fetchCollectLogData();
+    } else {
+      clearData();
+    }
+  }, [userId]);
 
   useFocusEffect(
     React.useCallback(() => {
       // 在页面获取焦点时执行的操作
+      //判断当前用户是否已经发生更改或者变化
       getUserDataFromAS();
       // fetchMyLogDatas();
       // console.log("Screen focused");
@@ -725,28 +747,31 @@ const MyLogPage = () => {
                   <Icon name="menu" size={28} color="#FFF" />
                 </TouchableOpacity>
                 <View style={{ flexDirection: "row" }}>
-                  <TouchableOpacity
-                    style={styles.button}
-                    onPress={() => {
-                      setSelect(true);
-                      setModalVisible(true);
-                    }}
-                  >
-                    {/* <Icon name="image" color="#FFF" /> */}
-                    <Icon
-                      style={{ alignItems: "flex-end" }}
-                      name="image"
-                      color="#FFF"
-                    />
-                    <Text
-                      style={
-                        styles.buttonLabel
-                        // selectedValue === value && styles.selectedLabel,
-                      }
+                  {userInfo && (
+                    <TouchableOpacity
+                      style={styles.button}
+                      onPress={() => {
+                        setSelect(true);
+                        setModalVisible(true);
+                      }}
                     >
-                      设置背景
-                    </Text>
-                  </TouchableOpacity>
+                      {/* <Icon name="image" color="#FFF" /> */}
+                      <Icon
+                        style={{ alignItems: "flex-end" }}
+                        name="image"
+                        color="#FFF"
+                      />
+                      <Text
+                        style={
+                          styles.buttonLabel
+                          // selectedValue === value && styles.selectedLabel,
+                        }
+                      >
+                        设置背景
+                      </Text>
+                    </TouchableOpacity>
+                  )}
+
                   <TouchableOpacity
                     style={{
                       flexDirection: "row",
@@ -786,13 +811,15 @@ const MyLogPage = () => {
                         setModalVisible(true);
                       }}
                     >
-                      <Avatar
-                        size={96}
-                        rounded
-                        source={{
-                          uri: userAvatarUrl,
-                        }}
-                      />
+                      {userAvatarUrl && (
+                        <Avatar
+                          size={96}
+                          rounded
+                          source={{
+                            uri: userAvatarUrl,
+                          }}
+                        />
+                      )}
                     </TouchableOpacity>
                   </View>
 
@@ -812,7 +839,7 @@ const MyLogPage = () => {
                           fontFamily: "serif",
                         }}
                       >
-                        {userInfo.username}
+                        {userInfo && userInfo.username}
                       </Text>
                     ) : (
                       <TouchableOpacity

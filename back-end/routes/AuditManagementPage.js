@@ -1,5 +1,6 @@
 const express = require("express");
 const { TravelLog, Manager } = require("../models");
+const { convertDateToString } = require("../utils/timeManager");
 const config = require("../config.json");
 const router = express.Router();
 const bcrypt = require("bcryptjs");
@@ -116,22 +117,6 @@ router.get("/userInfo", async (req, res) => {
     res.status(500).json({ message: "获取用户信息失败" });
   }
 });
-
-// 将Date对象转换成北京时间字符串 如：'2024/04/07 15:03:52'
-const convertDateToString = (date) => {
-  const formattedDate = new Date(date).toLocaleDateString("zh-CN", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  });
-  const formattedTime = new Date(date).toLocaleTimeString("zh-CN", {
-    hour12: false,
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-  });
-  return `${formattedDate} ${formattedTime}`;
-};
 
 // 获取游记列表信息
 router.get("/travelLogs", async (req, res) => {

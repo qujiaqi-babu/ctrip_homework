@@ -1,8 +1,6 @@
 const express = require("express");
-// const axios = require("axios");
-// const sharp = require("sharp");
+const { convertDateToString } = require("../utils/timeManager");
 const mongoose = require("mongoose");
-
 const ObjectId = mongoose.Types.ObjectId;
 const {
   User,
@@ -349,13 +347,13 @@ router.post("/share", authenticateToken, async (req, res) => {
 router.get("/myMessages", authenticateToken, async (req, res) => {
   try {
     // 瀑布流数据加载 每次增量加载count张
-    const count = parseInt(req.query.count);
-    const offset = parseInt(req.query.offset);
+    const limitCount = parseInt(req.query.limitCount);
+    const skipCount = parseInt(req.query.skipCount);
+    const toUserId = req.user.id;
     const shares = await Share.aggregate([
-      { $match: { isWatched: false } }, // 匹配未被查看的分享
+      // { $match: { isWatched: false } },
+      { $match: { toUserId: new ObjectId(toUserId) } }, // 匹配发送给当前登录用户的分享
       { $sort: { sharedTime: -1 } }, // 按分享时间由近及远排序
-      { $skip: skipCount }, // 跳过已获取的分享
-      { $limit: 10 }, // 限制结果数量为10条
       {
         $lookup: {
           from: "users",
@@ -374,19 +372,74 @@ router.get("/myMessages", authenticateToken, async (req, res) => {
       },
       {
         $project: {
+          _id: 1,
+          sharedTime: 1,
           "fromUser.username": 1,
           "fromUser.userAvatar": 1,
-          "travelLog._id": 1,
+          travelLogId: 1,
           "travelLog.title": 1,
           "travelLog.imagesUrl": 1,
-          sharedTime: 1,
         },
       },
     ]);
-    res.json(shares);
+    // 跳过已获取的skipCount条分享，限制结果数量为limitCount条
+    const result = shares.slice(skipCount, skipCount + limitCount);
+    const newResult = result
+      // .sort((a, b) => b.likes - a.likes) // 按点赞量降序排序
+      .map((item) => {
+        let imageUrl = item.travelLog[0].imagesUrl[0]; // 只展示第一张图片
+        if (!imageUrl.startsWith("http")) {
+          imageUrl = `${config.baseURL}/${config.logUploadPath}/${imageUrl}`;
+        }
+        let userAvatar = item.fromUser[0].userAvatar;
+        if (!userAvatar.startsWith("http")) {
+          userAvatar = `${config.baseURL}/${config.userAvatarPath}/${userAvatar}`;
+        }
+        // 将 MongoDB 文档对象转换为普通 JavaScript 对象
+        const newItem = {
+          id: item._id,
+          sharedTime: convertDateToString(item.sharedTime),
+          fromUsername: item.fromUser[0].username,
+          fromUserAvatar: userAvatar,
+          travelLogId: item.travelLogId,
+          travelLogTitle: item.travelLog[0].title,
+          travelLogImageUrl: imageUrl,
+        };
+        return newItem;
+      });
+    // console.log(newResult);
+    res.json(newResult);
   } catch (error) {
     console.error(error);
     res.status(500).json(createErrorResponse("我的消息获取失败"));
+  }
+});
+
+// 根据游记id返回作者详细信息
+router.get("/findAuthor/:id", async (req, res) => {
+  try {
+    const logId = req.params.id;
+    console.log("logId", logId);
+    const travelLog = await TravelLog.findById(new ObjectId(logId));
+    console.log("travelLog", travelLog);
+    if (!travelLog) {
+      return res.status(404).json({ error: "Travel log not found" });
+    }
+    const user = await User.findById(travelLog.userId);
+    console.log("user", user);
+    if (!user) {
+      return res.status(404).json({ error: "Travel author not found" });
+    }
+    const userInfo = {
+      userId: user._id,
+      username: user.username,
+      userAvatar: `${config.baseURL}/${config.userAvatarPath}/${user.userAvatar}`,
+    };
+    console.log(userInfo);
+    res.json(userInfo);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 

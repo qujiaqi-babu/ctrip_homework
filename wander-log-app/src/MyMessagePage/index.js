@@ -6,7 +6,10 @@ import {
   Image,
   StyleSheet,
   ActivityIndicator,
+  TouchableOpacity,
 } from "react-native";
+import { useNavigation } from "@react-navigation/native";
+import { Avatar, Dialog } from "@rneui/themed";
 const config = require("../../config.json");
 import {
   api,
@@ -20,99 +23,150 @@ const MyMessagePage = () => {
   // 每次加载countEachLoad个游记卡片
   const countEachLoad = config.countEachLoad;
   const [loadedCount, setLoadedCount] = useState(0);
-  const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [toTheEnd, setToTheEnd] = useState(false); // 是否到底了
+  const navigation = useNavigation();
 
   useEffect(() => {
-    fetchData();
-    // fetchMessages();
+    fetchMessages();
   }, []);
-
-  const fetchData = () => {
-    // Simulated fetching data from an API
-    setLoading(true);
-    setTimeout(() => {
-      const newData = generateData(page);
-      setData((prevData) => [...prevData, ...newData]);
-      setPage((prevPage) => prevPage + 1);
-      setLoading(false);
-    }, 1000);
-  };
 
   const fetchMessages = async () => {
     try {
+      setLoading(true);
       const params = {
-        count: countEachLoad,
-        offset: loadedCount,
+        limitCount: countEachLoad,
+        skipCount: loadedCount,
       };
       const response = await api.get("/home/myMessages", { params });
-      // const myFriends = response.data;
-      const myFriends = response.data.map((item) => ({
-        ...item,
-        selected: selectedFriends
-          ? selectedFriends.includes(item.userId)
-          : false,
-      }));
-      // console.log(myFriends);
-      setFriends(myFriends);
+      console.log(response.data);
+      if (response.data.length === 0) {
+        setToTheEnd(true); // 已经无法再获取新数据
+      }
+      const newData = [...data, ...response.data];
+      setData(newData);
+      const newLoadedCount = loadedCount + response.data.length;
+      setLoadedCount(newLoadedCount);
+      setLoading(false);
     } catch (error) {
       console.log(error);
     }
   };
 
-  const generateData = (page) => {
-    // Simulated data generation
-    const newData = [];
-    for (let i = 1; i <= 10; i++) {
-      newData.push({
-        id: (page - 1) * 10 + i,
-        sharedTime: `Shared ${Math.floor(Math.random() * 24)} hours ago`,
-        image: `https://example.com/image${Math.floor(Math.random() * 10)}.jpg`,
+  // 游记卡片点击事件
+  const handlePress = async (item) => {
+    // 根据游记id获取作者id、昵称、头像
+    // const response = await api.get(`/home/findAuthor/${item.id}`);
+    // console.log(response.data);
+
+    await api
+      .get(`/home/findAuthor/${item.travelLogId}`)
+      .then((response) => {
+        console.log(response.data);
+        const newItem = {
+          ...response.data,
+          _id: item.travelLogId,
+        };
+        navigation.navigate("LogDetail", {
+          item: newItem,
+        });
+      })
+      .catch((error) => {
+        console.log(error);
       });
-    }
-    return newData;
   };
 
   const renderItem = ({ item }) => (
-    <View style={styles.card}>
+    <View style={styles.cardContainer}>
       <Text style={styles.sharedTime}>{item.sharedTime}</Text>
-      <Image source={{ uri: item.image }} style={styles.image} />
+
+      {/* xxx向你分享： */}
+      <View style={styles.rowContainer}>
+        <Avatar
+          size={36}
+          rounded
+          source={{
+            uri: item.fromUserAvatar,
+          }}
+        />
+        <Text style={styles.fromUsername}>{item.fromUsername} 向你分享</Text>
+      </View>
+
+      {/* 游记卡片：第一张图片+标题 */}
+      <TouchableOpacity onPress={() => handlePress(item)}>
+        <View style={styles.card}>
+          <Image
+            source={{ uri: item.travelLogImageUrl }}
+            style={styles.image}
+          />
+          <Text style={styles.travelLogTitle}>{item.travelLogTitle}</Text>
+        </View>
+      </TouchableOpacity>
     </View>
   );
 
   return (
-    <FlatList
-      data={data}
-      inverted={true}
-      renderItem={renderItem}
-      keyExtractor={(item) => item.id.toString()}
-      onEndReached={fetchData}
-      onEndReachedThreshold={0.5}
-      ListFooterComponent={
-        loading && <ActivityIndicator size="large" color="#0000ff" />
-      }
-    />
+    <View style={styles.container}>
+      {data ? (
+        <FlatList
+          data={data}
+          inverted={true}
+          refreshing={loading}
+          renderItem={renderItem}
+          showsVerticalScrollIndicator={false}
+          keyExtractor={(item) => item.id.toString()}
+          onEndReached={fetchMessages}
+          onEndReachedThreshold={toTheEnd ? -0.5 : 0.5}
+        />
+      ) : (
+        <Dialog.Loading />
+      )}
+    </View>
   );
 };
 
+const cardRadius = 15;
 const styles = StyleSheet.create({
-  card: {
-    margin: 10,
-    padding: 10,
+  container: {
+    flex: 1,
     backgroundColor: "#fff",
-    borderRadius: 8,
-    elevation: 3,
+    paddingHorizontal: 20,
+  },
+  cardContainer: {
+    marginBottom: 30,
   },
   sharedTime: {
     fontSize: 16,
+    textAlign: "center",
+    marginVertical: 10,
+  },
+  rowContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 5,
+  },
+  fromUsername: {
+    fontSize: 18,
     fontWeight: "bold",
-    marginBottom: 10,
+    paddingHorizontal: 10,
+  },
+  card: {
+    backgroundColor: "#fff",
+    borderRadius: cardRadius,
+    elevation: 3,
   },
   image: {
     width: "100%",
     height: 200,
     resizeMode: "cover",
-    borderRadius: 8,
+    borderTopLeftRadius: cardRadius,
+    borderTopRightRadius: cardRadius,
+  },
+  travelLogTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    paddingHorizontal: 20,
+    marginBottom: 5,
   },
 });
 

@@ -402,7 +402,9 @@ const LogDetailPage = ({ route }) => {
         <View style={{ marginTop: 10 }}>
           {travelLog && (
             <Text style={styles.editTime}>
-              {travelLog.destination.split("\n")[0]}
+              {travelLog.destination
+                ? travelLog.destination.split("\n")[0]
+                : ""}
             </Text>
           )}
           {travelLog && (

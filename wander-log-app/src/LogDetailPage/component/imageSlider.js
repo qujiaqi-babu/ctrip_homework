@@ -83,6 +83,7 @@ const ImageSlider = ({ imageUrls }) => {
         pagingEnabled
         onScroll={handleScroll}
         style={{ backgroundColor: "white" }}
+        showsHorizontalScrollIndicator={false}
       />
       <View style={styles.dotContainer}>
         {imageUrls.length > 1 &&

@@ -275,6 +275,7 @@ const LogPublicPage = ({ route }) => {
     setSelectedMonth("");
     setSelectedRange("");
     setLabelText("");
+    setLoadState(true);
   };
   const fetchLogDetail = async () => {
     try {
@@ -313,36 +314,29 @@ const LogPublicPage = ({ route }) => {
   };
   useEffect(() => {
     if (logId) {
-      // console.log(logId);
+      console.log(logId);
       setLoadState(false);
       fetchLogDetail();
+    } else {
+      setLoadState(false);
+      clearData();
     }
-    //获取当前位置
-    // const getLocation = async () => {
-    //   try {
-    //     let { status } = await Location.requestForegroundPermissionsAsync();
-    //     console.log(status);
-    //     if (status !== "granted") {
-    //       setLocationError("Location permission denied");
-    //       return;
-    //     }
-
-    //     let location = await Location.getCurrentPositionAsync({
-    //       accuracy: Location.Accuracy.Highest,
-    //       maximumAge: 10000,
-    //     });
-    //     // let geocode = await Location.reverseGeocodeAsync(location.coords);
-    //     // let city = geocode[0].city;
-    //     // setUserLocation(city);
-    //     setUserLocation(location);
-    //     console.log(location);
-    //   } catch (error) {
-    //     console.error("Error requesting location permission:", error);
-    //   }
-    // };
-
-    // getLocation();
-  }, []);
+  }, [logId]);
+  // useFocusEffect(
+  //   React.useCallback(() => {
+  //     // 在页面获取焦点时执行的操作
+  //     if (logId) {
+  //       console.log(logId);
+  //       setLoadState(false);
+  //       fetchLogDetail();
+  //     }
+  //     console.log("Screen focused");
+  //     return () => {
+  //       // 在页面失去焦点时执行的清理操作（可选）
+  //       clearData();
+  //     };
+  //   }, [])
+  // );
 
   const handleAddToDraft = async () => {
     if (imageUrl.length === 0 || !title || !content) {
@@ -375,7 +369,7 @@ const LogPublicPage = ({ route }) => {
       )
       .then((res) => {
         console.log("提交成功:", res.data.message);
-        clearData();
+        // clearData();
         // 提交成功后跳转到我的游记页面，并刷新
         navigation.navigate("MyLog");
       })
@@ -415,7 +409,7 @@ const LogPublicPage = ({ route }) => {
       )
       .then((res) => {
         console.log("提交成功:", res.data.message);
-        clearData();
+        // clearData();
         // 提交成功后跳转到我的游记页面，并刷新
         navigation.navigate("MyLog");
       })

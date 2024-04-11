@@ -1017,6 +1017,8 @@ const styles = StyleSheet.create({
     color: "#FFF",
   },
   emyptyItemContainer: {
+    // width: "100%",
+    // backgroundColor: "red",
     marginTop: 30,
   },
 });

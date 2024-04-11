@@ -26,6 +26,7 @@ import * as Location from "expo-location";
 import { TouchableWithoutFeedback } from "@ui-kitten/components/devsupport";
 import { api } from "../../util";
 import MapView from "react-native-maps";
+import { useFocusEffect } from "@react-navigation/native";
 const config = require("../../config.json");
 
 const Toast = Overlay.Toast;
@@ -266,6 +267,15 @@ const LogPublicPage = ({ route }) => {
     setRating(index + 1); // 评级分数1~5
   };
 
+  const clearData = () => {
+    setImageUrl([]);
+    setContent("");
+    setRating(1);
+    setTitle("");
+    setSelectedMonth("");
+    setSelectedRange("");
+    setLabelText("");
+  };
   const fetchLogDetail = async () => {
     try {
       const response = await api.get(`/logDetail/findLog/${logId}`);
@@ -365,6 +375,7 @@ const LogPublicPage = ({ route }) => {
       )
       .then((res) => {
         console.log("提交成功:", res.data.message);
+        clearData();
         // 提交成功后跳转到我的游记页面，并刷新
         navigation.navigate("MyLog");
       })
@@ -404,6 +415,7 @@ const LogPublicPage = ({ route }) => {
       )
       .then((res) => {
         console.log("提交成功:", res.data.message);
+        clearData();
         // 提交成功后跳转到我的游记页面，并刷新
         navigation.navigate("MyLog");
       })

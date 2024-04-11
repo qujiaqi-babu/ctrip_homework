@@ -36,13 +36,11 @@ import { MaterialIcons, Ionicons } from "@expo/vector-icons";
 function PublishButton() {
   const navigation = useNavigation();
   return (
-    <View style={styles.addButton}>
-      <TouchableWithoutFeedback
-        onPress={() => navigation.navigate("LogPublic")}
-      >
+    <TouchableWithoutFeedback onPress={() => navigation.navigate("LogPublic")}>
+      <View style={styles.addButton}>
         <MaterialIcons name="add" size={32} color="white" />
-      </TouchableWithoutFeedback>
-    </View>
+      </View>
+    </TouchableWithoutFeedback>
   );
 }
 
@@ -70,16 +68,18 @@ function HomeTabScreen() {
             ),
           }}
         />
-        {/* <Tab.Screen
-        name="LogPublic"
-        component={LogPublicScreen}
-        options={{
-          tabBarLabel: "游记发布",
-          tabBarIcon: ({ color, size }) => (
-            <MaterialIcons name="library-add" color={color} size={size} />
-          ),
-        }}
-      /> */}
+        <Tab.Screen
+          name="LogPublic"
+          component={LogPublicScreen}
+          options={{
+            tabBarLabel: "游记发布",
+            // tabBarIcon: ({ color, size }) => (
+            //   <MaterialIcons name="library-add" color={color} size={size} />
+            // ),
+            tabBarButton: () => <PublishButton />,
+            // tabBarStyle: { display: "none" },
+          }}
+        />
         <Tab.Screen
           name="MyLog"
           component={MyLogScreen}
@@ -91,7 +91,7 @@ function HomeTabScreen() {
           }}
         />
       </Tab.Navigator>
-      <PublishButton />
+      {/* <PublishButton /> */}
     </View>
   );
 }
@@ -107,7 +107,7 @@ function HomeStackScreen() {
       <Stack.Screen name="HomeTab" component={HomeTabScreen} />
       <Stack.Screen name="LogDetail" component={LogDetailScreen} />
       <Stack.Screen name="Login" component={LoginScreen} />
-      <Stack.Screen name="LogPublic" component={LogPublicScreen} />
+      {/* <Stack.Screen name="LogPublic" component={LogPublicScreen} /> */}
       <Stack.Screen
         name="Setting"
         component={SettingScreen}
@@ -221,15 +221,17 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   addButton: {
-    position: "absolute",
+    // position: "absolute",
     width: 60,
     paddingVertical: 6,
-    top: height + 6,
-    left: width / 2 - 30,
+    // top: height + 6,
+    // bottom: 2,
+    // left: width / 2 - 30,
     borderRadius: 15,
     backgroundColor: "#3498DB",
     alignItems: "center",
     justifyContent: "center",
+    margin: 2,
   },
 });
 

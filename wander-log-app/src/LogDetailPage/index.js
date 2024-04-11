@@ -277,6 +277,17 @@ const LogDetailPage = ({ route }) => {
     }
   };
 
+  // 字符匹配
+  const matchText = (text) => {
+    matches = text.match(/\S+市/g);
+    // 输出匹配到的结果
+    if (matches) {
+      return matches[0];
+    } else {
+      return null;
+    }
+  };
+
   return (
     <View style={{ flex: 1, backgroundColor: "white" }}>
       {/* 顶部导航栏 */}
@@ -352,7 +363,9 @@ const LogDetailPage = ({ route }) => {
                       },
                     ]}
                   >
-                    {travelLog.destination ? travelLog.destination : "XX"}
+                    {travelLog.destination
+                      ? matchText(travelLog.destination)
+                      : "XX"}
                   </Text>
                 )}
               </TouchableOpacity>
@@ -387,6 +400,11 @@ const LogDetailPage = ({ route }) => {
           )}
         </View>
         <View style={{ marginTop: 10 }}>
+          {travelLog && (
+            <Text style={styles.editTime}>
+              {travelLog.destination.split("\n")[0]}
+            </Text>
+          )}
           {travelLog && (
             <Text style={styles.editTime}>{travelLog.editTime}</Text>
           )}

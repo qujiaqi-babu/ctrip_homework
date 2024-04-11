@@ -306,7 +306,7 @@ const LogPublicPage = ({ route }) => {
       setSelectedMonth(data.travelMonth);
       setSelectedRange(data.perCost);
       setLabelText(data.topic);
-      setDestinationText(data.destinationText);
+      setDestinationText(data.destination);
       // setTravelLog({
       //   ...travelLog,
       //   imagesUrl: data.imagesUrl,

@@ -6,7 +6,9 @@ import {
   Button,
   View,
   TouchableWithoutFeedback,
+  Overlay,
 } from "react-native";
+const Toast = Overlay.Toast;
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { NavigationContainer, useNavigation } from "@react-navigation/native";
@@ -35,8 +37,17 @@ import { MaterialIcons, Ionicons } from "@expo/vector-icons";
 // 发布游记按钮
 function PublishButton() {
   const navigation = useNavigation();
+  const addButtonPress = async () => {
+    let user = await getItemFromAS("userInfo");
+    user = JSON.parse(user);
+    if (user) {
+      navigation.navigate("LogPublic");
+    } else {
+      Toast.show("请先登录~");
+    }
+  };
   return (
-    <TouchableWithoutFeedback onPress={() => navigation.navigate("LogPublic")}>
+    <TouchableWithoutFeedback onPress={addButtonPress}>
       <View style={styles.addButton}>
         <MaterialIcons name="add" size={32} color="white" />
       </View>
@@ -77,7 +88,7 @@ function HomeTabScreen() {
             //   <MaterialIcons name="library-add" color={color} size={size} />
             // ),
             tabBarButton: () => <PublishButton />,
-            // tabBarStyle: { display: "none" },
+            tabBarStyle: { display: "none" },
           }}
         />
         <Tab.Screen

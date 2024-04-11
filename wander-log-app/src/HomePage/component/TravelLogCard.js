@@ -8,6 +8,7 @@ import {
   StyleSheet,
   Image,
   Dimensions,
+  Overlay,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { AntDesign, Ionicons } from "@expo/vector-icons";
@@ -18,6 +19,7 @@ import {
   removeValueFromAS,
   getItemFromAS,
 } from "../../../util";
+const Toast = Overlay.Toast;
 
 // 屏幕宽度
 // const screenWidth = Dimensions.get("window").width;
@@ -35,6 +37,12 @@ const TravelLogCard = ({ item, columnIndex, numColumns }) => {
 
   // 获取导航对象
   const navigation = useNavigation();
+
+  // 重要！！！否则游记列表刷新时点赞状态不会更新
+  useEffect(() => {
+    setLiked(item.liked);
+    setLikes(item.likes);
+  }, [item]);
 
   // 检查当前用户是否点赞过该游记
   // const checkLike = async () => {
@@ -71,17 +79,23 @@ const TravelLogCard = ({ item, columnIndex, numColumns }) => {
 
   // 当前用户点赞或取消点赞该游记，数据库同步更新
   const handleLike = async () => {
-    await api
-      .post("/home/like", {
-        travelLogId: item._id,
-      })
-      .then((response) => {
-        setLiked(response.data.liked);
-        setLikes(response.data.liked ? likes + 1 : likes - 1);
-      })
-      .catch((error) => {
-        // console.log(error);
-      });
+    let user = await getItemFromAS("userInfo");
+    user = JSON.parse(user);
+    if (user) {
+      await api
+        .post("/home/like", {
+          travelLogId: item._id,
+        })
+        .then((response) => {
+          setLiked(response.data.liked);
+          setLikes(response.data.liked ? likes + 1 : likes - 1);
+        })
+        .catch((error) => {
+          // console.log(error);
+        });
+    } else {
+      Toast.show("请先登录~");
+    }
   };
 
   // 点赞功能的点击效果

@@ -25,6 +25,7 @@ import SettingScreen from "./src/SettingPage";
 import AddUserScreen from "./src/AddUserPage";
 import ShareToUserScreen from "./src/ShareToUserPage";
 import MyMessageScreen from "./src/MyMessagePage";
+import AddLocationScreen from "./src/AddLocationPage";
 import {
   api,
   setAuthHeader,
@@ -169,6 +170,14 @@ function HomeStackScreen() {
         options={{
           headerShown: false,
           headerTitle: "otherUserLogPage",
+        }}
+      />
+      <Stack.Screen
+        name="AddLocation"
+        component={AddLocationScreen}
+        options={{
+          headerShown: false,
+          headerTitle: "AddLocationPage",
         }}
       />
       <Stack.Screen

@@ -4,13 +4,14 @@ import { Alert } from "react-native";
 
 /**
  *
- * @param {value} param0 :传入地图的
- *
+ * @param {value} param0 :首次传入地图组件的值
+ * @param {setValueFunc} param1:传入地点的set方法
+ * @param {setStateFunc} param2:传入控制变量的set方法
  * @returns
  */
-const LBSMap = ({ value, setStateFunc }) => {
-  const [htmlData, setHtmlData] = useState("");
+const LBSMap = ({ value, setValueFunc, setStateFunc }) => {
   const webRef = useRef(null);
+  console.log(value);
   const loaction = value;
 
   const handleMessage = (event) => {
@@ -19,13 +20,15 @@ const LBSMap = ({ value, setStateFunc }) => {
     const message = event.nativeEvent.data;
     const data = JSON.parse(message);
     if (data.status == "success") {
+      setValueFunc(data.location);
       setStateFunc(true);
     } else if (data.status == "error") {
+      setValueFunc("");
       setStateFunc(false);
     }
-    console.log(data);
+    // console.log(data);
   };
-
+  // useEffect(() => {}, [value]);
   return (
     <WebView
       style={{

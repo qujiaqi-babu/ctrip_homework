@@ -8,10 +8,13 @@ import {
   TouchableOpacity,
   Animated,
   TextInput,
+  Overlay,
 } from "react-native";
 import { Avatar, Dialog } from "@rneui/themed";
 import { Feather, MaterialIcons } from "@expo/vector-icons";
 import { api } from "../../util";
+
+const Toast = Overlay.Toast;
 
 const RenderItem = ({ value, handleFriendPress }) => {
   const navigation = useNavigation();
@@ -44,54 +47,59 @@ const RenderItem = ({ value, handleFriendPress }) => {
   };
 
   return (
-    <View style={styles.rowContainer}>
-      <TouchableOpacity onPress={handleIconPress} style={styles.checkIcon}>
+    <TouchableOpacity onPress={handleIconPress}>
+      <View style={styles.rowContainer}>
         <Animated.View style={[{ transform: [{ scale: selectScaleValue }] }]}>
           <Feather
             name={selected ? "check-circle" : "circle"}
             size={24}
             color={selected ? "#3498DB" : "black"}
+            style={styles.checkIcon}
           />
         </Animated.View>
-      </TouchableOpacity>
-      <TouchableOpacity
+        {/* <TouchableOpacity
         onPress={() => {
           navigation.navigate("OtherUserLog", { userId: value.userId });
         }}
         style={styles.rowCard}
-      >
-        <Avatar
-          size={64}
-          rounded
-          source={{
-            uri: value.userAvatar
-              ? value.userAvatar
-              : "https://randomuser.me/api/portraits/men/36.jpg",
-          }}
-        />
-        <View style={styles.columnContainer}>
-          <Text style={{ fontSize: 20, paddingBottom: 5 }}>
-            {value.username}
-          </Text>
-          <Text
-            style={{
-              fontSize: 15,
-              paddingBottom: 5,
+      > */}
+        <View style={styles.rowCard}>
+          <Avatar
+            size={64}
+            rounded
+            source={{
+              uri: value.userAvatar
+                ? value.userAvatar
+                : "https://randomuser.me/api/portraits/men/36.jpg",
             }}
-          >
-            {value.profile ? value.profile : "为世界的美好而战"}
-          </Text>
+          />
+          <View style={styles.columnContainer}>
+            <Text style={{ fontSize: 20, paddingBottom: 5 }}>
+              {value.username}
+            </Text>
+            <Text
+              style={{
+                fontSize: 15,
+                paddingBottom: 5,
+              }}
+            >
+              {value.profile ? value.profile : "为世界的美好而战"}
+            </Text>
+          </View>
         </View>
-      </TouchableOpacity>
-    </View>
+        {/* </TouchableOpacity> */}
+      </View>
+    </TouchableOpacity>
   );
 };
 
-const FriendList = () => {
+const FriendList = ({ route }) => {
+  const { logId } = route.params; // 详情页传来的值
   const [friends, setFriends] = useState([]);
   const [selectedFriends, setSelectedFriends] = useState([]);
   const [searchInput, setSearchInput] = useState("");
   const [searchContent, setSearchContent] = useState("");
+  const navigation = useNavigation();
 
   const fetchFriends = async () => {
     try {
@@ -150,11 +158,14 @@ const FriendList = () => {
 
   // 当前用户分享该游记，数据库同步更新
   const handleSharePress = async () => {
-    console.log("分享给选定的好友:", selectedFriends);
+    // console.log("分享给选定的好友:", selectedFriends);
     const response = await api.post("/home/share", {
-      selectedFriends: selectedFriends,
+      travelLogId: logId,
+      toUserIds: selectedFriends,
     });
-    // setFocused(response.data.focused);
+    // console.log(response.data);
+    Toast.show(`成功分享给${response.data.length}位好友`);
+    navigation.goBack();
   };
 
   return (

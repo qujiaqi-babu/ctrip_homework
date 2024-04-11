@@ -27,7 +27,7 @@ const LogDetailPage = ({ route }) => {
   const userName = item.username;
 
   const navigation = useNavigation();
-  const [isSubscribed, setIsSubscribed] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [liked, setLiked] = useState(false);
   const [likes, setLikes] = useState(0);
@@ -39,6 +39,31 @@ const LogDetailPage = ({ route }) => {
   const [collectScaleValue] = useState(new Animated.Value(1));
 
   const [travelLog, setTravelLog] = useState(null);
+
+  useEffect(() => {
+    // console.log("fetching log detail...");
+    checkFocus();
+    checkLike(); // 当前用户是否点赞过该游记
+    checkCollect(); // 当前用户是否收藏过该游记
+    const fetchLogDetail = async () => {
+      try {
+        const response = await api.get(`/logDetail/findLog/${logId}`);
+        const data = await response.data;
+        // console.log(data);
+        setTravelLog({
+          ...data,
+          perCost: mapPerCost(data.percost),
+          recomRate: mapRate(data.rate),
+          editTime: formatDate(data.editTime),
+        });
+        setCollects(data.collects);
+        setLikes(data.likes);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+    fetchLogDetail();
+  }, []);
 
   // 调整数据格式
   const mapPerCost = (cost) => {
@@ -63,6 +88,19 @@ const LogDetailPage = ({ route }) => {
     const month = (date.getMonth() + 1).toString().padStart(2, "0");
     const day = date.getDate().toString().padStart(2, "0");
     return `${year}-${month}-${day}`;
+  };
+
+  // 检查当前用户是否关注过该用户
+  const checkFocus = async () => {
+    // console.log(userId, item._id);
+    await api
+      .get(`/userInfo/checkFocus/${userId}`)
+      .then((response) => {
+        setIsFocused(response.data.focused);
+      })
+      .catch((error) => {
+        // console.log(error);
+      });
   };
 
   // 检查当前用户是否点赞过该游记
@@ -91,71 +129,101 @@ const LogDetailPage = ({ route }) => {
       });
   };
 
-  useEffect(() => {
-    // console.log("fetching log detail...");
-    checkLike(); // 当前用户是否点赞过该游记
-    checkCollect(); // 当前用户是否收藏过该游记
-    const fetchLogDetail = async () => {
-      try {
-        const response = await api.get(`/logDetail/findLog/${logId}`);
-        const data = await response.data;
-        // console.log(data);
-        setTravelLog({
-          ...data,
-          perCost: mapPerCost(data.percost),
-          recomRate: mapRate(data.rate),
-          editTime: formatDate(data.editTime),
-        });
-        setCollects(data.collects);
-        setLikes(data.likes);
-      } catch (error) {
-        console.error(error);
+  // 查看游记作者个人页面
+  const handleUserPress = async () => {
+    let user = await getItemFromAS("userInfo");
+    user = JSON.parse(user);
+    if (user) {
+      let user = await getItemFromAS("userInfo");
+      user = JSON.parse(user);
+      if (user.userId && user.userId == userId) {
+        // navigation.goBack();
+        navigation.navigate("MyLog");
+      } else {
+        navigation.navigate("OtherUserLog", { userId: userId });
       }
-    };
-    fetchLogDetail();
-  }, []);
+    } else {
+      Toast.show("请先登录~");
+    }
+  };
 
   // 关注用户功能
-  const handleSubscribe = () => {
-    setIsSubscribed(!isSubscribed);
+  const handleFocusPress = async () => {
+    let user = await getItemFromAS("userInfo");
+    user = JSON.parse(user);
+    if (user) {
+      // console.log(user);
+      const response = await api.post("/userInfo/focus", {
+        beFollowedId: userId,
+      });
+      setIsFocused(response.data.focused);
+    } else {
+      Toast.show("请先登录~");
+    }
+  };
+
+  // 分享功能
+  const handleSharePress = async () => {
+    let user = await getItemFromAS("userInfo");
+    user = JSON.parse(user);
+    if (user) {
+      // console.log(user);
+      navigation.navigate("ShareToUser", { logId: logId });
+    } else {
+      Toast.show("请先登录~");
+    }
   };
 
   // 评论功能
   const handleCommentSubmit = () => {
-    console.log("提交评论:", comment);
-    setComment("");
-    setComments(comments + 1);
-    setModalVisible(false);
+    if (comment) {
+      console.log("提交评论:", comment);
+      setComment("");
+      setComments(comments + 1);
+      setModalVisible(false);
+    }
   };
 
   // 当前用户点赞或取消点赞该游记，数据库同步更新
   const handleLike = async () => {
-    await api
-      .post("/home/like", {
-        travelLogId: item._id,
-      })
-      .then((response) => {
-        setLiked(response.data.liked);
-        setLikes(response.data.liked ? likes + 1 : likes - 1);
-      })
-      .catch((error) => {
-        // console.log(error);
-      });
+    let user = await getItemFromAS("userInfo");
+    user = JSON.parse(user);
+    if (user) {
+      await api
+        .post("/home/like", {
+          travelLogId: item._id,
+        })
+        .then((response) => {
+          setLiked(response.data.liked);
+          setLikes(response.data.liked ? likes + 1 : likes - 1);
+        })
+        .catch((error) => {
+          // console.log(error);
+        });
+    } else {
+      Toast.show("请先登录~");
+    }
   };
 
   // 当前用户收藏或取消收藏该游记，数据库同步更新
   const handleCollect = async () => {
-    await api
-      .post("/home/collect", {
-        travelLogId: item._id,
-      })
-      .then((response) => {
-        setCollected(response.data.collected);
-        setCollects(response.data.collected ? collects + 1 : collects - 1);
-      })
-      .catch((error) => {
-        // console.log(error);
-      });
+    let user = await getItemFromAS("userInfo");
+    user = JSON.parse(user);
+    if (user) {
+      await api
+        .post("/home/collect", {
+          travelLogId: item._id,
+        })
+        .then((response) => {
+          setCollected(response.data.collected);
+          setCollects(response.data.collected ? collects + 1 : collects - 1);
+        })
+        .catch((error) => {
+          // console.log(error);
+        });
+    } else {
+      Toast.show("请先登录~");
+    }
   };
 
   // 点赞or收藏按钮的点击效果
@@ -209,19 +277,7 @@ const LogDetailPage = ({ route }) => {
               style={{ marginLeft: 10 }}
             />
           </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.userInfo}
-            onPress={async () => {
-              let user = await getItemFromAS("userInfo");
-              user = JSON.parse(user);
-              if (user.userId && user.userId == userId) {
-                // navigation.goBack();
-                navigation.navigate("MyLog");
-              } else {
-                navigation.navigate("OtherUserLog", { userId: userId });
-              }
-            }}
-          >
+          <TouchableOpacity style={styles.userInfo} onPress={handleUserPress}>
             {/* 根据传过来的用户Id进行查找，跳到对应的id用户界面 */}
             <View style={styles.avatarContainer}>
               <Image source={{ uri: userAvatar }} style={styles.avatar} />
@@ -235,27 +291,16 @@ const LogDetailPage = ({ route }) => {
         </View>
         <View style={styles.leftTopScreen}>
           <TouchableOpacity
-            style={[styles.subscribe, isSubscribed && styles.subscribed]}
-            onPress={handleSubscribe}
+            style={[styles.subscribe, isFocused && styles.subscribed]}
+            onPress={handleFocusPress}
           >
             <Text
-              style={[
-                styles.subscribeText,
-                isSubscribed && styles.subscribedText,
-              ]}
+              style={[styles.subscribeText, isFocused && styles.subscribedText]}
             >
-              {isSubscribed ? "已关注" : "关注"}
+              {isFocused ? "已关注" : "关注"}
             </Text>
           </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => {
-              if (userId) {
-                navigation.navigate("ShareToUser");
-              } else {
-                Toast.show("请先登录~");
-              }
-            }}
-          >
+          <TouchableOpacity onPress={handleSharePress}>
             <MaterialIcons
               name="ios-share"
               size={30}

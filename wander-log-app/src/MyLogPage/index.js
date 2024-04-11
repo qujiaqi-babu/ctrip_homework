@@ -12,6 +12,7 @@ import {
   Modal,
   Overlay,
   ImageBackground,
+  Alert,
 } from "react-native";
 import {
   Icon,
@@ -31,7 +32,7 @@ import { TouchableWithoutFeedback } from "@ui-kitten/components/devsupport";
 import * as FileSystem from "expo-file-system";
 import { get } from "react-native/Libraries/TurboModule/TurboModuleRegistry";
 import { useFocusEffect } from "@react-navigation/native";
-import { AntDesign } from "@expo/vector-icons";
+import { AntDesign, Ionicons } from "@expo/vector-icons";
 import {
   api,
   setAuthHeader,
@@ -178,72 +179,35 @@ const EmyptyItem = ({ name, color, label }) => {
     </View>
   );
 };
-//渲染组件
-const RenderItem = ({ value }) => {
-  // console.log(value);
-  const navigation = useNavigation();
-  return (
-    <Card containerStyle={{ borderRadius: 10, padding: 0 }}>
-      <Card.Image
-        style={{ padding: 0 }}
-        source={{
-          uri: value.imageUrl,
-        }}
-        onPress={() => {
-          if (value.state) {
-            if (value.state == "已通过") {
-              navigation.navigate("LogDetail", { item: value });
-            } else if (value.state == "未发布" || value.state == "待审核") {
-              navigation.navigate("LogPublic", { item: value });
-            } else if (value.state == "未通过") {
-              navigation.navigate("LogPublic", { item: value });
-            }
+
+// 长按删除事件
+const handleDeleteLog = (id, freshData) => {
+  console.log(id);
+  Alert.alert(
+    "删除游记",
+    "确定要删除这条游记吗？",
+    [
+      {
+        text: "取消",
+        style: "cancel",
+      },
+      {
+        text: "删除",
+        onPress: () => {
+          try {
+            api.delete(`/myLog/deleteLogs/${id}`).then((res) => {
+              console.log(res.data);
+              Toast.show("删除成功");
+            });
+            freshData();
+          } catch (error) {
+            console.error("Error deleting data:", error);
+            Toast.show("删除失败");
           }
-        }}
-      />
-      <View
-        style={{
-          flexDirection: "row",
-          justifyContent: "space-evenly",
-          alignItems: "center",
-          marginBottom: 10,
-          marginTop: 5,
-        }}
-      >
-        <Text
-          style={{
-            width: "60%",
-            justifyContent: "center",
-            alignItems: "center",
-            textAlign: "center",
-          }}
-        >
-          {value.title}
-        </Text>
-        <Text
-          style={{
-            width: "40%",
-            justifyContent: "center",
-            alignItems: "center",
-            textAlign: "center",
-          }}
-        >
-          <Badge
-            badgeStyle={{}}
-            containerStyle={{}}
-            status={
-              (value.state == "已通过" && "success") ||
-              (value.state == "待审核" && "primary") ||
-              (value.state == "未通过" && "error") ||
-              (value.state == "未发布" && "warning")
-            }
-            textProps={{}}
-            textStyle={{ color: "#EFE" }}
-            value={value.state}
-          />
-        </Text>
-      </View>
-    </Card>
+        },
+      },
+    ],
+    { cancelable: false }
   );
 };
 
@@ -260,6 +224,152 @@ const MyLogPage = () => {
   const [likeLogDatas, setLikeLogDatas] = useState([]);
   const [collectLogDatas, setCollectDatas] = useState([]);
 
+  //渲染我的游记组件
+  const RenderItemMyLog = ({ value, freshMyLogData }) => {
+    // console.log(value);
+    const navigation = useNavigation();
+    return (
+      <Card containerStyle={{ borderRadius: 10, padding: 0 }}>
+        <Card.Image
+          style={{ padding: 0 }}
+          source={{
+            uri: value.imageUrl,
+          }}
+          onPress={() => {
+            if (value.state) {
+              if (value.state == "已通过") {
+                navigation.navigate("LogDetail", { item: value });
+              } else if (value.state == "未发布" || value.state == "待审核") {
+                navigation.navigate("LogPublic", { item: value });
+              } else if (value.state == "未通过") {
+                navigation.navigate("LogPublic", { item: value });
+              }
+            }
+          }}
+          onLongPress={() => {
+            if (userInfo.userId === value.userId) {
+              handleDeleteLog(value._id, freshMyLogData);
+            }
+          }}
+        />
+        <View
+          style={{
+            flexDirection: "row",
+            // justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: 10,
+            marginTop: 5,
+          }}
+        >
+          <Text
+            style={{
+              width: "60%",
+              alignItems: "center",
+              marginLeft: 10,
+            }}
+          >
+            {value.title}
+          </Text>
+          <Text
+            style={{
+              width: "40%",
+              // justifyContent: "center",
+              alignItems: "center",
+              // textAlign: "center",
+            }}
+          >
+            <Badge
+              badgeStyle={{}}
+              containerStyle={{}}
+              status={
+                (value.state == "已通过" && "success") ||
+                (value.state == "待审核" && "primary") ||
+                (value.state == "未通过" && "error") ||
+                (value.state == "未发布" && "warning")
+              }
+              textProps={{}}
+              textStyle={{ color: "#EFE" }}
+              value={value.state}
+            />
+          </Text>
+        </View>
+      </Card>
+    );
+  };
+
+  //渲染点赞和收藏组件
+  const RenderItemOtherLog = ({ value, type }) => {
+    // console.log(value);
+    const navigation = useNavigation();
+    return (
+      <Card containerStyle={{ borderRadius: 10, padding: 0 }}>
+        <Card.Image
+          style={{ padding: 0 }}
+          source={{
+            uri: value.imageUrl,
+          }}
+          onPress={() => {
+            if (value.state) {
+              navigation.navigate("LogDetail", { item: value });
+            }
+          }}
+        />
+        <View
+          style={{
+            flexDirection: "row",
+            // justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: 10,
+            marginTop: 5,
+          }}
+        >
+          <Text
+            style={{
+              width: "60%",
+              alignItems: "center",
+              marginLeft: 10,
+            }}
+          >
+            {value.title}
+          </Text>
+          <Text
+            style={{
+              width: "40%",
+              justifyContent: "center",
+              alignItems: "center",
+              textAlign: "center",
+            }}
+          >
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              {selectIcon(type)}
+              <Text style={{ fontSize: 16, marginLeft: 3 }}>
+                {type === "collect" ? value.collects : value.likes}
+              </Text>
+            </View>
+          </Text>
+        </View>
+      </Card>
+    );
+  };
+
+  // 收藏和点赞的icon获取
+  const selectIcon = (type) => {
+    if (type === "collect") {
+      return <AntDesign name={"star"} size={24} color={"#F5B041"}></AntDesign>;
+    } else if (type === "like") {
+      return <Ionicons name={"heart"} size={24} color={"red"} />;
+    } else {
+      return <></>;
+    }
+  };
+
+  // 获取游记数据
   const fetchUserLogData = async () => {
     try {
       setLoading(true);
@@ -276,6 +386,7 @@ const MyLogPage = () => {
     }
   };
 
+  // 获取我的游记
   const fetchMyLogDatas = async (type, server_url, setFunc) => {
     console.log(type);
     try {
@@ -293,6 +404,8 @@ const MyLogPage = () => {
       console.log("获取失败", error.response.data.message);
     }
   };
+
+  // 获取点赞的游记
   const fetchLikeLogData = async () => {
     try {
       setLoading(true);
@@ -311,6 +424,8 @@ const MyLogPage = () => {
       console.log(e.response.data.message);
     }
   };
+
+  // 获取收藏的游记
   const fetchCollectLogData = async () => {
     try {
       setLoading(true);
@@ -332,6 +447,8 @@ const MyLogPage = () => {
   const changeTapIndex = (e) => {
     setIndex(e);
   };
+
+  //获取当前用户信息
   const getUserDataFromAS = async () => {
     try {
       let user = await getItemFromAS("userInfo");
@@ -344,6 +461,7 @@ const MyLogPage = () => {
       console.log(e);
     }
   };
+
   useEffect(() => {
     console.log("获取用户数据");
     setIndex(0);
@@ -351,6 +469,7 @@ const MyLogPage = () => {
     fetchLikeLogData();
     fetchCollectLogData();
   }, []);
+
   useFocusEffect(
     React.useCallback(() => {
       // 在页面获取焦点时执行的操作
@@ -464,6 +583,7 @@ const MyLogPage = () => {
     // 获取imageData
     setModalVisible(false); // 拍照上传后关闭模态框
   };
+
   return (
     <>
       {/* 图片上传方式选择模态框 */}
@@ -837,7 +957,10 @@ const MyLogPage = () => {
                       numColumns={2}
                       renderItem={({ item, index }) => (
                         <View style={{ width: "50%" }} key={index}>
-                          <RenderItem value={item} />
+                          <RenderItemMyLog
+                            value={item}
+                            freshMyLogData={fetchUserLogData}
+                          />
                         </View>
                       )}
                     ></FlatList>
@@ -869,7 +992,7 @@ const MyLogPage = () => {
                       numColumns={2}
                       renderItem={({ item, index }) => (
                         <View style={{ width: "50%" }} key={index}>
-                          <RenderItem value={item} />
+                          <RenderItemOtherLog value={item} type={"collect"} />
                         </View>
                       )}
                     ></FlatList>
@@ -901,7 +1024,7 @@ const MyLogPage = () => {
                       numColumns={2}
                       renderItem={({ item, index }) => (
                         <View style={{ width: "50%" }} key={index}>
-                          <RenderItem value={item} />
+                          <RenderItemOtherLog value={item} type={"like"} />
                         </View>
                       )}
                     ></FlatList>

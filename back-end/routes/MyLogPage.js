@@ -72,6 +72,7 @@ router.get("/getMyLogs", authenticateToken, async (req, res) => {
     res.status(500).json({ status: "error", message: "出错了，请联系管理员" }); // 如果出现错误，返回500错误
   }
 });
+
 //获取我点赞的笔记
 router.get("/getMyLikeLogs", authenticateToken, async (req, res) => {
   try {
@@ -149,6 +150,7 @@ router.get("/getMyLikeLogs", authenticateToken, async (req, res) => {
     }); // 如果出现错误，返回500错误
   }
 });
+
 //获取用户收藏的笔记
 router.get("/getMyCollectLogs", authenticateToken, async (req, res) => {
   try {
@@ -180,6 +182,7 @@ router.get("/getMyCollectLogs", authenticateToken, async (req, res) => {
           "travelLog.title": 1,
           "travelLog.imagesUrl": 1,
           "travelLog.likes": 1,
+          "travelLog.collects": 1,
           "travelLog.userId": 1,
           "travelLog.state": 1,
         },
@@ -204,6 +207,7 @@ router.get("/getMyCollectLogs", authenticateToken, async (req, res) => {
           title: item.title,
           imageUrl: imageUrl,
           likes: item.likes,
+          collects: item.collects,
           userId: item.userId,
           state: item.state,
           // username: item.user[0].username,
@@ -287,6 +291,22 @@ router.get("/getLogsByUserId/:id", async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ status: "error", message: "出错了，请联系管理员" }); // 如果出现错误，返回500错误
+  }
+});
+
+// 删除游记
+router.delete("/deleteLogs/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const log = await TravelLog.findByIdAndDelete(id);
+    if (!log) {
+      return res.status(404).json({ message: "游记不存在" });
+    }
+    await Manager.deleteOne({ log });
+    res.json({ message: "游记删除成功" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "服务器错误" });
   }
 });
 

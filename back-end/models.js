@@ -42,8 +42,8 @@ const UserSchema = new Schema({
 UserSchema.plugin(AutoIncrement, { inc_field: "customId" });
 // 游记模型
 const TravelLogSchema = new Schema({
-  title: { type: String, required: true }, // 标题
-  content: { type: String, required: true }, // 内容
+  title: { type: String }, // 标题
+  content: { type: String }, // 内容
   imagesUrl: [{ type: String }], // 存储图片的 URL 列表
   travelMonth: {
     type: String,

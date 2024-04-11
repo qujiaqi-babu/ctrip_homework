@@ -308,9 +308,25 @@ const MyLogPage = () => {
           source={{
             uri: value.imageUrl,
           }}
-          onPress={() => {
+          onPress={async () => {
             if (value.state) {
-              navigation.navigate("LogDetail", { item: value });
+              await api
+                .get(`/home/findAuthor/${value._id}`)
+                .then((response) => {
+                  console.log(response.data);
+                  const newItem = {
+                    ...response.data,
+                    _id: value._id,
+                  };
+                  navigation.navigate("LogDetail", {
+                    item: newItem,
+                  });
+                })
+                .catch((error) => {
+                  console.log(error);
+                });
+
+              // navigation.navigate("LogDetail", { item: value });
             }
           }}
         />

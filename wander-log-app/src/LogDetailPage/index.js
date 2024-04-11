@@ -39,6 +39,9 @@ const LogDetailPage = ({ route }) => {
   const [comments, setComments] = useState(0);
   const [likeScaleValue] = useState(new Animated.Value(1));
   const [collectScaleValue] = useState(new Animated.Value(1));
+  // const [userId, setUserId] = useState("");
+  // const [userName, setUserName] = useState("");
+  // const [userAvatar, setUserAvatar] = useState("");
 
   const [travelLog, setTravelLog] = useState(null);
 
@@ -51,7 +54,7 @@ const LogDetailPage = ({ route }) => {
       try {
         const response = await api.get(`/logDetail/findLog/${logId}`);
         const data = await response.data;
-        // console.log(data);
+        console.log(data);
         setTravelLog({
           ...data,
           perCost: mapPerCost(data.percost),
@@ -60,6 +63,9 @@ const LogDetailPage = ({ route }) => {
         });
         setCollects(data.collects);
         setLikes(data.likes);
+        // setUserId(data.userId._id);
+        // setUserName(data.userId.username);
+        // setUserAvatar(data.userId.userAvatar);
       } catch (error) {
         console.error(error);
       }

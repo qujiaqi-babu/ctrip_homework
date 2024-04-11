@@ -978,7 +978,7 @@ const styles = StyleSheet.create({
     marginVertical: 10,
   },
   three: {
-    flex: 5,
+    flex: 4,
     marginTop: 5,
   },
   contentInput: {
@@ -1064,7 +1064,7 @@ const styles = StyleSheet.create({
     marginLeft: 10,
   },
   five: {
-    flex: 7,
+    flex: 6,
     flexDirection: "row",
     // alignItems: "center",
     justifyContent: "space-between",

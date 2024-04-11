@@ -15,6 +15,8 @@ import { MaterialIcons, Ionicons, AntDesign } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import ImageSlider from "./component/imageSlider";
 import { api, getItemFromAS } from "../../util";
+import * as Linking from "expo-linking";
+import { color } from "@rneui/base";
 
 const Toast = Overlay.Toast;
 
@@ -191,6 +193,15 @@ const LogDetailPage = ({ route }) => {
     }
   };
 
+  // 文本链接
+  const handleLinkPress = (url) => {
+    try {
+      Linking.openURL(url);
+    } catch (error) {
+      console.error("Error opening link:", error);
+    }
+  };
+
   return (
     <View style={{ flex: 1, backgroundColor: "white" }}>
       {/* 顶部导航栏 */}
@@ -273,16 +284,33 @@ const LogDetailPage = ({ route }) => {
           <View style={styles.labelBox}>
             <View style={styles.label}>
               <Text style={styles.labelText}>地点</Text>
-              {travelLog && (
-                <Text style={styles.labelData}>
-                  {travelLog.destination ? travelLog.destination : "xx"}
-                </Text>
-              )}
+              <TouchableOpacity
+                onPress={() => {
+                  handleLinkPress("https://www.ctrip.com/");
+                }}
+              >
+                {travelLog && (
+                  <Text
+                    style={[
+                      styles.labelData,
+                      {
+                        color: "#5499C7",
+                        textDecorationLine: "underline",
+                        paddingBottom: 0,
+                      },
+                    ]}
+                  >
+                    {travelLog.destination ? travelLog.destination : "XX"}
+                  </Text>
+                )}
+              </TouchableOpacity>
             </View>
             <View style={styles.label}>
               <Text style={styles.labelText}>出行月份</Text>
               {travelLog && (
-                <Text style={styles.labelData}>{travelLog.travelMonth}</Text>
+                <Text style={[styles.labelData, {}]}>
+                  {travelLog.travelMonth}
+                </Text>
               )}
             </View>
             <View style={styles.label}>
@@ -537,7 +565,7 @@ const styles = StyleSheet.create({
     color: "#808B96",
   },
   labelData: {
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: "bold",
     marginTop: 5,
   },

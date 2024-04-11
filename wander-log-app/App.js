@@ -35,6 +35,11 @@ import {
 
 import { MaterialIcons, Ionicons } from "@expo/vector-icons";
 
+import { LogBox } from "react-native";
+
+// 屏蔽掉所有的黄色警告框
+LogBox.ignoreAllLogs();
+
 // 发布游记按钮
 function PublishButton() {
   const navigation = useNavigation();

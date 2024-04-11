@@ -19,7 +19,7 @@ import {
   ListItem,
   Dialog,
 } from "@rneui/themed";
-import { WebView } from "react-native-webview";
+import LBSMap from "./components/LBSMap";
 import { useNavigation } from "@react-navigation/native";
 import { api } from "../../util";
 // 在发送请求之前，添加 token 到请求头
@@ -47,92 +47,9 @@ const EditProfile = (props) => {
 
 const EditPage = () => {
   const navigation = useNavigation();
+  const [couldSave, setCouldSave] = useState(false);
   const [data, setData] = useState({});
   const [profile, setProfile] = React.useState("");
-  const [htmlData, setHtmlData] = useState("");
-  const webRef = useRef(null);
-  const html = `<!DOCTYPE html>
-<html>
-	<head>
-		<meta charset="utf-8" />
-		<!--适应移动端页面展示-->
-		<meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
-		<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=0">
-		<title></title>
-		<!--引用百度地图API文件-->
-		<script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak=Asqhnvd151Sdv7yvfejSEi3DhnQKAeRX"></script>
-		<style type="text/css">
-		    html {
-		    	height: 100%
-		    }
-		    
-		    body {
-		    	height: 100%;
-		    	margin: 0px;
-		    	padding: 0px
-		    }
-		    /*设置容器样式*/
-		    #container {
-		    	height: 100%;
-		    }
-		</style>
-	</head>
-	<body>
-		<!--地图存放的div-->
-		<div id="container"></div>
-		<script type="text/javascript">
-			//创建地址实例
-			var map = new BMap.Map("container"); 
-			//设置中心的坐标
-			var point = new BMap.Point();
-			//初始化地图页面，设置中心点坐标和地图级别  
-			map.centerAndZoom(point, 15); 
-			//开启鼠标滚轮缩放地图
-			map.enableScrollWheelZoom(true);
-			
-			//添加控件
-			//缩略地图OverviewMapControl，默认位于地图右下方，是一个可折叠的缩略地图
-			map.addControl(new BMap.OverviewMapControl());
-			//地图类型MapTypeControl, 默认位于地图右上方
-			map.addControl(new BMap.MapTypeControl());
-			//平移缩放控件 NavigationControl	, PC端默认位于地图左上方，它包含控制地图的平移和缩放的功能。移动端提供缩放控件，默认位于地图右下方
-			map.addControl(new BMap.NavigationControl());
-			//比例尺ScaleControl, 默认位于地图左下方，显示地图的比例关系
-			//map.addControl(new BMap.ScaleControl());
-			//设置控件位置偏移，x,y轴
-			var opts = {offset: new BMap.Size(90, 30)}
-			map.addControl(new BMap.ScaleControl(opts));
-  			window.ReactNativeWebView.postMessage("hello",'*');
-			//根据浏览器定位，之后显示当前位置
-			var geolocation = new BMap.Geolocation();
-			geolocation.getCurrentPosition(function(r){
-				if(this.getStatus() == BMAP_STATUS_SUCCESS){
-					var mk = new BMap.Marker(r.point);
-					map.addOverlay(mk);
-					map.panTo(r.point);
-					var latCurrent = r.point.lat;
-					var lngCurrent = r.point.lng;
-					alert('您的位置：'+r.point.lng+','+r.point.lat);
-
-					//设置导航终点，起始位置到终点位置
-					//location.href = "http://api.map.baidu.com/direction?origin=" + latCurrent + "," + lngCurrent + 
-					//"&destination=30.4325,111.182311&mode=driving&region=随便写的一个地址&output=html";
-				}
-				else {
-					alert('failed'+this.getStatus());
-				}        
-			});
-		</script>
-	</body>
-</html>`;
-
-  const handleMessage = (event) => {
-    console.log("hello");
-    // 获取来自 WebView 的消息
-    const message = event.nativeEvent.data;
-    setHtmlData(message); // 更新状态以显示 HTML 页面的数据
-    console.log(message);
-  };
 
   const fetchData = async () => {
     try {
@@ -188,9 +105,11 @@ const EditPage = () => {
             <Text style={{ color: "black", fontSize: 18, fontFamily: "serif" }}>
               编辑简介
             </Text>
-            <TouchableOpacity onPress={handleSave}>
+            <TouchableOpacity disabled={!couldSave} onPress={handleSave}>
               <Text
-                style={{ color: "#EE3B3B", fontSize: 18, fontFamily: "serif" }}
+                style={
+                  couldSave ? styles.TextButton : styles.disabledTextButton
+                }
               >
                 保存
               </Text>
@@ -203,24 +122,7 @@ const EditPage = () => {
               onChangeText={(text) => setProfile(text)}
               value={profile}
             />
-            <WebView
-              style={{
-                width: 400,
-                height: 400,
-                // backgroundColor: "red",
-              }}
-              // source={{ html }}
-              source={{ uri: "http://10.0.2.2:8080/image/map.html" }}
-              ref={webRef}
-              originWhitelist={["*"]}
-              onMessage={handleMessage}
-              //重写webview的postMessage方法，解决RN无法监听html自带的window.postMessage
-              injectedJavaScript={`(function() {
-              window.postMessage = function(data) {
-                window.ReactNativeWebView.postMessage(data)
-              }
-              })();`}
-            />
+            <LBSMap value={"上海华东理工大学"} setStateFunc={setCouldSave} />
           </View>
         </View>
       ) : (
@@ -252,5 +154,16 @@ const styles = StyleSheet.create({
     alignItems: "center",
     // backgroundColor: "red",
     // width: "80%",
+  },
+  disabledTextButton: {
+    color: "#EE3B3B",
+    opacity: 0.5,
+    fontSize: 18,
+    fontFamily: "serif",
+  },
+  TextButton: {
+    color: "#EE3B3B",
+    fontSize: 18,
+    fontFamily: "serif",
   },
 });

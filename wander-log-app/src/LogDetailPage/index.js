@@ -65,6 +65,7 @@ const LogDetailPage = ({ route }) => {
       }
     };
     fetchLogDetail();
+    // console.log(travelLog);
   }, []);
 
   // 调整数据格式

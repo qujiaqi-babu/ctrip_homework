@@ -31,6 +31,7 @@ import { TouchableWithoutFeedback } from "@ui-kitten/components/devsupport";
 import * as FileSystem from "expo-file-system";
 import { get } from "react-native/Libraries/TurboModule/TurboModuleRegistry";
 import { useFocusEffect } from "@react-navigation/native";
+import { AntDesign } from "@expo/vector-icons";
 import {
   api,
   setAuthHeader,
@@ -610,8 +611,12 @@ const MyLogPage = () => {
                       设置背景
                     </Text>
                   </TouchableOpacity>
-                  <TouchableOpacity>
-                    <Icon name="share" size={28} color="#FFF" />
+                  <TouchableOpacity
+                    onPress={() => {
+                      navigation.navigate("MyMessage");
+                    }}
+                  >
+                    <AntDesign name="message1" size={28} color="#FFF" />
                   </TouchableOpacity>
                 </View>
               </View>
@@ -984,7 +989,7 @@ const styles = StyleSheet.create({
   },
   contentBox: {
     position: "absolute",
-    top: 30,
+    top: 20,
     width: "100%",
     height: "90%",
   },

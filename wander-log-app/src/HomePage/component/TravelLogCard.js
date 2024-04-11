@@ -38,7 +38,7 @@ const TravelLogCard = ({ item, columnIndex, numColumns }) => {
   // 获取导航对象
   const navigation = useNavigation();
 
-  // 重要！！！否则游记列表刷新时点赞状态不会更新
+  // 重要！！！否则游记列表刷新时点赞状态可能不会更新
   useEffect(() => {
     setLiked(item.liked);
     setLikes(item.likes);

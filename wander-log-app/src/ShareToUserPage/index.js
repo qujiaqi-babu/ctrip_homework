@@ -23,7 +23,9 @@ const RenderItem = ({ value, handleFriendPress }) => {
 
   // console.log(value.username, value.selected, selected);
 
-  // 当组件的传入值发生变化，更新其选中状态（重要！！！）
+  // 当组件的传入值发生变化，更新其选中状态
+  // 其实设keyExtractor={(item) => item.userId.toString()}就可以了
+  // 这样就能确保FlatList正确地渲染和更新列表项
   useEffect(() => {
     setSelected(value.selected);
   }, [value]);
@@ -93,7 +95,7 @@ const RenderItem = ({ value, handleFriendPress }) => {
   );
 };
 
-const FriendList = ({ route }) => {
+const ShareToUserPage = ({ route }) => {
   const { logId } = route.params; // 详情页传来的值
   const [friends, setFriends] = useState([]);
   const [selectedFriends, setSelectedFriends] = useState([]);
@@ -200,6 +202,7 @@ const FriendList = ({ route }) => {
       {friends ? (
         <FlatList
           showsVerticalScrollIndicator={false}
+          keyExtractor={(item) => item.userId.toString()}
           data={friends}
           numColumns={1}
           renderItem={({ item, index }) => (
@@ -292,4 +295,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default FriendList;
+export default ShareToUserPage;

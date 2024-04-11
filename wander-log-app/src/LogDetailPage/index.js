@@ -54,7 +54,7 @@ const LogDetailPage = ({ route }) => {
       try {
         const response = await api.get(`/logDetail/findLog/${logId}`);
         const data = await response.data;
-        console.log(data);
+        // console.log(data);
         setTravelLog({
           ...data,
           perCost: mapPerCost(data.percost),

@@ -93,15 +93,15 @@ const RenderItem = ({ value }) => {
         >
           <Text>{value.title}</Text>
           <Text>
-            <Badge
+            {/* <Badge
               badgeStyle={{}}
               containerStyle={{}}
               status="primary"
               textProps={{}}
               textStyle={{ color: "#EFE" }}
-              value="审核中"
+              value={value.state}
               options={{}}
-            />
+            /> */}
           </Text>
         </View>
       </Card>
@@ -349,6 +349,7 @@ const OtherUserPage = ({ route }) => {
           <View style={styles.log_container}>
             <Tab
               value={index}
+              disableIndicator={true}
               onChange={(e) => setIndex(e)}
               indicatorStyle={{
                 // position: "sticky",
@@ -362,8 +363,8 @@ const OtherUserPage = ({ route }) => {
               dense
             >
               <Tab.Item>笔记</Tab.Item>
-              <Tab.Item>收藏</Tab.Item>
-              <Tab.Item>赞过</Tab.Item>
+              {/* <Tab.Item>收藏</Tab.Item>
+              <Tab.Item>赞过</Tab.Item> */}
             </Tab>
             <TabView value={index} onChange={setIndex} animationType="spring">
               <TabView.Item style={{ width: "100%" }}>
@@ -386,7 +387,7 @@ const OtherUserPage = ({ route }) => {
                   ></EmyptyItem>
                 )}
               </TabView.Item>
-              <TabView.Item style={{ width: "100%" }}>
+              {/* <TabView.Item style={{ width: "100%" }}>
                 <EmyptyItem
                   name="collections"
                   color="lightgray"
@@ -399,7 +400,7 @@ const OtherUserPage = ({ route }) => {
                   color="lavenderblush"
                   label="爱过~"
                 />
-              </TabView.Item>
+              </TabView.Item> */}
             </TabView>
           </View>
         </View>

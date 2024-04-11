@@ -243,6 +243,7 @@ router.get("/getLogsByUserId/:id", async (req, res) => {
       imagesUrl: { $slice: 1 }, // 只获取第一张图片
       hits: 1,
       userId: 1,
+      state: 1,
     }; // 选择要获取的字段，1表示包含该字段，0表示不包含该字段
     const travelLogs = await TravelLog.find(
       {
@@ -279,6 +280,7 @@ router.get("/getLogsByUserId/:id", async (req, res) => {
           userId: item.userId._id,
           username: item.userId.username,
           userAvatar: userAvatar,
+          state: item.state,
         };
         return newItem;
       });

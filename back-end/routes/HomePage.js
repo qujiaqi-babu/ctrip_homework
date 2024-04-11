@@ -430,10 +430,14 @@ router.get("/findAuthor/:id", async (req, res) => {
     if (!user) {
       return res.status(404).json({ error: "Travel author not found" });
     }
+    let userAvatar = user.userAvatar;
+    if (!userAvatar.startsWith("http")) {
+      userAvatar = `${config.baseURL}/${config.userAvatarPath}/${userAvatar}`;
+    }
     const userInfo = {
       userId: user._id,
       username: user.username,
-      userAvatar: `${config.baseURL}/${config.userAvatarPath}/${user.userAvatar}`,
+      userAvatar: userAvatar,
     };
     console.log(userInfo);
     res.json(userInfo);

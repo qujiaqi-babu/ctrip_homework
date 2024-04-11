@@ -72,7 +72,6 @@ const LogPublicPage = ({ route }) => {
 
   const [selectedMonth, setSelectedMonth] = useState(null);
   const [selectedRange, setSelectedRange] = useState(null);
-  const [userLocation, setUserLocation] = useState();
   const [mapRegion, setmapRegion] = useState({
     latitude: 37.78825,
     longitude: -122.4324,
@@ -247,7 +246,14 @@ const LogPublicPage = ({ route }) => {
 
   // 处理添加地点的逻辑
   const handleAddDestination = () => {
-    setDestinationModal(true);
+    if (destinationText) {
+      navigation.navigate("AddLocation", {
+        value: destinationText,
+        setFunc: setDestinationText,
+      });
+    } else {
+      navigation.navigate("AddLocation", { setFunc: setDestinationText });
+    }
   };
 
   // 选择地点
@@ -281,6 +287,7 @@ const LogPublicPage = ({ route }) => {
     setLabelText("主题");
     setLoadState(true);
     setVioLabelVisible(false);
+    setDestinationText("");
   };
   const fetchLogDetail = async () => {
     try {
@@ -299,6 +306,7 @@ const LogPublicPage = ({ route }) => {
       setSelectedMonth(data.travelMonth);
       setSelectedRange(data.perCost);
       setLabelText(data.topic);
+      setDestinationText(data.destinationText);
       // setTravelLog({
       //   ...travelLog,
       //   imagesUrl: data.imagesUrl,
@@ -841,10 +849,10 @@ const LogPublicPage = ({ route }) => {
                     source={require("../LogPublicPage/public/place.png")}
                     style={styles.placeIcon}
                   />
-                  {userLocation ? (
-                    <Text style={styles.placeText}>添加地点</Text>
+                  {destinationText ? (
+                    <Text>{destinationText}</Text>
                   ) : (
-                    <Text>{JSON.stringify(userLocation)}</Text>
+                    <Text style={styles.placeText}>添加地点</Text>
                   )}
                 </View>
                 <MaterialIcons

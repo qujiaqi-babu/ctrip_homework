@@ -326,12 +326,19 @@ router.get("/myFriends", authenticateToken, async (req, res) => {
 
 // 用户向好友列表分享特定游记
 router.post("/share", authenticateToken, async (req, res) => {
-  const { selectedFriends } = req.body;
-  const userId = req.user.id;
+  const fromUserId = req.user.id;
+  const { travelLogId, toUserIds } = req.body;
+  // const
   try {
-    const collect = await Share.findOne({ userId, travelLogId });
-    const newCollect = new Share({ fromUserId, travelLogId, toUserId });
-    await newCollect.save();
+    const result = await Share.insertMany(
+      toUserIds.map((toUserId) => ({
+        fromUserId,
+        travelLogId,
+        toUserId,
+      }))
+    );
+    // console.log(`${result.length} documents inserted.`);
+    res.json(result);
   } catch (error) {
     console.error("Error collect:", error);
     res.status(500).send("Internal server error");

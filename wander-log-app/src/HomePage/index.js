@@ -24,8 +24,9 @@ import {
   getItemFromAS,
 } from "../../util";
 
-// 屏幕宽度
+// 屏幕宽度高度
 const screenWidth = Dimensions.get("window").width;
+const screenHeight = Dimensions.get("window").height;
 const Toast = Overlay.Toast;
 
 const RequestStatus = {
@@ -37,7 +38,8 @@ const RequestStatus = {
 
 const HomePage = ({ navigation }) => {
   // 瀑布流列数
-  const [numColumns, setNumColumns] = useState(2);
+  const numColumns = screenHeight / screenWidth > 1.2 ? 2 : 3;
+  // const [numColumns, setNumColumns] = useState(2);
   const topics = ["", ...config.topic];
 
   // 每次瀑布流加载countEachLoad个游记卡片

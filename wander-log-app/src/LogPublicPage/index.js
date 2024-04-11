@@ -341,8 +341,8 @@ const LogPublicPage = ({ route }) => {
   // );
 
   const handleAddToDraft = async () => {
-    if (imageUrl.length === 0 || !title || !content) {
-      Toast.show("请至少上传一张图片，填写标题和内容~", { duration: 2000 });
+    if (imageUrl.length === 0) {
+      Toast.show("没有内容需要保存哦~", { duration: 2000 });
       return;
     }
 
@@ -465,6 +465,7 @@ const LogPublicPage = ({ route }) => {
                 </View>
               )}
               {/* 第一块布局放图片和添加按钮 */}
+              {/* <View style={{ marginTop: 10, }}> */}
               <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                 <View style={styles.one}>
                   <View style={{ flexDirection: "row" }}>
@@ -516,6 +517,7 @@ const LogPublicPage = ({ route }) => {
                   </View>
                 </View>
               </ScrollView>
+              {/* </View> */}
               {/* 图片上传方式选择模态框 */}
               <Modal
                 animationType="slide"
@@ -859,6 +861,7 @@ const LogPublicPage = ({ route }) => {
                   />
                 </TouchableOpacity>
               </View>
+              <View style={{ flex: 5 }}></View>
             </View>
             {/* 底部操作栏 */}
             <View style={styles.bottomBox}>
@@ -1064,7 +1067,7 @@ const styles = StyleSheet.create({
     marginLeft: 10,
   },
   five: {
-    flex: 6,
+    flex: 1,
     flexDirection: "row",
     // alignItems: "center",
     justifyContent: "space-between",
@@ -1082,12 +1085,13 @@ const styles = StyleSheet.create({
     marginLeft: 10,
   },
   bottomBox: {
-    height: 40,
-    // backgroundColor: 'red',
+    height: 50,
+    // backgroundColor: "red",
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-end",
-    margin: 10,
+    marginLeft: 10,
+    marginRight: 10,
   },
   draftBack: {
     width: 40,

@@ -234,6 +234,7 @@ const HomePage = ({ navigation }) => {
             <WaterfallFlow
               style={styles.waterfallFlow}
               data={travelLogs}
+              // keyExtractor={(item) => item._id.toString()}
               onRefresh={handleFresh}
               refreshing={requestStatus === RequestStatus.PENDING}
               onEndReached={() => {

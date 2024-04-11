@@ -24,6 +24,7 @@ import OtherUserScreen from "./src/otherUserPage";
 import SettingScreen from "./src/SettingPage";
 import AddUserScreen from "./src/AddUserPage";
 import ShareToUserScreen from "./src/ShareToUserPage";
+import MyMessageScreen from "./src/MyMessagePage";
 import {
   api,
   setAuthHeader,
@@ -157,14 +158,6 @@ function HomeStackScreen() {
           headerTitle: "",
         }}
       />
-      {/* <Stack.Screen
-        name="MyLogPage"
-        component={MyLogScreen}
-        options={{
-          headerShown: false,
-          headerTitle: "UserLogPage",
-        }}
-      /> */}
       <Stack.Screen
         name="OtherUserLog"
         component={OtherUserScreen}
@@ -189,6 +182,15 @@ function HomeStackScreen() {
           headerShown: true,
           headerTitleAlign: "center",
           headerTitle: "分享给好友",
+        }}
+      />
+      <Stack.Screen
+        name="MyMessage"
+        component={MyMessageScreen}
+        options={{
+          headerShown: true,
+          headerTitleAlign: "center",
+          headerTitle: "我的消息",
         }}
       />
     </Stack.Navigator>

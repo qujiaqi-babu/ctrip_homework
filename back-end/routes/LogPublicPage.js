@@ -114,6 +114,7 @@ router.post("/drafts", authenticateToken, async (req, res) => {
     topic,
     state,
   } = req.body;
+  console.log(req.body);
   const imageData = images._parts[0][1];
   res.setHeader("content-type", "application/json");
   // 保存游记图片
@@ -143,7 +144,7 @@ router.post("/drafts", authenticateToken, async (req, res) => {
     });
     // 保存游记到数据库
     await travelLog.save();
-    res.status(201).json(createSuccessResponse("游记发布成功！"));
+    res.status(201).json(createSuccessResponse("游记保存成功！"));
   } catch (err) {
     console.error(err);
     res.status(500).json(createErrorResponse(err));

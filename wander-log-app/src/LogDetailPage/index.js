@@ -9,11 +9,14 @@ import {
   TextInput,
   Animated,
   Modal,
+  Overlay,
 } from "react-native";
 import { MaterialIcons, Ionicons, AntDesign } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import ImageSlider from "./component/imageSlider";
 import { api, getItemFromAS } from "../../util";
+
+const Toast = Overlay.Toast;
 
 const LogDetailPage = ({ route }) => {
   const { item, setCardLikes, setCardLiked } = route.params; // 主页传来的值
@@ -189,7 +192,7 @@ const LogDetailPage = ({ route }) => {
   };
 
   return (
-    <View style={{ flex: 1 }}>
+    <View style={{ flex: 1, backgroundColor: "white" }}>
       {/* 顶部导航栏 */}
       <View style={styles.topScreen}>
         <View style={styles.leftTopScreen}>
@@ -246,7 +249,11 @@ const LogDetailPage = ({ route }) => {
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => {
-              navigation.navigate("ShareToUser");
+              if (userId) {
+                navigation.navigate("ShareToUser");
+              } else {
+                Toast.show("请先登录~");
+              }
             }}
           >
             <MaterialIcons
@@ -514,7 +521,7 @@ const styles = StyleSheet.create({
     width: "98%",
     height: 80,
     borderRadius: 20,
-    backgroundColor: "#D4E6F1",
+    backgroundColor: "#EBF5FB",
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",

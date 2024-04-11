@@ -25,7 +25,7 @@ import * as FileSystem from "expo-file-system";
 import * as Location from "expo-location";
 import { TouchableWithoutFeedback } from "@ui-kitten/components/devsupport";
 import { api } from "../../util";
-import MapView from "react-native-maps";
+import { WebView } from "react-native-webview";
 import { useFocusEffect } from "@react-navigation/native";
 const config = require("../../config.json");
 

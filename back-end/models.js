@@ -48,6 +48,7 @@ const TravelLogSchema = new Schema({
   travelMonth: {
     type: String,
     enum: [
+      "",
       "一月",
       "二月",
       "三月",
@@ -64,7 +65,7 @@ const TravelLogSchema = new Schema({
   }, // 旅行月份
   percost: {
     type: String,
-    enum: ["0—500", "500—1000", "1000—2000", "2000以上"],
+    enum: ["", "0—500", "500—1000", "1000—2000", "2000以上"],
   }, // 人均消费
   rate: { type: Number, enum: [1, 2, 3, 4, 5] }, // 评分
   destination: { type: String }, // 目的地

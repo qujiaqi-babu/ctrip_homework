@@ -19,7 +19,7 @@ import {
   ListItem,
   Dialog,
 } from "@rneui/themed";
-import { WebView } from "react-native-webview";
+import LBSMap from "./components/LBSMap";
 import { useNavigation } from "@react-navigation/native";
 import { api } from "../../util";
 // 在发送请求之前，添加 token 到请求头
@@ -47,33 +47,9 @@ const EditProfile = (props) => {
 
 const EditPage = () => {
   const navigation = useNavigation();
+  const [couldSave, setCouldSave] = useState(false);
   const [data, setData] = useState({});
   const [profile, setProfile] = React.useState("");
-  const [htmlData, setHtmlData] = useState("");
-  const webRef = useRef(null);
-  const loaction = "上海华东理工大学";
-  const html = `      <html>
-      <head>		
-      <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
-		<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=0">
-    </head>
-      <body>
-        <script>
-          setTimeout(function () {
-            window.ReactNativeWebView.postMessage("Hello!")
-          }, 2000)
-        </script>
-      </body>
-      </html>
-`;
-
-  const handleMessage = (event) => {
-    // console.log("hello");
-    // 获取来自 WebView 的消息
-    const message = event.nativeEvent.data;
-    setHtmlData(message); // 更新状态以显示 HTML 页面的数据
-    console.log(message);
-  };
 
   const fetchData = async () => {
     try {
@@ -129,9 +105,11 @@ const EditPage = () => {
             <Text style={{ color: "black", fontSize: 18, fontFamily: "serif" }}>
               编辑简介
             </Text>
-            <TouchableOpacity onPress={handleSave}>
+            <TouchableOpacity disabled={!couldSave} onPress={handleSave}>
               <Text
-                style={{ color: "#EE3B3B", fontSize: 18, fontFamily: "serif" }}
+                style={
+                  couldSave ? styles.TextButton : styles.disabledTextButton
+                }
               >
                 保存
               </Text>
@@ -144,30 +122,7 @@ const EditPage = () => {
               onChangeText={(text) => setProfile(text)}
               value={profile}
             />
-            <WebView
-              style={{
-                width: 400,
-                height: 400,
-                // backgroundColor: "red",
-              }}
-              // source={{ html }}
-              source={{ uri: "http://10.0.2.2:8080/image/map2.html" }}
-              ref={webRef}
-              originWhitelist={["*"]}
-              useWebKit={true}
-              javaScriptEnabled={true}
-              domStorageEnabled={true}
-              scrollEnabled={false}
-              onMessage={handleMessage}
-              //重写webview的postMessage方法，解决RN无法监听html自带的window.postMessage
-              injectedJavaScript={`var cityNameInput = document.getElementById('cityName');
-                // 设置 input 元素的值为自己想要的值
-              if (cityNameInput) { // 确保元素存在
-                  cityNameInput.value ="${loaction}" ;
-              } else {
-                  console.error('Input element with id "cityName" not found');
-              }`}
-            />
+            <LBSMap value={"上海华东理工大学"} setStateFunc={setCouldSave} />
           </View>
         </View>
       ) : (
@@ -199,5 +154,16 @@ const styles = StyleSheet.create({
     alignItems: "center",
     // backgroundColor: "red",
     // width: "80%",
+  },
+  disabledTextButton: {
+    color: "#EE3B3B",
+    opacity: 0.5,
+    fontSize: 18,
+    fontFamily: "serif",
+  },
+  TextButton: {
+    color: "#EE3B3B",
+    fontSize: 18,
+    fontFamily: "serif",
   },
 });

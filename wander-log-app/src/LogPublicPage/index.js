@@ -1,5 +1,5 @@
 import "rn-overlay";
-import { Overlay, ScrollView } from "react-native";
+import { Dimensions, Overlay, ScrollView } from "react-native";
 import { Dialog } from "@rneui/themed";
 import React, { useState, useEffect } from "react";
 import {
@@ -30,6 +30,8 @@ import { useFocusEffect } from "@react-navigation/native";
 const config = require("../../config.json");
 
 const Toast = Overlay.Toast;
+const screenHeight = Dimensions.get("window").height;
+// console.log(screenHeight);
 
 const LogPublicPage = ({ route }) => {
   let logId = null;
@@ -274,7 +276,7 @@ const LogPublicPage = ({ route }) => {
     setTitle("");
     setSelectedMonth("");
     setSelectedRange("");
-    setLabelText("");
+    setLabelText("主题");
     setLoadState(true);
   };
   const fetchLogDetail = async () => {
@@ -419,340 +421,188 @@ const LogPublicPage = ({ route }) => {
   };
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      style={styles.container}
-    >
+    <View style={{ flex: 1 }}>
       {/* 解决安卓平台唤出键盘，页面上挤的问题 */}
       {loadState ? (
-        <View style={styles.container}>
-          {/* 顶部放导航栏的地方 */}
-          <View style={styles.topBottom}>
-            <TouchableOpacity
-              onPress={() => {
-                navigation.goBack();
-              }}
-            >
-              <MaterialIcons name="chevron-left" size={36} color="#989797" />
-            </TouchableOpacity>
-            {vioLabelVisible && (
-              // <View style={styles.violationTag}>
-              <TouchableWithoutFeedback
-                style={styles.violationTag}
-                onPress={() => setShowInstruction(!showInstruction)}
-              >
-                <Text style={styles.violationText}>该内容涉嫌违规</Text>
-                <AntDesign
-                  name={showInstruction ? "up" : "down"}
-                  size={16}
-                  style={{ marginLeft: 5, color: "white" }}
-                />
-              </TouchableWithoutFeedback>
-              // </View>
-            )}
-          </View>
-          {/* 中间放拒绝理由，点击叉叉可关闭 */}
-          {showInstruction && (
-            <View>
-              <Text style={{ fontSize: 16, color: "#C0392B" }}>
-                拒绝理由：{instruction}
-              </Text>
-            </View>
-          )}
-          {/* 第一块布局放图片和添加按钮 */}
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            <View style={styles.one}>
-              <View style={{ flexDirection: "row" }}>
-                {imageUrl.map((url, index) => (
+        <View style={{ flex: 1 }}>
+          <ScrollView>
+            <View style={styles.container}>
+              {/* 顶部放导航栏的地方 */}
+              <View style={styles.topBottom}>
+                <TouchableOpacity
+                  onPress={() => {
+                    navigation.goBack();
+                  }}
+                >
+                  <MaterialIcons
+                    name="chevron-left"
+                    size={36}
+                    color="#989797"
+                  />
+                </TouchableOpacity>
+                {vioLabelVisible && (
+                  // <View style={styles.violationTag}>
                   <TouchableWithoutFeedback
-                    key={index}
-                    onPress={() => handleImagePress(url)}
-                    onLongPress={() => {
-                      handleDeleteImage(index);
-                    }}
+                    style={styles.violationTag}
+                    onPress={() => setShowInstruction(!showInstruction)}
                   >
-                    <Image
-                      key={index}
-                      style={styles.imageContainer}
-                      source={{ uri: url }}
+                    <Text style={styles.violationText}>该内容涉嫌违规</Text>
+                    <AntDesign
+                      name={showInstruction ? "up" : "down"}
+                      size={16}
+                      style={{ marginLeft: 5, color: "white" }}
                     />
                   </TouchableWithoutFeedback>
-                ))}
-                <Modal
-                  visible={imageVisible}
-                  onRequestClose={() => setImageVisible(false)}
+                  // </View>
+                )}
+              </View>
+              {/* 中间放拒绝理由，点击叉叉可关闭 */}
+              {showInstruction && (
+                <View>
+                  <Text style={{ fontSize: 16, color: "#C0392B" }}>
+                    拒绝理由：{instruction}
+                  </Text>
+                </View>
+              )}
+              {/* 第一块布局放图片和添加按钮 */}
+              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                <View style={styles.one}>
+                  <View style={{ flexDirection: "row" }}>
+                    {imageUrl.map((url, index) => (
+                      <TouchableWithoutFeedback
+                        key={index}
+                        onPress={() => handleImagePress(url)}
+                        onLongPress={() => {
+                          handleDeleteImage(index);
+                        }}
+                      >
+                        <Image
+                          key={index}
+                          style={styles.imageContainer}
+                          source={{ uri: url }}
+                        />
+                      </TouchableWithoutFeedback>
+                    ))}
+                    <Modal
+                      visible={imageVisible}
+                      onRequestClose={() => setImageVisible(false)}
+                    >
+                      <TouchableWithoutFeedback
+                        style={{ flex: 1 }}
+                        onPress={() => setImageVisible(false)}
+                      >
+                        <View style={{ flex: 1, backgroundColor: "black" }}>
+                          <Image
+                            source={{ uri: selectedImage }}
+                            style={{ width: "100%", height: "100%" }}
+                            resizeMode="contain"
+                          />
+                        </View>
+                      </TouchableWithoutFeedback>
+                    </Modal>
+                  </View>
+                  <View style={styles.imageContainer}>
+                    <Button
+                      title="+"
+                      // disabled
+                      buttonStyle={{
+                        width: 80,
+                        height: 80,
+                        backgroundColor: "#E3E6E8",
+                      }}
+                      titleStyle={{ fontSize: 24, color: "gray" }}
+                      onPress={handleOpenModal}
+                    />
+                  </View>
+                </View>
+              </ScrollView>
+              {/* 图片上传方式选择模态框 */}
+              <Modal
+                animationType="slide"
+                transparent={true}
+                visible={modalVisible}
+                onRequestClose={() => {
+                  setModalVisible(false);
+                }}
+              >
+                <TouchableWithoutFeedback
+                  style={{ flex: 1 }}
+                  onPress={() => setModalVisible(false)}
                 >
-                  <TouchableWithoutFeedback
-                    style={{ flex: 1 }}
-                    onPress={() => setImageVisible(false)}
+                  <View
+                    style={{
+                      flex: 1,
+                      backgroundColor: "rgba(0,0,0,0.5)",
+                      justifyContent: "flex-end",
+                    }}
                   >
-                    <View style={{ flex: 1, backgroundColor: "black" }}>
-                      <Image
-                        source={{ uri: selectedImage }}
-                        style={{ width: "100%", height: "100%" }}
-                        resizeMode="contain"
-                      />
+                    <View
+                      style={{
+                        height: "20%",
+                        backgroundColor: "white",
+                        borderRadius: 10,
+                        padding: 20,
+                        marginTop: 20,
+                      }}
+                    >
+                      <TouchableOpacity
+                        onPress={handleTakeImage}
+                        style={{
+                          flex: 1,
+                          justifyContent: "center",
+                          alignItems: "center",
+                        }}
+                      >
+                        <Text style={{ fontSize: 20 }}>拍照</Text>
+                      </TouchableOpacity>
+                      <View
+                        style={{
+                          height: 2,
+                          width: "100%",
+                          backgroundColor: "#D1CFCF",
+                          marginVertical: 10,
+                        }}
+                      ></View>
+                      <TouchableOpacity
+                        onPress={handleUploadImage}
+                        style={{
+                          flex: 1,
+                          justifyContent: "center",
+                          alignItems: "center",
+                        }}
+                      >
+                        <Text style={{ fontSize: 20 }}>从相册上传</Text>
+                      </TouchableOpacity>
                     </View>
-                  </TouchableWithoutFeedback>
-                </Modal>
-              </View>
-              <View style={styles.imageContainer}>
-                <Button
-                  title="+"
-                  // disabled
-                  buttonStyle={{
-                    width: 80,
-                    height: 80,
-                    backgroundColor: "#E3E6E8",
-                  }}
-                  titleStyle={{ fontSize: 24, color: "gray" }}
-                  onPress={handleOpenModal}
+                  </View>
+                </TouchableWithoutFeedback>
+              </Modal>
+              {/* 标题栏 */}
+              <View style={styles.two}>
+                <TextInput
+                  value={title}
+                  onChangeText={handleChangeTitle}
+                  style={styles.titleInput}
+                  multiline={false} // 不允许多行输入
+                  placeholder="填写标题会被更多人看到哦~"
+                  keyboardShouldPersistTaps="handled"
                 />
-              </View>
-            </View>
-          </ScrollView>
-          {/* 图片上传方式选择模态框 */}
-          <Modal
-            animationType="slide"
-            transparent={true}
-            visible={modalVisible}
-            onRequestClose={() => {
-              setModalVisible(false);
-            }}
-          >
-            <TouchableWithoutFeedback
-              style={{ flex: 1 }}
-              onPress={() => setModalVisible(false)}
-            >
-              <View
-                style={{
-                  flex: 1,
-                  backgroundColor: "rgba(0,0,0,0.5)",
-                  justifyContent: "flex-end",
-                }}
-              >
-                <View
-                  style={{
-                    height: "20%",
-                    backgroundColor: "white",
-                    borderRadius: 10,
-                    padding: 20,
-                    marginTop: 20,
-                  }}
-                >
+                {title.length > 0 && (
                   <TouchableOpacity
-                    onPress={handleTakeImage}
-                    style={{
-                      flex: 1,
-                      justifyContent: "center",
-                      alignItems: "center",
+                    onPress={() => {
+                      setTitle("");
                     }}
                   >
-                    <Text style={{ fontSize: 20 }}>拍照</Text>
+                    <MaterialIcons name="cancel" size={24} color="#989797" />
                   </TouchableOpacity>
-                  <View
-                    style={{
-                      height: 2,
-                      width: "100%",
-                      backgroundColor: "#D1CFCF",
-                      marginVertical: 10,
-                    }}
-                  ></View>
-                  <TouchableOpacity
-                    onPress={handleUploadImage}
-                    style={{
-                      flex: 1,
-                      justifyContent: "center",
-                      alignItems: "center",
-                    }}
-                  >
-                    <Text style={{ fontSize: 20 }}>从相册上传</Text>
-                  </TouchableOpacity>
-                </View>
+                )}
+                <Text style={styles.maxTitle}>
+                  {Math.round(maxTitleLength - calculateLength(title))}
+                </Text>
               </View>
-            </TouchableWithoutFeedback>
-          </Modal>
-          {/* 标题栏 */}
-          <View style={styles.two}>
-            <TextInput
-              value={title}
-              onChangeText={handleChangeTitle}
-              style={styles.titleInput}
-              multiline={false} // 不允许多行输入
-              placeholder="填写标题会被更多人看到哦~"
-              keyboardShouldPersistTaps="handled"
-            />
-            {title.length > 0 && (
-              <TouchableOpacity
-                onPress={() => {
-                  setTitle("");
-                }}
-              >
-                <MaterialIcons name="cancel" size={24} color="#989797" />
-              </TouchableOpacity>
-            )}
-            <Text style={styles.maxTitle}>
-              {Math.round(maxTitleLength - calculateLength(title))}
-            </Text>
-          </View>
-          <View style={styles.line}></View>
-          {/* 正文栏 */}
-          <View style={styles.three}>
-            <TextInput
-              style={styles.contentInput}
-              multiline={true} // 允许多行输入
-              numberOfLines={4}
-              textAlignVertical="top" // 设置文本垂直对齐方式为顶部
-              placeholder="添加正文"
-              onChangeText={handleInputContent}
-              value={content}
-            />
-            <View style={styles.bottomContent}>
-              <TouchableOpacity
-                style={styles.addLabel}
-                onPress={handleAddLabel}
-              >
-                <Text style={styles.addLabelText}># {labelText}</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => {
-                  setIsModalVisible(true);
-                }}
-              >
-                <MaterialIcons
-                  name="keyboard-arrow-up"
-                  size={24}
-                  color="black"
-                />
-              </TouchableOpacity>
-            </View>
-          </View>
-          {/* 标签模态框 */}
-          <Modal
-            visible={labelModal}
-            animationType="slide"
-            onRequestClose={() => {
-              setLabelModal(false);
-            }}
-          >
-            <TouchableWithoutFeedback
-              style={{ flex: 1 }}
-              onPress={() => setLabelModal(false)}
-            >
-              <View
-                style={{
-                  flex: 1,
-                  backgroundColor: "rgba(0,0,0,0.5)",
-                  justifyContent: "flex-end",
-                }}
-              >
-                <View
-                  style={{
-                    height: "70%",
-                    backgroundColor: "white",
-                    borderRadius: 10,
-                    padding: 20,
-                    marginTop: 20,
-                  }}
-                >
-                  <View
-                    style={{ justifyContent: "center", alignItems: "center" }}
-                  >
-                    <Text style={{ fontSize: 20, fontWeight: "bold" }}>
-                      添加标签
-                    </Text>
-                  </View>
-                  <View style={{ marginTop: 20 }}>
-                    {labelThemes.map((labelTheme, index) => (
-                      <View key={index} style={{ justifyContent: "center" }}>
-                        <TouchableOpacity
-                          onPress={() => {
-                            handleLabelPress(labelTheme);
-                          }}
-                        >
-                          <Text style={{ fontSize: 18, marginTop: 10 }}>
-                            # {labelTheme}
-                          </Text>
-                        </TouchableOpacity>
-                        <View style={styles.line}></View>
-                      </View>
-                    ))}
-                  </View>
-                </View>
-              </View>
-            </TouchableWithoutFeedback>
-          </Modal>
-          {/* 目的地模态框 */}
-          <Modal
-            visible={destinationModal}
-            animationType="slide"
-            onRequestClose={() => {
-              setDestinationModal(false);
-            }}
-          >
-            <TouchableWithoutFeedback
-              style={{ flex: 1 }}
-              onPress={() => setDestinationModal(false)}
-            >
-              <View
-                style={{
-                  flex: 1,
-                  backgroundColor: "rgba(0,0,0,0.5)",
-                  justifyContent: "flex-end",
-                }}
-              >
-                <View
-                  style={{
-                    height: "100%",
-                    backgroundColor: "white",
-                    borderRadius: 10,
-                    padding: 20,
-                    marginTop: 20,
-                  }}
-                >
-                  <View
-                    style={{ justifyContent: "center", alignItems: "center" }}
-                  >
-                    <Text style={{ fontSize: 20, fontWeight: "bold" }}>
-                      添加地点
-                    </Text>
-                  </View>
-                  <View style={{ width: "100%" }}>
-                    <MapView
-                      style={{ alignSelf: "stretch", height: "100%" }}
-                      region={mapRegion}
-                    />
-                  </View>
-                  <View style={{ marginTop: 20 }}>
-                    {destinationThemes.map((destinationTheme, index) => (
-                      <View key={index} style={{ justifyContent: "center" }}>
-                        <TouchableOpacity
-                          onPress={() => {
-                            handleDestinationPress(destinationTheme);
-                          }}
-                        >
-                          <Text style={{ fontSize: 18, marginTop: 10 }}>
-                            # {destinationTheme}
-                          </Text>
-                        </TouchableOpacity>
-                        <View style={styles.line}></View>
-                      </View>
-                    ))}
-                  </View>
-                </View>
-              </View>
-            </TouchableWithoutFeedback>
-          </Modal>
-          {/* 正文模态框 */}
-          <Modal
-            visible={isModalVisible}
-            animationType="slide"
-            onRequestClose={() => {
-              setIsModalVisible(false);
-            }}
-          >
-            <View style={styles.modalContainer}>
-              <View style={styles.modalContent}>
+              <View style={styles.line}></View>
+              {/* 正文栏 */}
+              <View style={styles.three}>
                 <TextInput
                   style={styles.contentInput}
                   multiline={true} // 允许多行输入
@@ -771,98 +621,267 @@ const LogPublicPage = ({ route }) => {
                   </TouchableOpacity>
                   <TouchableOpacity
                     onPress={() => {
-                      setIsModalVisible(false);
+                      setIsModalVisible(true);
                     }}
                   >
                     <MaterialIcons
-                      name="keyboard-arrow-down"
+                      name="keyboard-arrow-up"
                       size={24}
                       color="black"
                     />
                   </TouchableOpacity>
                 </View>
               </View>
-            </View>
-          </Modal>
-          <View style={styles.line}></View>
-          {/* 选择框 */}
-          <View style={styles.four}>
-            <View style={styles.picker}>
-              <Text style={styles.pickerText}>出行月份:</Text>
-              <View style={styles.monthPicker}>
-                <MonthPicker onSelectMonth={handleSelectMonth} />
+              {/* 标签模态框 */}
+              <Modal
+                visible={labelModal}
+                animationType="slide"
+                onRequestClose={() => {
+                  setLabelModal(false);
+                }}
+              >
+                <TouchableWithoutFeedback
+                  style={{ flex: 1 }}
+                  onPress={() => setLabelModal(false)}
+                >
+                  <View
+                    style={{
+                      flex: 1,
+                      backgroundColor: "rgba(0,0,0,0.5)",
+                      justifyContent: "flex-end",
+                    }}
+                  >
+                    <View
+                      style={{
+                        height: "70%",
+                        backgroundColor: "white",
+                        borderRadius: 10,
+                        padding: 20,
+                        marginTop: 20,
+                      }}
+                    >
+                      <View
+                        style={{
+                          justifyContent: "center",
+                          alignItems: "center",
+                        }}
+                      >
+                        <Text style={{ fontSize: 20, fontWeight: "bold" }}>
+                          添加标签
+                        </Text>
+                      </View>
+                      <View style={{ marginTop: 20 }}>
+                        {labelThemes.map((labelTheme, index) => (
+                          <View
+                            key={index}
+                            style={{ justifyContent: "center" }}
+                          >
+                            <TouchableOpacity
+                              onPress={() => {
+                                handleLabelPress(labelTheme);
+                              }}
+                            >
+                              <Text style={{ fontSize: 18, marginTop: 10 }}>
+                                # {labelTheme}
+                              </Text>
+                            </TouchableOpacity>
+                            <View style={styles.line}></View>
+                          </View>
+                        ))}
+                      </View>
+                    </View>
+                  </View>
+                </TouchableWithoutFeedback>
+              </Modal>
+              {/* 目的地模态框 */}
+              <Modal
+                visible={destinationModal}
+                animationType="slide"
+                onRequestClose={() => {
+                  setDestinationModal(false);
+                }}
+              >
+                <TouchableWithoutFeedback
+                  style={{ flex: 1 }}
+                  onPress={() => setDestinationModal(false)}
+                >
+                  <View
+                    style={{
+                      flex: 1,
+                      backgroundColor: "rgba(0,0,0,0.5)",
+                      justifyContent: "flex-end",
+                    }}
+                  >
+                    <View
+                      style={{
+                        height: "100%",
+                        backgroundColor: "white",
+                        borderRadius: 10,
+                        padding: 20,
+                        marginTop: 20,
+                      }}
+                    >
+                      <View
+                        style={{
+                          justifyContent: "center",
+                          alignItems: "center",
+                        }}
+                      >
+                        <Text style={{ fontSize: 20, fontWeight: "bold" }}>
+                          添加地点
+                        </Text>
+                      </View>
+                      <View style={{ width: "100%" }}>
+                        <MapView
+                          style={{ alignSelf: "stretch", height: "100%" }}
+                          region={mapRegion}
+                        />
+                      </View>
+                      <View style={{ marginTop: 20 }}>
+                        {destinationThemes.map((destinationTheme, index) => (
+                          <View
+                            key={index}
+                            style={{ justifyContent: "center" }}
+                          >
+                            <TouchableOpacity
+                              onPress={() => {
+                                handleDestinationPress(destinationTheme);
+                              }}
+                            >
+                              <Text style={{ fontSize: 18, marginTop: 10 }}>
+                                # {destinationTheme}
+                              </Text>
+                            </TouchableOpacity>
+                            <View style={styles.line}></View>
+                          </View>
+                        ))}
+                      </View>
+                    </View>
+                  </View>
+                </TouchableWithoutFeedback>
+              </Modal>
+              {/* 正文模态框 */}
+              <Modal
+                visible={isModalVisible}
+                animationType="slide"
+                onRequestClose={() => {
+                  setIsModalVisible(false);
+                }}
+              >
+                <View style={styles.modalContainer}>
+                  <View style={styles.modalContent}>
+                    <TextInput
+                      style={styles.contentInput}
+                      multiline={true} // 允许多行输入
+                      numberOfLines={4}
+                      textAlignVertical="top" // 设置文本垂直对齐方式为顶部
+                      placeholder="添加正文"
+                      onChangeText={handleInputContent}
+                      value={content}
+                    />
+                    <View style={styles.bottomContent}>
+                      <TouchableOpacity
+                        style={styles.addLabel}
+                        onPress={handleAddLabel}
+                      >
+                        <Text style={styles.addLabelText}># {labelText}</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        onPress={() => {
+                          setIsModalVisible(false);
+                        }}
+                      >
+                        <MaterialIcons
+                          name="keyboard-arrow-down"
+                          size={24}
+                          color="black"
+                        />
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                </View>
+              </Modal>
+              <View style={styles.line}></View>
+              {/* 选择框 */}
+              <View style={styles.four}>
+                <View style={styles.picker}>
+                  <Text style={styles.pickerText}>出行月份:</Text>
+                  <View style={styles.monthPicker}>
+                    <MonthPicker onSelectMonth={handleSelectMonth} />
+                  </View>
+                </View>
+                <View style={styles.picker}>
+                  <Text style={styles.pickerText}>人均消费:</Text>
+                  <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                    <View style={styles.rangeContainer}>
+                      <RangeButtonGroup
+                        ranges={ranges}
+                        selectedRange={selectedRange}
+                        onPress={handleRangePress}
+                      />
+                    </View>
+                  </ScrollView>
+                </View>
+                <View style={styles.picker}>
+                  <Text style={styles.pickerText}>满意度:</Text>
+                  <View style={styles.rateContainer}>
+                    <StarRating
+                      rating={rating}
+                      starSize={30}
+                      totalStars={5}
+                      onPress={handleClickStar}
+                    />
+                  </View>
+                </View>
+              </View>
+              <View style={styles.line}></View>
+              {/* 添加地点 */}
+              <View style={styles.five}>
+                <TouchableOpacity
+                  style={styles.five}
+                  onPress={handleAddDestination}
+                >
+                  <View style={styles.left}>
+                    <Image
+                      source={require("../LogPublicPage/public/place.png")}
+                      style={styles.placeIcon}
+                    />
+                    {userLocation ? (
+                      <Text style={styles.placeText}>添加地点</Text>
+                    ) : (
+                      <Text>{JSON.stringify(userLocation)}</Text>
+                    )}
+                  </View>
+                  <MaterialIcons
+                    name="keyboard-arrow-right"
+                    size={24}
+                    color="#B7B7B7"
+                  />
+                </TouchableOpacity>
               </View>
             </View>
-            <View style={styles.picker}>
-              <Text style={styles.pickerText}>人均消费:</Text>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                <View style={styles.rangeContainer}>
-                  <RangeButtonGroup
-                    ranges={ranges}
-                    selectedRange={selectedRange}
-                    onPress={handleRangePress}
+            {/* 底部操作栏 */}
+            <View style={styles.bottomBox}>
+              <TouchableOpacity onPress={handleAddToDraft}>
+                <View style={styles.draftBack}>
+                  <Image
+                    source={require("../LogPublicPage/public/draft.png")}
+                    style={styles.draftIcon}
                   />
                 </View>
-              </ScrollView>
+                <Text style={styles.draftText}>存草稿</Text>
+              </TouchableOpacity>
+              {/* 提交按钮，将数据上传 */}
+              <TouchableOpacity
+                style={styles.publicArea}
+                onPress={() => {
+                  handleSubmitData();
+                }}
+              >
+                <Text style={styles.publicText}>发布笔记</Text>
+              </TouchableOpacity>
             </View>
-            <View style={styles.picker}>
-              <Text style={styles.pickerText}>满意度:</Text>
-              <View style={styles.rateContainer}>
-                <StarRating
-                  rating={rating}
-                  starSize={30}
-                  totalStars={5}
-                  onPress={handleClickStar}
-                />
-              </View>
-            </View>
-          </View>
-          <View style={styles.line}></View>
-          {/* 添加地点 */}
-          <View style={styles.five}>
-            <TouchableOpacity
-              style={styles.five}
-              onPress={handleAddDestination}
-            >
-              <View style={styles.left}>
-                <Image
-                  source={require("../LogPublicPage/public/place.png")}
-                  style={styles.placeIcon}
-                />
-                {userLocation ? (
-                  <Text style={styles.placeText}>添加地点</Text>
-                ) : (
-                  <Text>{JSON.stringify(userLocation)}</Text>
-                )}
-              </View>
-              <MaterialIcons
-                name="keyboard-arrow-right"
-                size={24}
-                color="#B7B7B7"
-              />
-            </TouchableOpacity>
-          </View>
-          {/* 底部操作栏 */}
-          <View style={styles.six}>
-            <TouchableOpacity onPress={handleAddToDraft}>
-              <View style={styles.draftBack}>
-                <Image
-                  source={require("../LogPublicPage/public/draft.png")}
-                  style={styles.draftIcon}
-                />
-              </View>
-              <Text style={styles.draftText}>存草稿</Text>
-            </TouchableOpacity>
-            {/* 提交按钮，将数据上传 */}
-            <TouchableOpacity
-              style={styles.publicArea}
-              onPress={() => {
-                handleSubmitData();
-              }}
-            >
-              <Text style={styles.publicText}>发布笔记</Text>
-            </TouchableOpacity>
-          </View>
+          </ScrollView>
         </View>
       ) : (
         <View
@@ -875,17 +894,17 @@ const LogPublicPage = ({ route }) => {
           <Dialog.Loading />
         </View>
       )}
-    </KeyboardAvoidingView>
+    </View>
   );
 };
 
 // CSS
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    height: screenHeight,
     flexDirection: "column",
-    marginLeft: 5,
-    marginRight: 5,
+    marginLeft: 10,
+    marginRight: 10,
   },
   topBottom: {
     flex: 1,
@@ -959,7 +978,7 @@ const styles = StyleSheet.create({
     marginVertical: 10,
   },
   three: {
-    flex: 3,
+    flex: 5,
     marginTop: 5,
   },
   contentInput: {
@@ -999,7 +1018,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   four: {
-    flex: 3,
+    flex: 4,
   },
   picker: {
     flex: 1,
@@ -1045,14 +1064,14 @@ const styles = StyleSheet.create({
     marginLeft: 10,
   },
   five: {
-    flex: 1,
+    flex: 7,
     flexDirection: "row",
-    alignItems: "center",
+    // alignItems: "center",
     justifyContent: "space-between",
   },
   left: {
     flexDirection: "row",
-    alignItems: "center",
+    // alignItems: "center",
   },
   placeIcon: {
     width: 25,
@@ -1062,13 +1081,14 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginLeft: 10,
   },
-  six: {
-    flex: 3,
+  bottomBox: {
+    height: 40,
+    // backgroundColor: 'red',
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-end",
+    margin: 10,
   },
-  draftBox: {},
   draftBack: {
     width: 40,
     height: 40,

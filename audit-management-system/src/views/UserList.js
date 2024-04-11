@@ -116,6 +116,7 @@ const UserList = () => {
 
   // 提交表单数据
   const onFinish = async (values) => {
+    console.log("Received values of form: ", values);
     onClose();
     try {
       const response = await api.post("/auditManagement/addUser", values);
@@ -222,8 +223,8 @@ const UserList = () => {
               </Col>
               <Col span={12}>
                 <Form.Item
-                  label="Password"
-                  name="密码"
+                  label="密码"
+                  name="password"
                   rules={[
                     {
                       required: true,

@@ -151,9 +151,9 @@ const FriendList = () => {
   // 当前用户分享该游记，数据库同步更新
   const handleSharePress = async () => {
     console.log("分享给选定的好友:", selectedFriends);
-    // const response = await api.post("/home/share", {
-    //   beFollowedId: value.userId,
-    // });
+    const response = await api.post("/home/share", {
+      selectedFriends: selectedFriends,
+    });
     // setFocused(response.data.focused);
   };
 

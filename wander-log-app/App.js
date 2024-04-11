@@ -77,7 +77,7 @@ function HomeTabScreen() {
             //   <MaterialIcons name="library-add" color={color} size={size} />
             // ),
             tabBarButton: () => <PublishButton />,
-            // tabBarStyle: { display: "none" },
+            tabBarStyle: { display: "none" },
           }}
         />
         <Tab.Screen

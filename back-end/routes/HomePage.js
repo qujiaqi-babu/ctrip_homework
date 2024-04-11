@@ -326,39 +326,12 @@ router.get("/myFriends", authenticateToken, async (req, res) => {
 
 // 用户向好友列表分享特定游记
 router.post("/share", authenticateToken, async (req, res) => {
-  const { travelLogId } = req.body;
+  const { selectedFriends } = req.body;
   const userId = req.user.id;
   try {
-    // 检查是否已经收藏
-    const collect = await Collect.findOne({ userId, travelLogId });
-    if (collect) {
-      // 如果已经收藏，则取消收藏，即移除该条记录
-      await Collect.deleteOne({ _id: collect._id });
-      // 查找游记并更新收藏数
-      const travelLog = await TravelLog.findByIdAndUpdate(
-        travelLogId,
-        { $inc: { collects: -1 } } // 使用 $inc 操作符将点赞数-1
-      );
-      if (!travelLog) {
-        res.status(404).send("TravelLog not found");
-      } else {
-        res.json({ collected: false });
-      }
-    } else {
-      // 如果没有收藏，则收藏
-      const newCollect = new Collect({ userId, travelLogId });
-      await newCollect.save();
-      // 查找游记并更新收藏数
-      const travelLog = await TravelLog.findByIdAndUpdate(
-        travelLogId,
-        { $inc: { collects: 1 } } // 使用 $inc 操作符将点赞数+1
-      );
-      if (!travelLog) {
-        res.status(404).send("TravelLog not found");
-      } else {
-        res.json({ collected: true });
-      }
-    }
+    const collect = await Share.findOne({ userId, travelLogId });
+    const newCollect = new Share({ fromUserId, travelLogId, toUserId });
+    await newCollect.save();
   } catch (error) {
     console.error("Error collect:", error);
     res.status(500).send("Internal server error");

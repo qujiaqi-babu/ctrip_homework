@@ -55,11 +55,11 @@ node server.js
 
 下面分别展示”蓝鸟漫游日志“的各个页面设计以及审核系统的页面设计（见word文档）
 
-<img src="pic/README.assets/a6dd4a2985953daec5389f31a2cb9dc.png" alt="a6dd4a2985953daec5389f31a2cb9dc" style="zoom: 33%;" /><img src="pic/README.assets/c48edd4ee28cb7048955375d72f4596.png" alt="c48edd4ee28cb7048955375d72f4596" style="zoom: 33%;" /><img src="pic/README.assets/0248ccb23e4a4b91602e879c80042cc.png" alt="0248ccb23e4a4b91602e879c80042cc" style="zoom: 33%;" />
+<img src="pic/README.assets/c48edd4ee28cb7048955375d72f4596.png" alt="c48edd4ee28cb7048955375d72f4596" style="zoom: 33%;" /><img src="pic/README.assets/0248ccb23e4a4b91602e879c80042cc.png" alt="0248ccb23e4a4b91602e879c80042cc" style="zoom: 33%;" /><img src="pic/README.assets/image-20240412084721082.png" alt="image-20240412084721082" style="zoom: 33%;" /><img src="pic/README.assets/image-20240412084739717.png" alt="image-20240412084739717" style="zoom: 33%;" />
 
 
 
-
+<img src="pic/README.assets/1c2cbda5d59103eb64b4629e660804d.png" alt="1c2cbda5d59103eb64b4629e660804d" style="zoom:33%;" /><img src="pic/README.assets/c1299d9a408c25d008116564a6f3511.png" alt="c1299d9a408c25d008116564a6f3511" style="zoom:33%;" /><img src="pic/README.assets/87914843c6d1dc698168f68320ce3d0.png" alt="87914843c6d1dc698168f68320ce3d0" style="zoom: 33%;" /><img src="pic/README.assets/0a17f4b4615318a1ae8674cfd8ebb42.png" alt="0a17f4b4615318a1ae8674cfd8ebb42" style="zoom:33%;" />
 
 ## 功能实现
 
@@ -103,6 +103,8 @@ APP使用token身份校验的方式，具体来说，当用户登录时，服务
 
 优化审核页面同时展示多张图片和游记内容的设计。使用antd组件库中的card组件内部嵌入Carousel走马灯组件显示图片，这样审核员在审核时仅需通过点击走马灯的索引块即可切换查看图片。在卡片的右边显示执行操作的通过和拒绝按钮，游记的状态改变还会引起最右边圆形审核状态的样式变化，对于审核人员来说更加醒目。点击拒绝按钮后会从卡片的右边打开一个抽屉，在抽屉中填写不予通过的理由，出于用户的角度考虑，将一类拒绝理由抽离出来，做成标签，审核人员可点击这些标签将这些标签的文本输入到文本框中进行提交，简化了输入拒绝理由这一操作，同时给与用户自由操作的空间，可在输入框中输入理由进行提交。
 
+<img src="pic/README.assets/d72f809f0bab19cf90e99374cd2abf4.png" alt="d72f809f0bab19cf90e99374cd2abf4" style="zoom: 33%;" />
+
 
 
 ## 其他
@@ -118,10 +120,6 @@ APP使用token身份校验的方式，具体来说，当用户登录时，服务
 - ### 页面兼容性
 
 我们在Pixel 8、Pixel Fold、 Pixel 7 Pro等机型上均验证过，证明我们的”蓝鸟漫游日志“APP具有很好的兼容性。
-
-
-
-
 
 - ### 代码管理
 
